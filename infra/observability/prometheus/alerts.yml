@@ -1,0 +1,17 @@
+groups:
+- name: infra-alerts
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance down"
+      description: "{{ $labels.instance }} is down"
+
+  - alert: PostgresDown
+    expr: pg_up == 0
+    for: 1m
+    labels:
+      severity: critical

@@ -153,6 +153,7 @@ services:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ../infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../infra/observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus_data:/prometheus
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy >/dev/null 2>&1 || exit 1"]
@@ -289,7 +290,7 @@ services:
     privileged: true
     networks: [backend]
     logging:
-      driver: "json-file"
+      driver: "json-file" 
       options:
         max-size: "10m"
         max-file: "3"
