@@ -21,6 +21,11 @@ services:
       timeout: 3s
       retries: 20
     networks: [backend]
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   postgres_game:
     image: postgres:16-alpine
@@ -39,6 +44,11 @@ services:
       timeout: 3s
       retries: 20
     networks: [backend]
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 
   postgres_social:
@@ -58,7 +68,11 @@ services:
       timeout: 3s
       retries: 20
     networks: [backend]
-
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   postgres_stats:
     image: postgres:16-alpine
@@ -77,7 +91,11 @@ services:
       timeout: 3s
       retries: 20
     networks: [backend]
-
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   # ---------- Redis (sessions/caching/ephemeral matchmaking state) ----------
   redis:
     image: redis:7-alpine
@@ -93,7 +111,11 @@ services:
       timeout: 3s
       retries: 20
     networks: [backend]
-
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # ---------- RabbitMQ (async events: match.finished etc.) ----------
   rabbitmq:
@@ -114,6 +136,163 @@ services:
       timeout: 5s
       retries: 20
     networks: [backend]
+    logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------- Observability: Prometheus ----------
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ../infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9090/-/healthy >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------- Observability: Grafana ----------
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../infra/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------- Exporter: Redis ----------
+  redis_exporter:
+    image: oliver006/redis_exporter:v1.61.0
+    container_name: redis_exporter
+    environment:
+      REDIS_ADDR: "redis:6379"
+    ports:
+      - "${REDIS_EXPORTER_PORT:-9121}:9121"
+    depends_on:
+      - redis
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------- Exporters: Postgres (one per DB) ----------
+  postgres_exporter_auth:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres_exporter_auth
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?sslmode=disable"
+    ports:
+      - "${PG_EXPORTER_AUTH_PORT:-9187}:9187"
+    depends_on:
+      - postgres_auth
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres_exporter_game:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres_exporter_game
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${GAME_DB_USER}:${GAME_DB_PASSWORD}@postgres_game:5432/${GAME_DB_NAME}?sslmode=disable"
+    ports:
+      - "${PG_EXPORTER_GAME_PORT:-9188}:9187"
+    depends_on:
+      - postgres_game
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres_exporter_social:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres_exporter_social
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${SOCIAL_DB_USER}:${SOCIAL_DB_PASSWORD}@postgres_social:5432/${SOCIAL_DB_NAME}?sslmode=disable"
+    ports:
+      - "${PG_EXPORTER_SOCIAL_PORT:-9189}:9187"
+    depends_on:
+      - postgres_social
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres_exporter_stats:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres_exporter_stats
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?sslmode=disable"
+    ports:
+      - "${PG_EXPORTER_STATS_PORT:-9190}:9187"
+    depends_on:
+      - postgres_stats
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------- Container metrics: cAdvisor ----------
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    ports:
+      - "${CADVISOR_PORT:-8080}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    privileged: true
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 
 networks:
@@ -127,3 +306,6 @@ volumes:
   pg_stats_data:
   redis_data:
   rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+

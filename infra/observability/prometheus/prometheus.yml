@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: "redis_exporter"
+    static_configs:
+      - targets: ["redis_exporter:9121"]
+
+  - job_name: "postgres_exporter_auth"
+    static_configs:
+      - targets: ["postgres_exporter_auth:9187"]
+
+  - job_name: "postgres_exporter_game"
+    static_configs:
+      - targets: ["postgres_exporter_game:9187"]
+
+  - job_name: "postgres_exporter_social"
+    static_configs:
+      - targets: ["postgres_exporter_social:9187"]
+
+  - job_name: "postgres_exporter_stats"
+    static_configs:
+      - targets: ["postgres_exporter_stats:9187"]
+
+  # RabbitMQ exposes Prometheus metrics on 15692 by default 
+  - job_name: "rabbitmq"
+    static_configs:
+      - targets: ["rabbitmq:15692"]
+
+  # Container metrics
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
