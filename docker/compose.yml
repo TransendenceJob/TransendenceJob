@@ -1,0 +1,129 @@
+name : TransendenceJob
+
+
+services:
+
+  # ---------- Databases (one Postgres per service: clear ownership) ----------
+  postgres_auth:
+    image: postgres:16-alpine
+    container_name: postgres_auth
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER:-auth}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD:-auth}
+      POSTGRES_DB: ${AUTH_DB_NAME:-auth_db}
+    ports:
+      - "${AUTH_DB_PORT:-5433}:5432"
+    volumes:
+      - pg_auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+  
+  postgres_game:
+    image: postgres:16-alpine
+    container_name: postgres_game
+    environment:
+      POSTGRES_USER: ${GAME_DB_USER:-auth}
+      POSTGRES_PASSWORD: ${GAME_DB_PASSWORD:-auth}
+      POSTGRES_DB: ${GAME_DB_NAME:-auth_db}
+    ports:
+      - "${GAME_DB_PORT:-5434}:5432"
+    volumes:
+      - pg_game_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+
+  postgres_social:
+    image: postgres:16-alpine
+    container_name: postgres_social
+    environment:
+      POSTGRES_USER: ${SOCIAL_DB_USER:-auth}
+      POSTGRES_PASSWORD: ${SOCIAL_DB_PASSWORD:-auth}
+      POSTGRES_DB: ${SOCIAl_DB_NAME:-auth_db}
+    ports:
+      - "${SOCIAL_DB_PORT:-5435}:5432"
+    volumes:
+      - pg_social_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+
+  postgres_stats:
+    image: postgres:16-alpine
+    container_name: postgres_stats
+    environment:
+      POSTGRES_USER: ${STATS_DB_USER:-auth}
+      POSTGRES_PASSWORD: ${STATS_DB_PASSWORD:-auth}
+      POSTGRES_DB: ${STATS_DB_NAME:-auth_db}
+    ports:
+      - "${STATS_DB_PORT:-5436}:5432"
+    volumes:
+      - pg_stats_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  # ---------- Redis (sessions/caching/ephemeral matchmaking state) ----------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+
+  # ---------- RabbitMQ (async events: match.finished etc.) ----------
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"       # AMQP
+      - "${RABBITMQ_UI_PORT:-15672}:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pg_auth_data:
+  pg_game_data:
+  pg_social_data:
+  pg_stats_data:
+  redis_data:
+  rabbitmq_data:
