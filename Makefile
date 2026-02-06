@@ -3,7 +3,11 @@ COMPOSE = docker compose --env-file .env -f docker/compose.yml
 
 .PHONY: up down ps logs health reset
 
-up:
+
+check-env:
+	@test -f .env || (echo "❌ .env missing. Run: cp .env.example .env" && exit 1)
+
+up: check-env
 	$(COMPOSE) up -d
 
 down:

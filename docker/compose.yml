@@ -294,6 +294,28 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  node_exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node_exporter
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100:9100}"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+
 
 networks:
   backend:
