@@ -1,0 +1,64 @@
+name: Enable Auto-merge on label
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    runs-on: ubuntu-latest
+    env:
+      AUTOMERGE_LABEL: ${{ vars.AUTOMERGE_LABEL }}
+      DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+      MAIN_BRANCH: ${{ vars.MAIN_BRANCH }}
+      REQUIRE_MEMBER_FOR_AUTOMERGE: ${{ vars.REQUIRE_MEMBER_FOR_AUTOMERGE }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const pr = context.payload.pull_request;
+            const label = (process.env.AUTOMERGE_LABEL || 'automerge').trim();
+
+            // Only run when the label that was added matches
+            if ((context.payload.label?.name || '').toLowerCase() !== label.toLowerCase()) {
+              core.info('Label does not match automerge label; skipping.');
+              return;
+            }
+
+            const allowedBases = new Set([
+              (process.env.MAIN_BRANCH || 'main').trim(),
+              (process.env.DEFAULT_BASE_BRANCH || 'development').trim(),
+            ].filter(Boolean));
+
+            if (!allowedBases.has(pr.base.ref)) {
+              core.info(`Base branch ${pr.base.ref} not in allowed list; skipping.`);
+              return;
+            }
+
+            // Optional: require org member/collaborator
+            const requireMember = String(process.env.REQUIRE_MEMBER_FOR_AUTOMERGE || '').toLowerCase() === 'true';
+            if (requireMember) {
+              // Permission levels: admin, maintain, write, triage, read
+              const perm = await github.rest.repos.getCollaboratorPermissionLevel({
+                ...context.repo,
+                username: context.actor,
+              });
+              const level = perm.data.permission;
+              if (!['admin','maintain','write'].includes(level)) {
+                core.warning(`Actor ${context.actor} permission is ${level}; refusing to enable auto-merge.`);
+                return;
+              }
+            }
+
+            await github.graphql(`
+              mutation($id:ID!){
+                enablePullRequestAutoMerge(input:{ pullRequestId:$id, mergeMethod:SQUASH }){
+                  pullRequest{ number }
+                }
+              }`, { id: pr.node_id });
+
+            core.info(`Auto-merge enabled for PR #${pr.number}`);

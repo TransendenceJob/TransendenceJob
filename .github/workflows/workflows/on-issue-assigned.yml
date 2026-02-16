@@ -1,0 +1,171 @@
+name: On Issue Assigned
+
+on:
+  issues:
+    types: [assigned]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  assign-branch:
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+
+      PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+      PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+      STATUS_READY: ${{ vars.STATUS_READY }}
+
+      LABEL_FEATURE: ${{ vars.LABEL_FEATURE }}
+      LABEL_BUG: ${{ vars.LABEL_BUG }}
+      LABEL_REFACTOR: ${{ vars.LABEL_REFACTOR }}
+
+    steps:
+      - name: Create branch & move to Ready
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_PAT || github.token }}
+          script: |
+            const issue = context.payload.issue;
+            const repo = context.repo;
+
+            const validLabels = new Set([
+              (process.env.LABEL_FEATURE || 'feature').toLowerCase(),
+              (process.env.LABEL_BUG || 'bug').toLowerCase(),
+              (process.env.LABEL_REFACTOR || 'refactor').toLowerCase(),
+            ]);
+
+            const labels = (issue.labels || []).map(l => (l.name || '').toLowerCase());
+            if (!labels.some(l => validLabels.has(l))) {
+              core.info("Issue doesn't have a valid type label (feature/bug/refactor). Skipping.");
+              return;
+            }
+
+            const issueNumber = issue.number;
+            const issueNodeId = issue.node_id;
+            const assignee = context.payload.assignee?.login;
+            if (!assignee) {
+              core.info('No assignee login; skipping.');
+              return;
+            }
+
+            const baseBranch = (process.env.DEFAULT_BASE_BRANCH || 'development').trim();
+            const branchName = `${issueNumber}_${assignee}`.toLowerCase();
+
+            // Get base branch SHA
+            const baseRef = await github.rest.git.getRef({ ...repo, ref: `heads/${baseBranch}` });
+
+            // Create branch if it does not exist
+            try {
+              await github.rest.git.getRef({ ...repo, ref: `heads/${branchName}` });
+              core.info('Branch already exists; skipping createRef');
+            } catch {
+              await github.rest.git.createRef({
+                ...repo,
+                ref: `refs/heads/${branchName}`,
+                sha: baseRef.data.object.sha,
+              });
+              core.info(`Branch created: ${branchName}`);
+            }
+
+            // Comment on the issue with link + checkout command
+            const branchUrl = `https://github.com/${repo.owner}/${repo.repo}/tree/${branchName}`;
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number: issueNumber,
+              body:
+                `🚀 Branch created: [\`${branchName}\`](${branchUrl})\n\n` +
+                `To check out this branch locally:\n` +
+                "```bash\n" +
+                `git fetch --prune && git checkout ${branchName}\n` +
+                "```"
+            });
+
+            // === ProjectV2 move to Ready ===
+            const PROJECT_ID = process.env.PROJECT_V2_ID;
+            if (!PROJECT_ID) {
+              core.warning('Missing vars.PROJECT_V2_ID; skipping project update.');
+              return;
+            }
+
+            const STATUS_FIELD_NAME = process.env.PROJECT_FIELD_STATUS_NAME || 'Status';
+            const READY_NAME = process.env.STATUS_READY || 'Ready';
+
+            // Load project status field/options
+            const projQ = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2SingleSelectField { id name options { id name } }
+                      }
+                    }
+                  }
+                }
+              }`;
+            const projData = await github.graphql(projQ, { projectId: PROJECT_ID });
+            const project = projData.node;
+            if (!project) throw new Error('Project not found by ID');
+
+            const statusField = project.fields.nodes.find(f => f && f.__typename === 'ProjectV2SingleSelectField' && f.name === STATUS_FIELD_NAME);
+            if (!statusField) throw new Error(`Field "${STATUS_FIELD_NAME}" not found on project "${project.title}"`);
+
+            const readyOpt = statusField.options.find(o => o.name === READY_NAME);
+            if (!readyOpt) throw new Error(`Option "${READY_NAME}" not found in field "${STATUS_FIELD_NAME}"`);
+
+            async function getOrCreateItemId(projectId, contentNodeId) {
+              let after = null;
+              while (true) {
+                const q = `
+                  query($projectId: ID!, $after: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 50, after: $after) {
+                          nodes { id content { ... on Issue { id } } }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }
+                  }`;
+                const r = await github.graphql(q, { projectId, after });
+                const page = r.node.items;
+                const existing = page.nodes.find(n => n.content?.id === contentNodeId);
+                if (existing) return existing.id;
+                if (!page.pageInfo.hasNextPage) break;
+                after = page.pageInfo.endCursor;
+              }
+
+              const added = await github.graphql(`
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item { id }
+                  }
+                }`, { projectId, contentId: contentNodeId });
+
+              return added.addProjectV2ItemById.item.id;
+            }
+
+            const itemId = await getOrCreateItemId(PROJECT_ID, issueNodeId);
+
+            await github.graphql(`
+              mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                updateProjectV2ItemFieldValue(input: $input) {
+                  projectV2Item { id }
+                }
+              }
+            `, {
+              input: {
+                projectId: PROJECT_ID,
+                itemId,
+                fieldId: statusField.id,
+                value: { singleSelectOptionId: readyOpt.id }
+              }
+            });
+
+            core.info(`Moved issue #${issueNumber} to "${READY_NAME}" in ProjectV2.`);

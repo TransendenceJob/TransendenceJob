@@ -1,0 +1,54 @@
+name: Delete Old Workflow Runs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      RUN_RETENTION_DAYS: ${{ vars.RUN_RETENTION_DAYS }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const repo = context.repo;
+            const days = Number(process.env.RUN_RETENTION_DAYS || 15);
+            const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+            let page = 1;
+            let totalDeleted = 0;
+
+            while (true) {
+              const { data } = await github.rest.actions.listWorkflowRunsForRepo({
+                ...repo,
+                per_page: 100,
+                page
+              });
+              const runs = data.workflow_runs || [];
+              if (runs.length === 0) break;
+
+              for (const run of runs) {
+                const created = new Date(run.created_at).getTime();
+                if (created < cutoff) {
+                  try {
+                    await github.rest.actions.deleteWorkflowRun({ ...repo, run_id: run.id });
+                    totalDeleted++;
+                    core.info(`Deleted run ${run.id} (${run.name}) from ${run.created_at}`);
+                  } catch (e) {
+                    core.warning(`Failed to delete run ${run.id}: ${e.message}`);
+                  }
+                }
+              }
+
+              page++;
+            }
+
+            core.info(`✅ Deleted ${totalDeleted} runs older than ${days} day(s).`);

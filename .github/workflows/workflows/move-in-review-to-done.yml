@@ -1,0 +1,177 @@
+name: Move 'In review' tickets to Done on PR approval/merge
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  move-to-done:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+      PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+      STATUS_IN_REVIEW: ${{ vars.STATUS_IN_REVIEW }}
+      STATUS_DONE: ${{ vars.STATUS_DONE }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_PAT || github.token }}
+          script: |
+            const repo = context.repo;
+            const PROJECT_ID = process.env.PROJECT_V2_ID;
+            const STATUS_FIELD_NAME = process.env.PROJECT_FIELD_STATUS_NAME || 'Status';
+            const INREVIEW_OPTION_NAME = process.env.STATUS_IN_REVIEW || 'In review';
+            const DONE_OPTION_NAME = process.env.STATUS_DONE || 'Done';
+
+            if (!PROJECT_ID) throw new Error('Missing vars.PROJECT_V2_ID');
+
+            // Only continue on APPROVED review or merged PR
+            const isReview = context.eventName === 'pull_request_review' && context.payload.action === 'submitted';
+            const isMerged = context.eventName === 'pull_request' && context.payload.action === 'closed' && context.payload.pull_request.merged === true;
+
+            if (!isReview && !isMerged) return;
+            if (isReview && (context.payload.review.state || '').toLowerCase() !== 'approved') return;
+
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+
+            // Fetch project fields + options
+            const projQ = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }`;
+            const projData = await github.graphql(projQ, { projectId: PROJECT_ID });
+            const project = projData.node;
+            if (!project) throw new Error('Project not found by ID');
+
+            const statusField = project.fields.nodes.find(
+              f => f && f.__typename === 'ProjectV2SingleSelectField' && f.name === STATUS_FIELD_NAME
+            );
+            if (!statusField) throw new Error(`Field "${STATUS_FIELD_NAME}" not found on project "${project.title}".`);
+
+            const inReviewOpt = statusField.options.find(o => o.name === INREVIEW_OPTION_NAME);
+            const doneOpt = statusField.options.find(o => o.name === DONE_OPTION_NAME);
+            if (!inReviewOpt) throw new Error(`Option "${INREVIEW_OPTION_NAME}" not found.`);
+            if (!doneOpt) throw new Error(`Option "${DONE_OPTION_NAME}" not found.`);
+
+            // List project items (paged)
+            async function listProjectItems(projectId) {
+              const items = [];
+              let after = null;
+              while (true) {
+                const q = `
+                  query($id:ID!, $after:String){
+                    node(id:$id){
+                      ... on ProjectV2 {
+                        items(first:100, after:$after){
+                          nodes{ id content { __typename ... on Issue { id number } } }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }
+                  }`;
+                const r = await github.graphql(q, { id: projectId, after });
+                const page = r.node.items;
+                items.push(...page.nodes);
+                if (!page.pageInfo.hasNextPage) break;
+                after = page.pageInfo.endCursor;
+              }
+              return items;
+            }
+
+            // Read Status of an item
+            async function getStatus(projectId, itemId) {
+              const q = `
+                query($projectId:ID!, $itemId:ID!, $fieldName:String!){
+                  node(id:$projectId){
+                    ... on ProjectV2 {
+                      item(id:$itemId){
+                        id
+                        fieldValueByName(name:$fieldName){
+                          __typename
+                          ... on ProjectV2ItemFieldSingleSelectValue { name optionId }
+                        }
+                      }
+                    }
+                  }
+                }`;
+              const r = await github.graphql(q, { projectId, itemId, fieldName: STATUS_FIELD_NAME });
+              const fv = r.node.item?.fieldValueByName;
+              if (!fv || fv.__typename !== 'ProjectV2ItemFieldSingleSelectValue') return null;
+              return { name: fv.name, optionId: fv.optionId };
+            }
+
+            // Resolve linked issues for this PR
+            const prQ = `
+              query($owner:String!, $repo:String!, $number:Int!){
+                repository(owner:$owner, name:$repo){
+                  pullRequest(number:$number){
+                    number
+                    closingIssuesReferences(first:20){ nodes { number } }
+                    body
+                    title
+                  }
+                }
+              }`;
+            const prData = await github.graphql(prQ, { owner: repo.owner, repo: repo.repo, number: pr.number });
+            const closingIssues = prData.repository.pullRequest.closingIssuesReferences.nodes || [];
+            const text = (prData.repository.pullRequest.title || '') + '\n' + (prData.repository.pullRequest.body || '');
+            const numsFromText = [...new Set((text.match(/#(\d+)/g) || []).map(s => +s.slice(1)))];
+            const issueNumbers = [...new Set([...closingIssues.map(i => i.number), ...numsFromText])];
+
+            if (!issueNumbers.length) {
+              core.info('No linked issues found; nothing to move.');
+              return;
+            }
+
+            const items = await listProjectItems(project.id);
+
+            for (const num of issueNumbers) {
+              const it = items.find(n => n.content?.__typename === 'Issue' && n.content.number === num);
+              if (!it) continue;
+
+              const st = await getStatus(project.id, it.id);
+              if (!st) continue;
+
+              if (st.optionId === inReviewOpt.id || st.name === INREVIEW_OPTION_NAME) {
+                try {
+                  await github.graphql(`
+                    mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                      updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } }
+                    }
+                  `, {
+                    input: {
+                      projectId: project.id,
+                      itemId: it.id,
+                      fieldId: statusField.id,
+                      value: { singleSelectOptionId: doneOpt.id }
+                    }
+                  });
+                  core.info(`Moved Issue #${num} to "${DONE_OPTION_NAME}".`);
+                } catch (e) {
+                  core.warning(`Failed to move Issue #${num}: ${e.message}`);
+                }
+              }
+            }

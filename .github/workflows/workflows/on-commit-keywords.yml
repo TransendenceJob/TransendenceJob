@@ -1,0 +1,192 @@
+name: On Commit Keywords
+
+on:
+  push:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  parse-commit:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+      PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+      STATUS_IN_PROGRESS: ${{ vars.STATUS_IN_PROGRESS }}
+      STATUS_IN_REVIEW: ${{ vars.STATUS_IN_REVIEW }}
+      DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+      COMMIT_KEYWORD_START: ${{ vars.COMMIT_KEYWORD_START }}
+      COMMIT_KEYWORD_END: ${{ vars.COMMIT_KEYWORD_END }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_PAT || github.token }}
+          script: |
+            const repo = context.repo;
+
+            const commit = context.payload.head_commit;
+            if (!commit) { core.info('No head_commit (likely a tag push or deleted branch).'); return; }
+
+            const message = commit.message || '';
+            // Skip merge commits to avoid accidental triggers
+            if (/^merge\b/i.test(message.trim())) {
+              core.info('Merge commit detected; skipping.');
+              return;
+            }
+
+            const startKw = (process.env.COMMIT_KEYWORD_START || '[New]').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const endKw = (process.env.COMMIT_KEYWORD_END || '[END]').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            const reStart = new RegExp(`${startKw}\\s*\\[#(\\d+)\\]`, 'i');
+            const reEnd   = new RegExp(`${endKw}\\s*\\[#(\\d+)\\]`, 'i');
+
+            const newMatch = message.match(reStart);
+            const endMatch = message.match(reEnd);
+            const issueNumber = +(newMatch?.[1] || endMatch?.[1] || 0);
+            if (!issueNumber) { core.info('No issue reference found in head commit.'); return; }
+
+            const PROJECT_ID = process.env.PROJECT_V2_ID;
+            if (!PROJECT_ID) throw new Error('Missing vars.PROJECT_V2_ID');
+
+            const STATUS_FIELD_NAME = process.env.PROJECT_FIELD_STATUS_NAME || 'Status';
+            const IN_PROGRESS_NAME = process.env.STATUS_IN_PROGRESS || 'In progress';
+            const IN_REVIEW_NAME = process.env.STATUS_IN_REVIEW || 'In review';
+
+            // Fetch project Status field + options
+            const projQ = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2SingleSelectField { id name options { id name } }
+                      }
+                    }
+                  }
+                }
+              }`;
+            const projData = await github.graphql(projQ, { projectId: PROJECT_ID });
+            const project = projData.node;
+            if (!project) throw new Error('Project not found by ID');
+
+            const statusField = project.fields.nodes.find(f => f && f.__typename === 'ProjectV2SingleSelectField' && f.name === STATUS_FIELD_NAME);
+            if (!statusField) throw new Error(`Field "${STATUS_FIELD_NAME}" not found on project "${project.title}"`);
+
+            const optInProgress = statusField.options.find(o => o.name === IN_PROGRESS_NAME);
+            const optInReview = statusField.options.find(o => o.name === IN_REVIEW_NAME);
+            if (newMatch && !optInProgress) throw new Error(`Status option "${IN_PROGRESS_NAME}" not found`);
+            if (endMatch && !optInReview) throw new Error(`Status option "${IN_REVIEW_NAME}" not found`);
+
+            // Find (or create) item for this issue in project
+            async function getOrCreateItemId(projectId, issueNodeId) {
+              let after = null;
+              while (true) {
+                const q = `
+                  query($projectId: ID!, $after: String) {
+                    node(id: $projectId) {
+                      ... on ProjectV2 {
+                        items(first: 50, after: $after) {
+                          nodes {
+                            id
+                            content { ... on Issue { id } }
+                          }
+                          pageInfo { hasNextPage endCursor }
+                        }
+                      }
+                    }
+                  }`;
+                const r = await github.graphql(q, { projectId, after });
+                const page = r.node.items;
+                const existing = page.nodes.find(n => n.content?.id === issueNodeId);
+                if (existing) return existing.id;
+                if (!page.pageInfo.hasNextPage) break;
+                after = page.pageInfo.endCursor;
+              }
+
+              const added = await github.graphql(`
+                mutation($projectId: ID!, $contentId: ID!) {
+                  addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                    item { id }
+                  }
+                }
+              `, { projectId, contentId: issueNodeId });
+
+              return added.addProjectV2ItemById.item.id;
+            }
+
+            const { data: issue } = await github.rest.issues.get({ ...repo, issue_number: issueNumber });
+            const itemId = await getOrCreateItemId(PROJECT_ID, issue.node_id);
+
+            async function setStatus(optionId) {
+              await github.graphql(`
+                mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                  updateProjectV2ItemFieldValue(input:$input){ projectV2Item{ id } }
+                }`, {
+                input: {
+                  projectId: PROJECT_ID,
+                  itemId,
+                  fieldId: statusField.id,
+                  value: { singleSelectOptionId: optionId }
+                }
+              });
+            }
+
+            if (newMatch) {
+              await setStatus(optInProgress.id);
+              core.info(`Moved issue #${issueNumber} to "${IN_PROGRESS_NAME}"`);
+            }
+
+            if (endMatch) {
+              await setStatus(optInReview.id);
+              core.info(`Moved issue #${issueNumber} to "${IN_REVIEW_NAME}"`);
+
+              // Suggest PR creation from the issue branch (keeps developer as author)
+              const assignees = (issue.assignees || []).map(a => a.login);
+              if (!assignees.length) return;
+
+              const branchPrefix = `${issue.number}_`;
+              const branches = [];
+              for (let page = 1; ; page++) {
+                const { data } = await github.rest.repos.listBranches({ ...repo, per_page: 100, page });
+                branches.push(...data);
+                if ((data || []).length < 100) break;
+              }
+
+              const match = branches.find(b => b.name.startsWith(branchPrefix));
+              if (!match) {
+                core.info(`No branch found starting with ${branchPrefix}`);
+                return;
+              }
+
+              const BASE_BRANCH = (process.env.DEFAULT_BASE_BRANCH || 'development').trim();
+              const existing = await github.rest.pulls.list({
+                ...repo,
+                state: 'open',
+                head: `${repo.owner}:${match.name}`,
+                base: BASE_BRANCH
+              });
+
+              if (existing.data.length) {
+                core.info(`PR already exists: #${existing.data[0].number}`);
+                return;
+              }
+
+              const prOpenUrl =
+                `https://github.com/${repo.owner}/${repo.repo}/compare/${encodeURIComponent(BASE_BRANCH)}...${encodeURIComponent(match.name)}` +
+                `?expand=1&title=${encodeURIComponent('[#' + issue.number + '] ' + issue.title)}` +
+                `&body=${encodeURIComponent('Closes #' + issue.number)}`;
+
+              await github.rest.issues.createComment({
+                ...repo,
+                issue_number: issue.number,
+                body:
+                  `🧩 Open a PR from this branch:\n` +
+                  `[Create Pull Request](${prOpenUrl})\n\n` +
+                  `This keeps **you** as the PR author.`
+              });
+            }

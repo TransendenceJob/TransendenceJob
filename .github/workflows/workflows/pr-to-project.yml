@@ -1,0 +1,108 @@
+name: Add PRs to Project
+
+on:
+  # pull_request_target runs in the base repo context (safe for org Projects + secrets)
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  add-pr-to-project:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+      PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+      STATUS_PULL_REQUESTS: ${{ vars.STATUS_PULL_REQUESTS }}
+      AUTOMERGE_LABEL: ${{ vars.AUTOMERGE_LABEL }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          # PAT is recommended for org Projects v2 mutations
+          github-token: ${{ secrets.PROJECTS_PAT || github.token }}
+          script: |
+            const pr = context.payload.pull_request;
+
+            const PROJECT_ID = process.env.PROJECT_V2_ID;
+            const STATUS_FIELD_NAME = process.env.PROJECT_FIELD_STATUS_NAME || 'Status';
+            const TARGET_OPTION_NAME = process.env.STATUS_PULL_REQUESTS || 'Pull Requests';
+            const AUTOMERGE_LABEL = (process.env.AUTOMERGE_LABEL || 'automerge').trim();
+
+            if (!PROJECT_ID) throw new Error('Missing vars.PROJECT_V2_ID');
+
+            // Fetch single-select Status field + options
+            const projQ = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    id
+                    title
+                    fields(first: 100) {
+                      nodes {
+                        __typename
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }`;
+            const projData = await github.graphql(projQ, { projectId: PROJECT_ID });
+            const project = projData.node;
+            if (!project) throw new Error('Project not found by ID');
+
+            const statusField = project.fields.nodes.find(
+              f => f && f.__typename === 'ProjectV2SingleSelectField' && f.name === STATUS_FIELD_NAME
+            );
+            if (!statusField) throw new Error(`Field "${STATUS_FIELD_NAME}" not found on project "${project.title}".`);
+
+            const targetOption = statusField.options.find(o => o.name === TARGET_OPTION_NAME);
+            if (!targetOption) throw new Error(`Option "${TARGET_OPTION_NAME}" not found in field "${STATUS_FIELD_NAME}".`);
+
+            // Add PR as an item to the project
+            const addItemRes = await github.graphql(`
+              mutation($projectId: ID!, $contentId: ID!) {
+                addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
+                  item { id }
+                }
+              }
+            `, { projectId: PROJECT_ID, contentId: pr.node_id });
+
+            const itemId = addItemRes.addProjectV2ItemById.item.id;
+
+            // Set Status = "Pull Requests" (or your configured lane)
+            await github.graphql(`
+              mutation($input: UpdateProjectV2ItemFieldValueInput!) {
+                updateProjectV2ItemFieldValue(input: $input) {
+                  projectV2Item { id }
+                }
+              }
+            `, {
+              input: {
+                projectId: PROJECT_ID,
+                itemId,
+                fieldId: statusField.id,
+                value: { singleSelectOptionId: targetOption.id }
+              }
+            });
+
+            // Optionally add the automerge label
+            if (AUTOMERGE_LABEL) {
+              try {
+                await github.rest.issues.addLabels({
+                  ...context.repo,
+                  issue_number: pr.number,
+                  labels: [AUTOMERGE_LABEL]
+                });
+              } catch (e) {
+                core.warning(`Could not add label "${AUTOMERGE_LABEL}": ${e.message}`);
+              }
+            }
+
+            core.info(`PR #${pr.number} added to "${project.title}" and set to "${TARGET_OPTION_NAME}".`);

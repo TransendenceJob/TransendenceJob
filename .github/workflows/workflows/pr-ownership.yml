@@ -1,0 +1,103 @@
+name: PR Ownership & Reviewers
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, ready_for_review]
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+env:
+  TEAM_CSV: ${{ vars.TEAM_CSV }}
+  # Optional override, e.g. ^(\d+)_([a-z0-9-]+)$
+  BRANCH_REGEX: ${{ vars.BRANCH_REGEX }}
+
+jobs:
+  own-and-request:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const repo = context.repo;
+            const pr = context.payload.pull_request;
+
+            const fallbackRegex = '^(\\d+)_([a-z0-9-]+)$';
+            const re = new RegExp(process.env.BRANCH_REGEX || fallbackRegex, 'i');
+
+            // Default: parse branch "123_username"
+            const m = pr.head.ref.match(re);
+            if (!m) {
+              core.info('Branch does not match expected pattern; skipping ownership automation.');
+              return;
+            }
+
+            const issueNumber = Number(m[1]);
+            const assigneeLogin = (m[2] || '').trim();
+            if (!issueNumber || !assigneeLogin) {
+              core.info('Could not extract issue number / assignee from branch; skipping.');
+              return;
+            }
+
+            // 1) Assign the PR to the assignee from branch
+            try {
+              await github.rest.issues.addAssignees({
+                ...repo,
+                issue_number: pr.number,
+                assignees: [assigneeLogin]
+              });
+            } catch (e) {
+              core.warning(`Could not assign PR to ${assigneeLogin}: ${e.message}`);
+            }
+
+            // 2) Ensure PR body closes the issue
+            const hasCloses = /(?:close[sd]?|fix(e[ds])?|resolve[sd]?)\s+#\d+/i.test(pr.body || '');
+            if (!hasCloses) {
+              const newBody = (pr.body ? pr.body + '\n\n' : '') + `Closes #${issueNumber}`;
+              await github.rest.pulls.update({ ...repo, pull_number: pr.number, body: newBody });
+            }
+
+            // 3) Mirror labels from the issue to the PR
+            try {
+              const { data: issue } = await github.rest.issues.get({ ...repo, issue_number: issueNumber });
+              const issueLabels = (issue.labels || []).map(l => typeof l === 'string' ? l : l.name).filter(Boolean);
+              if (issueLabels.length) {
+                await github.rest.issues.addLabels({ ...repo, issue_number: pr.number, labels: issueLabels });
+              }
+            } catch (e) {
+              core.warning(`Could not mirror labels from issue #${issueNumber}: ${e.message}`);
+            }
+
+            // 4) Auto-request teammates as reviewers (excluding author + assignee + already approved)
+            const team = (process.env.TEAM_CSV || '').split(',').map(s => s.trim()).filter(Boolean);
+            if (team.length) {
+              const exclude = new Set([pr.user.login.toLowerCase(), assigneeLogin.toLowerCase()]);
+              const reviewers = team.filter(u => !exclude.has(u.toLowerCase()));
+
+              if (reviewers.length) {
+                const { data: reviews } = await github.rest.pulls.listReviews({ ...repo, pull_number: pr.number });
+                const approved = new Set(
+                  (reviews || []).filter(r => r.state === 'APPROVED').map(r => r.user?.login?.toLowerCase()).filter(Boolean)
+                );
+                const toRequest = reviewers.filter(u => !approved.has(u.toLowerCase()));
+                if (toRequest.length) {
+                  try {
+                    await github.rest.pulls.requestReviewers({ ...repo, pull_number: pr.number, reviewers: toRequest });
+                  } catch (e) {
+                    core.warning(`Request reviewers failed: ${e.message}`);
+                  }
+                }
+              }
+            }
+
+            // 5) Optional: enforce PR title format "[#123] <title>"
+            if (!/^\[#\d+\]/.test(pr.title)) {
+              await github.rest.pulls.update({
+                ...repo,
+                pull_number: pr.number,
+                title: `[#${issueNumber}] ${pr.title}`
+              });
+            }
