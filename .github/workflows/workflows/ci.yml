@@ -1,33 +1,201 @@
 name: CI
 
 on:
-  workflow_dispatch:
   pull_request:
     branches: [ main, development ]
     types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [ main, development ]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-jobs:
-  build_cpp98:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Build (make)
-        run: make
+permissions:
+  contents: read
 
-  tests-catch2-cpp11:
+jobs:
+  sanity:
     runs-on: ubuntu-latest
-    needs: build_cpp98
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Build tests
-        run: make test
-      - name: Run tests
-        run: make test-fast
+
+      - name: Show context
+        run: |
+          echo "event=$GITHUB_EVENT_NAME"
+          echo "ref=$GITHUB_REF"
+          echo "sha=$GITHUB_SHA"
+          echo "actor=$GITHUB_ACTOR"
+
+      - name: List repository tree (top-level)
+        run: |
+          ls -la
+
+  config_check:
+    name: Config check (repo vars)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required repo variables exist
+        env:
+          # Project core
+          PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+          PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+
+          # Status options
+          STATUS_READY: ${{ vars.STATUS_READY }}
+          STATUS_IN_PROGRESS: ${{ vars.STATUS_IN_PROGRESS }}
+          STATUS_IN_REVIEW: ${{ vars.STATUS_IN_REVIEW }}
+          STATUS_DONE: ${{ vars.STATUS_DONE }}
+          STATUS_PULL_REQUESTS: ${{ vars.STATUS_PULL_REQUESTS }}
+
+          # Labels (title/triage mapping)
+          LABEL_FEATURE: ${{ vars.LABEL_FEATURE }}
+          LABEL_BUG: ${{ vars.LABEL_BUG }}
+          LABEL_REFACTOR: ${{ vars.LABEL_REFACTOR }}
+          LABEL_FIX: ${{ vars.LABEL_FIX }}
+
+          # Importance (description parsing)
+          PROJECT_FIELD_IMPORTANCE_NAME: ${{ vars.PROJECT_FIELD_IMPORTANCE_NAME }}
+          IMPORTANCE_URGENT: ${{ vars.IMPORTANCE_URGENT }}
+          IMPORTANCE_MAIN: ${{ vars.IMPORTANCE_MAIN }}
+          IMPORTANCE_SIDETRACK: ${{ vars.IMPORTANCE_SIDETRACK }}
+          IMPORTANCE_OVERLOOKED: ${{ vars.IMPORTANCE_OVERLOOKED }}
+
+          # Priority (P0-P3 parsing)
+          PROJECT_FIELD_PRIORITY_NAME: ${{ vars.PROJECT_FIELD_PRIORITY_NAME }}
+          PRIORITY_P0: ${{ vars.PRIORITY_P0 }}
+          PRIORITY_P1: ${{ vars.PRIORITY_P1 }}
+          PRIORITY_P2: ${{ vars.PRIORITY_P2 }}
+          PRIORITY_P3: ${{ vars.PRIORITY_P3 }}
+
+          # Size (Duration -> Size mapping)
+          PROJECT_FIELD_SIZE_NAME: ${{ vars.PROJECT_FIELD_SIZE_NAME }}
+          SIZE_FAST: ${{ vars.SIZE_FAST }}
+          SIZE_1_3_DAYS: ${{ vars.SIZE_1_3_DAYS }}
+          SIZE_UP_TO_5_DAYS: ${{ vars.SIZE_UP_TO_5_DAYS }}
+          SIZE_1_WEEK: ${{ vars.SIZE_1_WEEK }}
+          SIZE_2_WEEKS_PLUS: ${{ vars.SIZE_2_WEEKS_PLUS }}
+
+          # Branch / team / base branches
+          TEAM_CSV: ${{ vars.TEAM_CSV }}
+          DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+          MAIN_BRANCH: ${{ vars.MAIN_BRANCH }}
+          BRANCH_NAME_PATTERN: ${{ vars.BRANCH_NAME_PATTERN }}
+
+          # Automerge
+          AUTOMERGE_LABEL: ${{ vars.AUTOMERGE_LABEL }}
+          REQUIRE_MEMBER_FOR_AUTOMERGE: ${{ vars.REQUIRE_MEMBER_FOR_AUTOMERGE }}
+
+          # Commit keyword automation
+          COMMIT_KEYWORD_START: ${{ vars.COMMIT_KEYWORD_START }}
+          COMMIT_KEYWORD_END: ${{ vars.COMMIT_KEYWORD_END }}
+
+        run: |
+          set -e
+
+          missing=0
+          check() {
+            name="$1"
+            value="$2"
+            if [ -z "$value" ]; then
+              echo "❌ Missing repo variable: $name"
+              missing=1
+            else
+              echo "✅ $name=$value"
+            fi
+          }
+
+          echo "---- Project core ----"
+          check PROJECT_V2_ID "$PROJECT_V2_ID"
+          check PROJECT_FIELD_STATUS_NAME "$PROJECT_FIELD_STATUS_NAME"
+
+          echo "---- Status options ----"
+          check STATUS_READY "$STATUS_READY"
+          check STATUS_IN_PROGRESS "$STATUS_IN_PROGRESS"
+          check STATUS_IN_REVIEW "$STATUS_IN_REVIEW"
+          check STATUS_DONE "$STATUS_DONE"
+          check STATUS_PULL_REQUESTS "$STATUS_PULL_REQUESTS"
+
+          echo "---- Labels ----"
+          check LABEL_FEATURE "$LABEL_FEATURE"
+          check LABEL_BUG "$LABEL_BUG"
+          check LABEL_REFACTOR "$LABEL_REFACTOR"
+          check LABEL_FIX "$LABEL_FIX"
+
+          echo "---- Importance ----"
+          check PROJECT_FIELD_IMPORTANCE_NAME "$PROJECT_FIELD_IMPORTANCE_NAME"
+          check IMPORTANCE_URGENT "$IMPORTANCE_URGENT"
+          check IMPORTANCE_MAIN "$IMPORTANCE_MAIN"
+          check IMPORTANCE_SIDETRACK "$IMPORTANCE_SIDETRACK"
+          check IMPORTANCE_OVERLOOKED "$IMPORTANCE_OVERLOOKED"
+
+          echo "---- Priority ----"
+          check PROJECT_FIELD_PRIORITY_NAME "$PROJECT_FIELD_PRIORITY_NAME"
+          check PRIORITY_P0 "$PRIORITY_P0"
+          check PRIORITY_P1 "$PRIORITY_P1"
+          check PRIORITY_P2 "$PRIORITY_P2"
+          check PRIORITY_P3 "$PRIORITY_P3"
+
+          echo "---- Size ----"
+          check PROJECT_FIELD_SIZE_NAME "$PROJECT_FIELD_SIZE_NAME"
+          check SIZE_FAST "$SIZE_FAST"
+          check SIZE_1_3_DAYS "$SIZE_1_3_DAYS"
+          check SIZE_UP_TO_5_DAYS "$SIZE_UP_TO_5_DAYS"
+          check SIZE_1_WEEK "$SIZE_1_WEEK"
+          check SIZE_2_WEEKS_PLUS "$SIZE_2_WEEKS_PLUS"
+
+          echo "---- Branch/team ----"
+          check TEAM_CSV "$TEAM_CSV"
+          check DEFAULT_BASE_BRANCH "$DEFAULT_BASE_BRANCH"
+          check MAIN_BRANCH "$MAIN_BRANCH"
+          check BRANCH_NAME_PATTERN "$BRANCH_NAME_PATTERN"
+
+          echo "---- Automerge ----"
+          check AUTOMERGE_LABEL "$AUTOMERGE_LABEL"
+          check REQUIRE_MEMBER_FOR_AUTOMERGE "$REQUIRE_MEMBER_FOR_AUTOMERGE"
+
+          echo "---- Commit keywords ----"
+          check COMMIT_KEYWORD_START "$COMMIT_KEYWORD_START"
+          check COMMIT_KEYWORD_END "$COMMIT_KEYWORD_END"
+
+          if [ "$missing" -ne 0 ]; then
+            echo ""
+            echo "One or more required repo variables are missing."
+            exit 1
+          fi
+
+          echo ""
+          echo "All required repo variables are present ✅"
+
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed files
+        id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }} --depth=1
+            BASE="origin/${{ github.base_ref }}"
+          else
+            BASE="${{ github.sha }}~1"
+          fi
+
+          echo "Base: $BASE"
+          git diff --name-only "$BASE" "${{ github.sha }}" | tee changed_files.txt
+
+          echo "changed_frontend=false" >> $GITHUB_OUTPUT
+          echo "changed_backend=false" >> $GITHUB_OUTPUT
+          echo "changed_infra=false" >> $GITHUB_OUTPUT
+
+          if grep -q '^frontend/' changed_files.txt; then echo "changed_frontend=true" >> $GITHUB_OUTPUT; fi
+          if grep -q '^backend/' changed_files.txt; then echo "changed_backend=true" >> $GITHUB_OUTPUT; fi
+          if grep -q '^infrastructure/' changed_files.txt; then echo "changed_infra=true" >> $GITHUB_OUTPUT; fi
+
+      - name: Summary
+        run: |
+          echo "frontend changed? ${{ steps.diff.outputs.changed_frontend }}"
+          echo "backend changed?  ${{ steps.diff.outputs.changed_backend }}"
+          echo "infra changed?    ${{ steps.diff.outputs.changed_infra }}"

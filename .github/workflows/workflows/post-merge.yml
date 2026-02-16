@@ -22,6 +22,16 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
             const repo = context.repo;
+            const protectedBranches = new Set([
+                (process.env.MAIN_BRANCH || 'main').trim(),
+                (process.env.DEFAULT_BASE_BRANCH || 'development').trim(),
+            ].filter(Boolean));
+
+
+            if (protectedBranches.includes(pr.head.ref)) {
+                 core.info(`Not deleting protected branch: ${pr.head.ref}`);
+                return;
+            }
 
             const allowedBases = new Set([
               (process.env.MAIN_BRANCH || 'main').trim(),
