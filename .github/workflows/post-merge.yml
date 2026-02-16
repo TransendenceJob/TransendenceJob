@@ -6,52 +6,91 @@ on:
 
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
+  issues: read
 
 jobs:
-  delete-merged-branch:
+  housekeeping:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       MAIN_BRANCH: ${{ vars.MAIN_BRANCH }}
       DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+      LABEL_FIX: ${{ vars.LABEL_FIX }}
     steps:
       - uses: actions/github-script@v7
         with:
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.PROJECTS_PAT || secrets.GL_TOKEN || github.token }}
           script: |
             const pr = context.payload.pull_request;
             const repo = context.repo;
-            const protectedBranches = new Set([
-                (process.env.MAIN_BRANCH || 'main').trim(),
-                (process.env.DEFAULT_BASE_BRANCH || 'development').trim(),
-            ].filter(Boolean));
 
+            const norm = (s) => String(s ?? '').trim();
+            const lower = (s) => norm(s).toLowerCase();
 
-            if (protectedBranches.includes(pr.head.ref)) {
-                 core.info(`Not deleting protected branch: ${pr.head.ref}`);
+            const main = norm(process.env.MAIN_BRANCH) || 'main';
+            const dev  = norm(process.env.DEFAULT_BASE_BRANCH) || 'development';
+            const fixLabel = lower(process.env.LABEL_FIX || 'fix');
+
+            const protectedBranches = new Set([main, dev].filter(Boolean));
+
+            // Only run housekeeping for PRs merged into main/dev
+            if (![main, dev].includes(pr.base.ref)) {
+              core.info(`Base branch ${pr.base.ref} not in [${main}, ${dev}]; skipping.`);
+              return;
+            }
+
+            // 1) Delete head branch if safe
+            const headRef = pr.head.ref;
+
+            if (protectedBranches.has(headRef)) {
+              core.info(`Not deleting protected branch: ${headRef}`);
+            } else if (pr.head.repo.full_name !== pr.base.repo.full_name) {
+              core.info('PR head repo differs from base repo (fork/external); skipping deletion.');
+            } else if (/^(release|hotfix)\//i.test(headRef)) {
+              core.info(`Not deleting ${headRef} (release/hotfix prefix).`);
+            } else {
+              try {
+                await github.rest.git.deleteRef({ ...repo, ref: `heads/${headRef}` });
+                core.info(`Deleted branch ${headRef}`);
+              } catch (e) {
+                core.warning(`Failed to delete branch ${headRef}: ${e.message}`);
+              }
+            }
+
+            // 2) If this was a FIX merged into main, open a sync-back PR main -> development
+            const labels = (pr.labels || []).map(l => lower(l.name));
+            const isHotfixBranch = /^hotfix\//i.test(headRef);
+            const isFix = labels.includes(fixLabel) || lower(pr.title).includes('[fix]') || isHotfixBranch;
+
+            if (pr.base.ref === main && isFix && dev && dev !== main) {
+              core.info(`Hotfix detected; ensuring ${main} -> ${dev} sync-back PR exists.`);
+
+              // Check if an open PR already exists
+              const existing = await github.rest.pulls.list({
+                ...repo,
+                state: 'open',
+                base: dev,
+                head: `${repo.owner}:${main}`
+              });
+
+              if (existing.data.length > 0) {
+                core.info(`Sync-back PR already exists: #${existing.data[0].number}`);
                 return;
-            }
+              }
 
-            const allowedBases = new Set([
-              (process.env.MAIN_BRANCH || 'main').trim(),
-              (process.env.DEFAULT_BASE_BRANCH || 'development').trim(),
-            ].filter(Boolean));
-
-            if (!allowedBases.has(pr.base.ref)) {
-              core.info(`Base branch ${pr.base.ref} not in allowed list; skipping.`);
-              return;
-            }
-
-            // Only delete head branch if it belongs to this repo (not a fork)
-            if (pr.head.repo.fork) {
-              core.info('PR comes from a fork; skipping branch deletion.');
-              return;
-            }
-
-            try {
-              await github.rest.git.deleteRef({ ...repo, ref: `heads/${pr.head.ref}` });
-              core.info(`Deleted branch ${pr.head.ref}`);
-            } catch (e) {
-              core.warning(`Failed to delete branch ${pr.head.ref}: ${e.message}`);
+              try {
+                const created = await github.rest.pulls.create({
+                  ...repo,
+                  title: `Sync ${main} -> ${dev} (hotfix backport)`,
+                  head: main,
+                  base: dev,
+                  body:
+                    `This PR was auto-created after merging hotfix PR #${pr.number} into **${main}**.\n\n` +
+                    `Please merge to keep **${dev}** up-to-date with **${main}**.`
+                });
+                core.info(`Created sync-back PR #${created.data.number}`);
+              } catch (e) {
+                core.warning(`Failed to create sync-back PR: ${e.message}`);
+              }
             }

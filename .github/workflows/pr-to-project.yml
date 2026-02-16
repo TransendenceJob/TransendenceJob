@@ -1,14 +1,12 @@
 name: Add PRs to Project
 
 on:
-  # pull_request_target runs in the base repo context (safe for org Projects + secrets)
   pull_request_target:
     types: [opened, reopened, ready_for_review]
 
 permissions:
   contents: read
   pull-requests: write
-  issues: write
 
 jobs:
   add-pr-to-project:
@@ -17,23 +15,25 @@ jobs:
       PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
       PROJECT_FIELD_STATUS_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
       STATUS_PULL_REQUESTS: ${{ vars.STATUS_PULL_REQUESTS }}
-      AUTOMERGE_LABEL: ${{ vars.AUTOMERGE_LABEL }}
     steps:
       - uses: actions/github-script@v7
         with:
-          # PAT is recommended for org Projects v2 mutations
-          github-token: ${{ secrets.PROJECTS_PAT || github.token }}
+          github-token: ${{ secrets.PROJECTS_PAT || secrets.GL_TOKEN || github.token }}
           script: |
             const pr = context.payload.pull_request;
+            const repo = context.repo;
 
-            const PROJECT_ID = process.env.PROJECT_V2_ID;
-            const STATUS_FIELD_NAME = process.env.PROJECT_FIELD_STATUS_NAME || 'Status';
-            const TARGET_OPTION_NAME = process.env.STATUS_PULL_REQUESTS || 'Pull Requests';
-            const AUTOMERGE_LABEL = (process.env.AUTOMERGE_LABEL || 'automerge').trim();
+            const norm = (s) => String(s ?? '').trim();
+            const projectId = norm(process.env.PROJECT_V2_ID);
+            const statusFieldName = norm(process.env.PROJECT_FIELD_STATUS_NAME || 'Status');
+            const targetOptionName = norm(process.env.STATUS_PULL_REQUESTS || 'Pull Requests');
 
-            if (!PROJECT_ID) throw new Error('Missing vars.PROJECT_V2_ID');
+            if (!projectId) {
+              core.warning('PROJECT_V2_ID not set; skipping.');
+              return;
+            }
 
-            // Fetch single-select Status field + options
+            // Fetch Project fields and find Status field + target option
             const projQ = `
               query($projectId: ID!) {
                 node(id: $projectId) {
@@ -52,57 +52,50 @@ jobs:
                     }
                   }
                 }
-              }`;
-            const projData = await github.graphql(projQ, { projectId: PROJECT_ID });
-            const project = projData.node;
-            if (!project) throw new Error('Project not found by ID');
+              }
+            `;
+            const proj = await github.graphql(projQ, { projectId });
+            const project = proj.node;
 
-            const statusField = project.fields.nodes.find(
-              f => f && f.__typename === 'ProjectV2SingleSelectField' && f.name === STATUS_FIELD_NAME
+            const statusField = project.fields.nodes.find(f =>
+              f.__typename === 'ProjectV2SingleSelectField' && f.name === statusFieldName
             );
-            if (!statusField) throw new Error(`Field "${STATUS_FIELD_NAME}" not found on project "${project.title}".`);
+            if (!statusField) {
+              core.warning(`Status field "${statusFieldName}" not found.`);
+              return;
+            }
 
-            const targetOption = statusField.options.find(o => o.name === TARGET_OPTION_NAME);
-            if (!targetOption) throw new Error(`Option "${TARGET_OPTION_NAME}" not found in field "${STATUS_FIELD_NAME}".`);
+            const targetOpt = (statusField.options || []).find(o => o.name === targetOptionName);
+            if (!targetOpt) {
+              core.warning(`Status option "${targetOptionName}" not found.`);
+              core.info(`Available options: ${(statusField.options||[]).map(o=>o.name).join(' | ')}`);
+              return;
+            }
 
-            // Add PR as an item to the project
-            const addItemRes = await github.graphql(`
+            // Add PR to project (contentId = PR node_id)
+            const addM = `
               mutation($projectId: ID!, $contentId: ID!) {
                 addProjectV2ItemById(input: { projectId: $projectId, contentId: $contentId }) {
                   item { id }
                 }
               }
-            `, { projectId: PROJECT_ID, contentId: pr.node_id });
+            `;
+            const add = await github.graphql(addM, { projectId, contentId: pr.node_id });
+            const itemId = add.addProjectV2ItemById.item.id;
 
-            const itemId = addItemRes.addProjectV2ItemById.item.id;
-
-            // Set Status = "Pull Requests" (or your configured lane)
-            await github.graphql(`
+            // Set status to Pull Requests
+            const setM = `
               mutation($input: UpdateProjectV2ItemFieldValueInput!) {
-                updateProjectV2ItemFieldValue(input: $input) {
-                  projectV2Item { id }
-                }
+                updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } }
               }
-            `, {
+            `;
+            await github.graphql(setM, {
               input: {
-                projectId: PROJECT_ID,
+                projectId,
                 itemId,
                 fieldId: statusField.id,
-                value: { singleSelectOptionId: targetOption.id }
+                value: { singleSelectOptionId: targetOpt.id }
               }
             });
 
-            // Optionally add the automerge label
-            if (AUTOMERGE_LABEL) {
-              try {
-                await github.rest.issues.addLabels({
-                  ...context.repo,
-                  issue_number: pr.number,
-                  labels: [AUTOMERGE_LABEL]
-                });
-              } catch (e) {
-                core.warning(`Could not add label "${AUTOMERGE_LABEL}": ${e.message}`);
-              }
-            }
-
-            core.info(`PR #${pr.number} added to "${project.title}" and set to "${TARGET_OPTION_NAME}".`);
+            core.info(`Added PR #${pr.number} to Project "${project.title}" and set status "${targetOptionName}".`);
