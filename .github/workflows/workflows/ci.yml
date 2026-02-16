@@ -199,3 +199,64 @@ jobs:
           echo "frontend changed? ${{ steps.diff.outputs.changed_frontend }}"
           echo "backend changed?  ${{ steps.diff.outputs.changed_backend }}"
           echo "infra changed?    ${{ steps.diff.outputs.changed_infra }}"
+
+  project_v2_smoke_test:
+    name: Project v2 smoke test (read-only)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PROJECT_V2_ID: ${{ vars.PROJECT_V2_ID }}
+      STATUS_FIELD_NAME: ${{ vars.PROJECT_FIELD_STATUS_NAME }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_PAT }}
+          script: |
+            const projectId = process.env.PROJECT_V2_ID?.trim();
+            const statusFieldName = process.env.STATUS_FIELD_NAME?.trim() || 'Status';
+
+            if (!projectId) {
+              core.setFailed('Missing PROJECT_V2_ID');
+              return;
+            }
+
+            const query = `
+              query($projectId: ID!) {
+                node(id: $projectId) {
+                  ... on ProjectV2 {
+                    title
+                    fields(first: 50) {
+                      nodes {
+                        ... on ProjectV2FieldCommon { name }
+                        ... on ProjectV2SingleSelectField {
+                          name
+                          options { name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const res = await github.graphql(query, { projectId });
+
+            if (!res?.node?.title) {
+              core.setFailed('Could not read ProjectV2 by ID. Check PROJECT_V2_ID and token permissions.');
+              return;
+            }
+
+            core.info(`Project title: ${res.node.title}`);
+
+            const fields = res.node.fields.nodes || [];
+            const statusField = fields.find(f => f?.name === statusFieldName);
+
+            if (!statusField) {
+              core.warning(`Status field "${statusFieldName}" not found in first 50 fields.`);
+              core.info(`Available fields: ${fields.map(f => f?.name).filter(Boolean).join(', ')}`);
+              return;
+            }
+
+            const options = statusField.options?.map(o => o.name).filter(Boolean) || [];
+            core.info(`Status field "${statusFieldName}" options: ${options.join(' | ')}`);
