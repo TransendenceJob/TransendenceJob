@@ -1,0 +1,106 @@
+AUTH SERVICE
+
+Table: users_auth - id uuid primary key - username citext not null
+unique - email citext not null unique - password_hash text null -
+global_role text not null default ‘USER’ - is_disabled boolean not null
+default false - created_at timestamptz not null - updated_at timestamptz
+not null
+
+Table: oauth_accounts - id uuid primary key - user_id uuid not null -
+provider text not null - provider_user_id text not null - provider_email
+citext null - created_at timestamptz not null Unique: (provider,
+provider_user_id)
+
+Table: sessions - id uuid primary key - user_id uuid not null -
+refresh_token_hash text not null - expires_at timestamptz not null -
+revoked_at timestamptz null - created_at timestamptz not null - ip inet
+null - user_agent text null
+
+Table: audit_log - id uuid primary key - actor_user_id uuid null -
+action text not null - target_type text not null - target_id uuid null -
+meta jsonb not null default ‘{}’ - created_at timestamptz not null
+
+USER SERVICE
+
+Table: user_profiles - user_id uuid primary key - display_name text
+null - avatar_url text null - bio text null - country text null -
+created_at timestamptz not null - updated_at timestamptz not null
+
+Table: user_privacy_settings - user_id uuid primary key -
+profile_visibility text not null default ‘PUBLIC’ - friends_visibility
+text not null default ‘FRIENDS’ - last_seen_visibility text not null
+default ‘FRIENDS’ - dm_policy text not null default ‘FRIENDS’ -
+updated_at timestamptz not null
+
+Table: user_presence - user_id uuid primary key - status text not null
+default ‘OFFLINE’ - last_seen_at timestamptz null - updated_at
+timestamptz not null
+
+SOCIAL SERVICE
+
+Table: friend_requests - id uuid primary key - from_user_id uuid not
+null - to_user_id uuid not null - status text not null default
+‘PENDING’ - message text null - created_at timestamptz not null -
+responded_at timestamptz null
+
+Table: friendships - user_low_id uuid not null - user_high_id uuid not
+null - created_at timestamptz not null Primary Key: (user_low_id,
+user_high_id)
+
+Table: blocks - blocker_id uuid not null - blocked_id uuid not null -
+created_at timestamptz not null Primary Key: (blocker_id, blocked_id)
+
+CLAN SERVICE
+
+Table: clans - id uuid primary key - name text not null - tag text
+null - owner_user_id uuid not null - visibility text not null default
+‘PUBLIC’ - join_policy text not null default ‘INVITE_ONLY’ - description
+text null - created_at timestamptz not null - updated_at timestamptz not
+null
+
+Table: clan_members - clan_id uuid not null - user_id uuid not null -
+role text not null default ‘MEMBER’ - joined_at timestamptz not null -
+muted_until timestamptz null Primary Key: (clan_id, user_id)
+
+Table: clan_invites - id uuid primary key - clan_id uuid not null -
+invited_user_id uuid not null - invited_by_user_id uuid not null -
+status text not null default ‘PENDING’ - created_at timestamptz not
+null - expires_at timestamptz not null - responded_at timestamptz null
+
+Table: clan_join_requests - id uuid primary key - clan_id uuid not
+null - user_id uuid not null - status text not null default ‘PENDING’ -
+created_at timestamptz not null - responded_at timestamptz null
+
+CHAT SERVICE
+
+Table: chat_threads - id uuid primary key - type text not null - clan_id
+uuid null - created_by_user_id uuid not null - created_at timestamptz
+not null - last_message_at timestamptz null
+
+Table: chat_participants - thread_id uuid not null - user_id uuid not
+null - joined_at timestamptz not null - last_read_at timestamptz null -
+is_muted boolean not null default false Primary Key: (thread_id,
+user_id)
+
+Table: messages - id uuid primary key - thread_id uuid not null -
+sender_user_id uuid not null - content text not null - content_type text
+not null default ‘TEXT’ - created_at timestamptz not null - edited_at
+timestamptz null - deleted_at timestamptz null
+
+Table: message_deletions - message_id uuid not null - user_id uuid not
+null - deleted_at timestamptz not null Primary Key: (message_id,
+user_id)
+
+PUBLIC API SERVICE
+
+Table: api_clients - id uuid primary key - name text not null -
+owner_user_id uuid null - created_at timestamptz not null
+
+Table: api_keys - id uuid primary key - client_id uuid not null -
+key_hash text not null - scopes text[] not null - rate_limit_per_min int
+not null default 60 - created_at timestamptz not null - revoked_at
+timestamptz null
+
+Table: api_usage - id uuid primary key - key_id uuid not null - endpoint
+text not null - status_code int not null - created_at timestamptz not
+null

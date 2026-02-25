@@ -1,0 +1,146 @@
+BFF_API_GATEWAY (public)
+POST /auth/register
+POST /auth/login
+POST /auth/logout
+POST /auth/refresh
+GET  /auth/me
+GET  /auth/google/start
+GET  /auth/google/callback
+POST /auth/google/link
+POST /auth/password/change
+POST /auth/password/forgot
+POST /auth/password/reset
+GET  /users/me/profile
+PATCH /users/me/profile
+GET  /users/{userId}/profile
+GET  /users/search?query=...
+GET  /users/me/privacy
+PATCH /users/me/privacy
+GET  /friends
+GET  /friends/requests/incoming
+GET  /friends/requests/outgoing
+POST /friends/requests
+POST /friends/requests/{requestId}/accept
+POST /friends/requests/{requestId}/decline
+POST /friends/requests/{requestId}/cancel
+DELETE /friends/{userId}
+POST /blocks/{userId}
+DELETE /blocks/{userId}
+GET  /blocks
+POST /clans
+GET  /clans
+GET  /clans/{clanId}
+PATCH /clans/{clanId}
+DELETE /clans/{clanId}
+GET  /clans/me
+GET  /clans/{clanId}/members
+PATCH /clans/{clanId}/members/{userId}
+DELETE /clans/{clanId}/members/{userId}
+POST /clans/{clanId}/invites
+GET  /clans/me/invites
+POST /clans/invites/{inviteId}/accept
+POST /clans/invites/{inviteId}/decline
+POST /clans/{clanId}/join-requests
+GET  /clans/{clanId}/join-requests
+POST /clans/join-requests/{requestId}/approve
+POST /clans/join-requests/{requestId}/reject
+GET  /chats
+POST /chats/dm
+GET  /chats/{threadId}
+GET  /chats/{threadId}/messages?cursor=...
+POST /chats/{threadId}/messages
+PATCH /messages/{messageId}
+DELETE /messages/{messageId}
+POST /chats/{threadId}/mute
+POST /chats/{threadId}/unmute
+POST /chats/{threadId}/read
+GET  /admin/users
+GET  /admin/users/{userId}
+PATCH /admin/users/{userId}
+POST /admin/users/{userId}/sessions/revoke
+GET  /admin/audit
+GET  /public/health
+GET  /public/clans
+GET  /public/clans/{clanId}
+GET  /public/users/{userId}
+GET  /public/leaderboard
+
+AUTH SERVICE (internal)
+POST /internal/auth/register
+POST /internal/auth/login
+POST /internal/auth/logout
+POST /internal/auth/refresh
+GET  /internal/auth/verify
+POST /internal/auth/google/exchange
+POST /internal/auth/users/{userId}/disable
+POST /internal/auth/users/{userId}/role
+POST /internal/auth/users/{userId}/sessions/revoke
+GET  /internal/auth/audit
+
+USER SERVICE (internal)
+GET  /internal/users/{userId}/profile
+PATCH /internal/users/{userId}/profile
+GET  /internal/users/search?query=...
+GET  /internal/users/{userId}/privacy
+PATCH /internal/users/{userId}/privacy
+PATCH /internal/users/{userId}/presence
+
+SOCIAL SERVICE (internal)
+GET  /internal/friends/{userId}
+POST /internal/friend-requests
+GET  /internal/friend-requests/incoming/{userId}
+GET  /internal/friend-requests/outgoing/{userId}
+POST /internal/friend-requests/{requestId}/accept
+POST /internal/friend-requests/{requestId}/decline
+POST /internal/friend-requests/{requestId}/cancel
+DELETE /internal/friends/{userId}/{otherUserId}
+GET  /internal/blocks/{userId}
+POST /internal/blocks
+DELETE /internal/blocks/{userId}/{blockedUserId}
+GET  /internal/social/is-friends?u=...&v=...
+GET  /internal/social/is-blocked?u=...&v=...
+
+CLAN SERVICE (internal)
+POST /internal/clans
+GET  /internal/clans
+GET  /internal/clans/{clanId}
+PATCH /internal/clans/{clanId}
+DELETE /internal/clans/{clanId}
+GET  /internal/clans/by-user/{userId}
+GET  /internal/clans/{clanId}/members
+GET  /internal/clans/{clanId}/members/{userId}
+PATCH /internal/clans/{clanId}/members/{userId}
+DELETE /internal/clans/{clanId}/members/{userId}
+POST /internal/clans/{clanId}/invites
+GET  /internal/clan-invites/by-user/{userId}
+POST /internal/clan-invites/{inviteId}/accept
+POST /internal/clan-invites/{inviteId}/decline
+POST /internal/clans/{clanId}/join-requests
+GET  /internal/clans/{clanId}/join-requests
+POST /internal/clan-join-requests/{requestId}/approve
+POST /internal/clan-join-requests/{requestId}/reject
+GET  /internal/clans/{clanId}/is-member/{userId}
+
+CHAT SERVICE (internal)
+GET  /internal/chats/by-user/{userId}
+POST /internal/chats/dm
+GET  /internal/chats/{threadId}
+GET  /internal/chats/{threadId}/messages?cursor=...
+POST /internal/chats/{threadId}/messages
+PATCH /internal/messages/{messageId}
+DELETE /internal/messages/{messageId}
+POST /internal/chats/{threadId}/mute
+POST /internal/chats/{threadId}/unmute
+POST /internal/chats/{threadId}/read
+GET  /internal/chats/{threadId}/can-read/{userId}
+
+PUBLIC API SERVICE (internal)
+GET  /internal/public/clans
+GET  /internal/public/clans/{clanId}
+GET  /internal/public/users/{userId}
+GET  /internal/public/leaderboard
+POST /internal/public/api-keys
+GET  /internal/public/api-keys
+DELETE /internal/public/api-keys/{keyId}
+GET  /internal/public/usage
+
