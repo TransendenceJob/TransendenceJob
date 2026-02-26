@@ -5,6 +5,7 @@ services:
 
   # ---------- Databases (one Postgres per service: clear ownership) ----------
   postgres_auth:
+    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_auth
     environment:
@@ -28,12 +29,13 @@ services:
         max-file: "3"
   
   postgres_game:
+    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_game
     environment:
-      POSTGRES_USER: ${GAME_DB_USER:-auth}
+      POSTGRES_USER: ${GAME_DB_USER:-game}
       POSTGRES_PASSWORD: ${GAME_DB_PASSWORD:-auth}
-      POSTGRES_DB: ${GAME_DB_NAME:-auth_db}
+      POSTGRES_DB: ${GAME_DB_NAME:-game_db}
     ports:
       - "${GAME_DB_PORT:-5434}:5432"
     volumes:
@@ -52,12 +54,13 @@ services:
 
 
   postgres_social:
+    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_social
     environment:
-      POSTGRES_USER: ${SOCIAL_DB_USER:-auth}
+      POSTGRES_USER: ${SOCIAL_DB_USER:-social}
       POSTGRES_PASSWORD: ${SOCIAL_DB_PASSWORD:-auth}
-      POSTGRES_DB: ${SOCIAl_DB_NAME:-auth_db}
+      POSTGRES_DB: ${SOCIAL_DB_NAME:-social_db}
     ports:
       - "${SOCIAL_DB_PORT:-5435}:5432"
     volumes:
@@ -75,12 +78,13 @@ services:
         max-file: "3"
 
   postgres_stats:
+    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_stats
     environment:
-      POSTGRES_USER: ${STATS_DB_USER:-auth}
+      POSTGRES_USER: ${STATS_DB_USER:-stats}
       POSTGRES_PASSWORD: ${STATS_DB_PASSWORD:-auth}
-      POSTGRES_DB: ${STATS_DB_NAME:-auth_db}
+      POSTGRES_DB: ${STATS_DB_NAME:-stats_db}
     ports:
       - "${STATS_DB_PORT:-5436}:5432"
     volumes:
@@ -98,6 +102,7 @@ services:
         max-file: "3"
   # ---------- Redis (sessions/caching/ephemeral matchmaking state) ----------
   redis:
+    profiles: ["dev"]
     image: redis:7-alpine
     container_name: redis
     command: ["redis-server", "--appendonly", "yes"]
@@ -119,6 +124,7 @@ services:
 
   # ---------- RabbitMQ (async events: match.finished etc.) ----------
   rabbitmq:
+    profiles: ["dev"]
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     environment:
@@ -144,6 +150,7 @@ services:
 
   # ---------- Observability: Prometheus ----------
   prometheus:
+    profiles: ["obs"]
     image: prom/prometheus:v2.52.0
     container_name: prometheus
     command:
@@ -169,6 +176,7 @@ services:
 
   # ---------- Observability: Grafana ----------
   grafana:
+    profiles: ["obs"]
     image: grafana/grafana:11.1.0
     container_name: grafana
     ports:
@@ -196,6 +204,7 @@ services:
 
   # ---------- Exporter: Redis ----------
   redis_exporter:
+    profiles: ["obs"]
     image: oliver006/redis_exporter:v1.61.0
     container_name: redis_exporter
     environment:
@@ -213,6 +222,7 @@ services:
 
   # ---------- Exporters: Postgres (one per DB) ----------
   postgres_exporter_auth:
+    profiles: ["obs"]
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter_auth
     environment:
@@ -229,6 +239,7 @@ services:
         max-file: "3"
 
   postgres_exporter_game:
+    profiles: ["obs"]
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter_game
     environment:
@@ -245,6 +256,7 @@ services:
         max-file: "3"
 
   postgres_exporter_social:
+    profiles: ["obs"]
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter_social
     environment:
@@ -261,6 +273,7 @@ services:
         max-file: "3"
 
   postgres_exporter_stats:
+    profiles: ["obs"]
     image: prometheuscommunity/postgres-exporter:v0.15.0
     container_name: postgres_exporter_stats
     environment:
@@ -278,6 +291,7 @@ services:
 
   # ---------- Container metrics: cAdvisor ----------
   cadvisor:
+    profiles: ["obs"]
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
     ports:
@@ -296,10 +310,11 @@ services:
         max-file: "3"
 
   node_exporter:
+    profiles: ["obs"]
     image: prom/node-exporter:v1.8.1
     container_name: node_exporter
     ports:
-      - "${NODE_EXPORTER_PORT:-9100:9100}"
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
