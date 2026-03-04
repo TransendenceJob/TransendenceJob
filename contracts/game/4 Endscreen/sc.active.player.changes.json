@@ -1,0 +1,13 @@
+{
+	"type": "sc.endscreen.data",
+	"matchId": 0,
+	"winnerId": 0,
+	"round": 0,
+	"worms": [
+		{
+			"wormId": 0,
+			"health": 100
+		}
+	],
+	"seq": [0]
+}

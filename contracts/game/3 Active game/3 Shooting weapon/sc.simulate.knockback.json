@@ -1,0 +1,9 @@
+{
+	"type": "sc.simulate.knockback",
+	"matchId": 0,
+	"wormId": 0,
+	"direction": [0.0, 0.0],
+	"speed": 0,
+	"newPosition": [0.0, 0.0],
+	"seq": [0]
+}
