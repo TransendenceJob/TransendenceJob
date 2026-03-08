@@ -1,0 +1,80 @@
+name: Refactor
+description: Improve structure, maintainability, or architecture without changing intended behavior.
+title: "[refactor]: "
+labels: ["refactor"]
+body:
+  - type: textarea
+    id: summary_block
+    attributes:
+      label: Parsed project fields
+      description: Keep the markers exactly as written so automation can parse them.
+      value: |
+        [Importance:] Main
+        [Duration:] 5 Days
+        {P2}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Intended area
+      options:
+        - Backend
+        - Frontend
+        - DevOps
+        - Game Server
+        - BFF / API Gateway
+        - Database
+        - QA / Test
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why refactor?
+      description: What pain point does this solve?
+      placeholder: Duplication, unclear boundaries, hard-to-test code, inconsistent naming, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_state
+    attributes:
+      label: Current state
+      description: Describe the current design or implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: target_state
+    attributes:
+      label: Target state
+      description: Describe the intended structure after the refactor.
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints / non-goals
+      description: What should not change?
+      placeholder: Public API unchanged, no DB migration, same websocket contract, etc.
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - Behavior remains unchanged
+        - Tests still pass
+        - Complexity / duplication reduced
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test plan

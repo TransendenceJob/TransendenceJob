@@ -1,0 +1,90 @@
+name: Feature
+description: Create a product or engineering feature issue.
+title: "[feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for new features. The format below is compatible with your current GitHub Project triage workflow.
+
+  - type: textarea
+    id: summary_block
+    attributes:
+      label: Parsed project fields
+      description: Keep the markers exactly as written so automation can parse them.
+      value: |
+        [Importance:] Main
+        [Duration:] 3 Days
+        {P1}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Intended area
+      description: Main ownership area for the task.
+      options:
+        - Backend
+        - Frontend
+        - DevOps
+        - Game Server
+        - BFF / API Gateway
+        - Database
+        - QA / Test
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / goal
+      description: What do we want to build and why?
+      placeholder: Describe the user or engineering problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is explicitly included in this issue?
+      placeholder: List the concrete deliverables.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: One requirement per line.
+      placeholder: |
+        - Endpoint exists and is documented
+        - Validation works on frontend and backend
+        - Tests cover success and failure cases
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: Technical notes
+      description: Contracts, services, dependencies, constraints, diagrams, or architecture notes.
+
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test plan
+      description: How will this be verified?
+      placeholder: Unit tests, integration tests, manual QA steps, observability checks.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked whether this depends on another service, API contract, or database change.
+        - label: I added enough detail so another teammate can implement this without guessing.
+        - label: I included validation and test expectations.

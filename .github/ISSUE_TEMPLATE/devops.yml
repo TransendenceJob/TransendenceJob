@@ -1,0 +1,72 @@
+name: DevOps task
+description: Infrastructure, CI/CD, observability, deployment, security, or platform task.
+title: "[feature][devops]: "
+labels: ["feature", "devops"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for infrastructure and platform work. It still uses the `[feature]` prefix so your current branch/project automation can pick it up.
+
+  - type: textarea
+    id: summary_block
+    attributes:
+      label: Parsed project fields
+      description: Keep the markers exactly as written so automation can parse them.
+      value: |
+        [Importance:] Main
+        [Duration:] 3 Days
+        {P1}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: track
+    attributes:
+      label: DevOps track
+      options:
+        - CI / GitHub Actions
+        - Docker / Compose
+        - Reverse proxy / Nginx
+        - Secrets / Config
+        - Monitoring / Grafana / Prometheus
+        - Logging / ELK
+        - Security / Hardening
+        - Backups / DR
+        - Cloud / Hosting
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      placeholder: What infra/platform capability do we need?
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation_scope
+    attributes:
+      label: Implementation scope
+      placeholder: Containers, workflows, dashboards, alerts, backups, policies, docs, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - Compose profile works
+        - CI job passes
+        - Dashboard/alert exists
+        - Documentation updated
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback / risk notes
+      description: Deployment risk, fallback, migration concern, production impact.

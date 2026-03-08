@@ -1,0 +1,82 @@
+name: Test / QA task
+description: Add or improve tests, coverage, validation, or QA scenarios.
+title: "[feature][test]: "
+labels: ["feature", "test"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for test work. It uses the `[feature]` prefix so your current automation still catches it.
+
+  - type: textarea
+    id: summary_block
+    attributes:
+      label: Parsed project fields
+      description: Keep the markers exactly as written so automation can parse them.
+      value: |
+        [Importance:] Main
+        [Duration:] 3 Days
+        {P2}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: test_type
+    attributes:
+      label: Test type
+      options:
+        - Unit
+        - Integration
+        - End-to-end
+        - Contract
+        - Performance
+        - Smoke / Regression
+        - Manual QA scenario
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Target area
+      options:
+        - Backend
+        - Frontend
+        - DevOps
+        - Game Server
+        - BFF / API Gateway
+        - Database
+        - Cross-service flow
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      placeholder: What quality risk are we covering?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenarios
+    attributes:
+      label: Scenarios to cover
+      placeholder: |
+        - Happy path
+        - Validation failure
+        - Unauthorized request
+        - Retry / reconnect behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - Tests exist and run in CI
+        - Clear assertions cover the requested scenarios
+        - Flaky behavior documented or removed
+    validations:
+      required: true

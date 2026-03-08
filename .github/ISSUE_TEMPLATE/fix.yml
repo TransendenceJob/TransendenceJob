@@ -1,0 +1,60 @@
+name: Fix
+description: Create a production or integration fix issue.
+title: "[fix]: "
+labels: ["fix"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when the work is a direct fix task. Note: your current triage workflow must support the `fix` label/title if you want full automation parity.
+
+  - type: textarea
+    id: summary_block
+    attributes:
+      label: Parsed project fields
+      description: Keep the markers exactly as written so automation can parse them.
+      value: |
+        [Importance:] Urgent
+        [Duration:] 1 Day
+        {P1}
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Intended area
+      options:
+        - Backend
+        - Frontend
+        - DevOps
+        - Game Server
+        - BFF / API Gateway
+        - Database
+        - QA / Test
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What needs to be fixed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Suspected root cause
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - The defect is no longer reproducible
+        - Regression test added where possible
+        - Relevant logs/alerts are clean
+    validations:
+      required: true
