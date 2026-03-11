@@ -1,0 +1,5601 @@
+IssueID,Title,Description,Service,Priority,Labels
+TICKET-1,[bug] auth-service – Rate limiting – add validation,"Service: auth-service
+
+Component: Rate limiting
+
+Task:
+Implement add validation for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P2,"auth-service,bug"
+TICKET-2,[feature] clan-service – Clan creation – write integration tests,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement write integration tests for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,feature"
+TICKET-3,[fix] observability – Prometheus config – add validation,"Service: observability
+
+Component: Prometheus config
+
+Task:
+Implement add validation for the Prometheus config module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,fix"
+TICKET-4,[bug] game-service – Game session – add OpenAPI schema,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement add OpenAPI schema for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,bug"
+TICKET-5,[bug] observability – Metrics exporters – implement controller,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement implement controller for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P3,"observability,bug"
+TICKET-6,[bug] infra-devops – Build images – create Prisma schema,"Service: infra-devops
+
+Component: Build images
+
+Task:
+Implement create Prisma schema for the Build images module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P0,"infra-devops,bug"
+TICKET-7,[feature] user-service – Privacy settings – create migration,"Service: user-service
+
+Component: Privacy settings
+
+Task:
+Implement create migration for the Privacy settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,feature"
+TICKET-8,[fix] clan-service – Clan roles – create migration,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement create migration for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,fix"
+TICKET-9,[feature] social-service – Notifications events – write unit tests,"Service: social-service
+
+Component: Notifications events
+
+Task:
+Implement write unit tests for the Notifications events module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,feature"
+TICKET-10,[fix] game-service – Terrain destruction – create DTO,"Service: game-service
+
+Component: Terrain destruction
+
+Task:
+Implement create DTO for the Terrain destruction module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,fix"
+TICKET-11,[feature] auth-service – JWT session issuance – implement service layer,"Service: auth-service
+
+Component: JWT session issuance
+
+Task:
+Implement implement service layer for the JWT session issuance module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,feature"
+TICKET-12,[fix] social-service – Friend list – create Prisma schema,"Service: social-service
+
+Component: Friend list
+
+Task:
+Implement create Prisma schema for the Friend list module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,fix"
+TICKET-13,[feature] chat-service – Read receipts – add OpenAPI schema,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement add OpenAPI schema for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,feature"
+TICKET-14,[bug] social-service – Relationship validation – implement service layer,"Service: social-service
+
+Component: Relationship validation
+
+Task:
+Implement implement service layer for the Relationship validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,bug"
+TICKET-15,[refactor] game-service – Inventory system – create migration,"Service: game-service
+
+Component: Inventory system
+
+Task:
+Implement create migration for the Inventory system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,refactor"
+TICKET-16,[refactor] observability – Structured logging – create DTO,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement create DTO for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,refactor"
+TICKET-17,[refactor] game-service – Game session – implement controller,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement implement controller for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,refactor"
+TICKET-18,[bug] chat-service – Read receipts – add OpenAPI schema,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement add OpenAPI schema for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,bug"
+TICKET-19,[bug] bff-gateway – Error translation – write integration tests,"Service: bff-gateway
+
+Component: Error translation
+
+Task:
+Implement write integration tests for the Error translation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,bug"
+TICKET-20,[refactor] infra-devops – CI pipelines – add logging,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement add logging for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,refactor"
+TICKET-21,[bug] clan-service – Join requests – implement service layer,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement implement service layer for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,bug"
+TICKET-22,[feature] public-api – API keys – implement controller,"Service: public-api
+
+Component: API keys
+
+Task:
+Implement implement controller for the API keys module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P2,"public-api,feature"
+TICKET-23,[fix] user-service – User settings – add logging,"Service: user-service
+
+Component: User settings
+
+Task:
+Implement add logging for the User settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,fix"
+TICKET-24,[refactor] infra-devops – Env configuration – create migration,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement create migration for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,refactor"
+TICKET-25,[bug] security – JWT validation – add validation,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement add validation for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,bug"
+TICKET-26,[refactor] social-service – Relationship validation – add validation,"Service: social-service
+
+Component: Relationship validation
+
+Task:
+Implement add validation for the Relationship validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P0,"social-service,refactor"
+TICKET-27,[feature] infra-devops – Service containers – implement service layer,"Service: infra-devops
+
+Component: Service containers
+
+Task:
+Implement implement service layer for the Service containers module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,feature"
+TICKET-28,[bug] chat-service – Cursor pagination – create migration,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement create migration for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,bug"
+TICKET-29,[fix] user-service – User search – implement service layer,"Service: user-service
+
+Component: User search
+
+Task:
+Implement implement service layer for the User search module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P1,"user-service,fix"
+TICKET-30,[fix] observability – Structured logging – add logging,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add logging for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,fix"
+TICKET-31,[refactor] clan-service – Clan membership – create DTO,"Service: clan-service
+
+Component: Clan membership
+
+Task:
+Implement create DTO for the Clan membership module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,refactor"
+TICKET-32,[feature] bff-gateway – Auth forwarding – write integration tests,"Service: bff-gateway
+
+Component: Auth forwarding
+
+Task:
+Implement write integration tests for the Auth forwarding module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,feature"
+TICKET-33,[bug] auth-service – Rate limiting – create Prisma schema,"Service: auth-service
+
+Component: Rate limiting
+
+Task:
+Implement create Prisma schema for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,bug"
+TICKET-34,[bug] user-service – Avatar upload – add validation,"Service: user-service
+
+Component: Avatar upload
+
+Task:
+Implement add validation for the Avatar upload module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,bug"
+TICKET-35,[feature] game-service – Terrain destruction – implement service layer,"Service: game-service
+
+Component: Terrain destruction
+
+Task:
+Implement implement service layer for the Terrain destruction module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,feature"
+TICKET-36,[fix] clan-service – Clan creation – write integration tests,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement write integration tests for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,fix"
+TICKET-37,[feature] user-service – Profile update – create DTO,"Service: user-service
+
+Component: Profile update
+
+Task:
+Implement create DTO for the Profile update module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,feature"
+TICKET-38,[bug] chat-service – DM threads – write integration tests,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement write integration tests for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,bug"
+TICKET-39,[fix] chat-service – Message sending – create migration,"Service: chat-service
+
+Component: Message sending
+
+Task:
+Implement create migration for the Message sending module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,fix"
+TICKET-40,[bug] observability – Grafana dashboards – write unit tests,"Service: observability
+
+Component: Grafana dashboards
+
+Task:
+Implement write unit tests for the Grafana dashboards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P3,"observability,bug"
+TICKET-41,[feature] game-service – Lobby system – create migration,"Service: game-service
+
+Component: Lobby system
+
+Task:
+Implement create migration for the Lobby system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,feature"
+TICKET-42,[feature] social-service – Friend requests – implement service layer,"Service: social-service
+
+Component: Friend requests
+
+Task:
+Implement implement service layer for the Friend requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,feature"
+TICKET-43,[feature] user-service – Presence status – implement controller,"Service: user-service
+
+Component: Presence status
+
+Task:
+Implement implement controller for the Presence status module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,feature"
+TICKET-44,[fix] clan-service – Join requests – implement service layer,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement implement service layer for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,fix"
+TICKET-45,[bug] chat-service – Cursor pagination – add validation,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement add validation for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,bug"
+TICKET-46,[feature] clan-service – Clan roles – write unit tests,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement write unit tests for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,feature"
+TICKET-47,[feature] infra-devops – CI pipelines – create DTO,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement create DTO for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P0,"infra-devops,feature"
+TICKET-48,[bug] security – Abuse detection – implement controller,"Service: security
+
+Component: Abuse detection
+
+Task:
+Implement implement controller for the Abuse detection module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P2,"security,bug"
+TICKET-49,[refactor] security – File upload sanitization – add logging,"Service: security
+
+Component: File upload sanitization
+
+Task:
+Implement add logging for the File upload sanitization module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P0,"security,refactor"
+TICKET-50,[fix] clan-service – Clan invites – create migration,"Service: clan-service
+
+Component: Clan invites
+
+Task:
+Implement create migration for the Clan invites module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,fix"
+TICKET-51,[refactor] clan-service – Clan creation – add OpenAPI schema,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement add OpenAPI schema for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,refactor"
+TICKET-52,[refactor] social-service – Friend list – implement controller,"Service: social-service
+
+Component: Friend list
+
+Task:
+Implement implement controller for the Friend list module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,refactor"
+TICKET-53,[bug] social-service – Block system – create Prisma schema,"Service: social-service
+
+Component: Block system
+
+Task:
+Implement create Prisma schema for the Block system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P0,"social-service,bug"
+TICKET-54,[refactor] infra-devops – CI pipelines – add logging,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement add logging for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P3,"infra-devops,refactor"
+TICKET-55,[bug] public-api – Leaderboard API – add OpenAPI schema,"Service: public-api
+
+Component: Leaderboard API
+
+Task:
+Implement add OpenAPI schema for the Leaderboard API module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,bug"
+TICKET-56,[fix] infra-devops – Docker compose – implement service layer,"Service: infra-devops
+
+Component: Docker compose
+
+Task:
+Implement implement service layer for the Docker compose module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,fix"
+TICKET-57,[feature] observability – Metrics exporters – implement controller,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement implement controller for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-58,[feature] auth-service – Password reset – create Prisma schema,"Service: auth-service
+
+Component: Password reset
+
+Task:
+Implement create Prisma schema for the Password reset module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,feature"
+TICKET-59,[bug] public-api – API keys – add OpenAPI schema,"Service: public-api
+
+Component: API keys
+
+Task:
+Implement add OpenAPI schema for the API keys module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,bug"
+TICKET-60,[refactor] clan-service – Clan invites – add OpenAPI schema,"Service: clan-service
+
+Component: Clan invites
+
+Task:
+Implement add OpenAPI schema for the Clan invites module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,refactor"
+TICKET-61,[bug] game-service – Matchmaking – add logging,"Service: game-service
+
+Component: Matchmaking
+
+Task:
+Implement add logging for the Matchmaking module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,bug"
+TICKET-62,[bug] user-service – Privacy settings – create Prisma schema,"Service: user-service
+
+Component: Privacy settings
+
+Task:
+Implement create Prisma schema for the Privacy settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,bug"
+TICKET-63,[bug] user-service – User search – implement service layer,"Service: user-service
+
+Component: User search
+
+Task:
+Implement implement service layer for the User search module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,bug"
+TICKET-64,[refactor] auth-service – Audit logs – create DTO,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement create DTO for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,refactor"
+TICKET-65,[bug] bff-gateway – Error translation – add logging,"Service: bff-gateway
+
+Component: Error translation
+
+Task:
+Implement add logging for the Error translation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P0,"bff-gateway,bug"
+TICKET-66,[refactor] auth-service – Audit logs – create Prisma schema,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement create Prisma schema for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,refactor"
+TICKET-67,[refactor] observability – Structured logging – add validation,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add validation for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,refactor"
+TICKET-68,[refactor] clan-service – Clan roles – implement controller,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement implement controller for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,refactor"
+TICKET-69,[bug] clan-service – Join requests – add logging,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement add logging for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,bug"
+TICKET-70,[fix] observability – Structured logging – create migration,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement create migration for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,fix"
+TICKET-71,[feature] observability – Structured logging – write integration tests,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement write integration tests for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-72,[refactor] chat-service – Cursor pagination – implement controller,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement implement controller for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,refactor"
+TICKET-73,[feature] user-service – User profile – add logging,"Service: user-service
+
+Component: User profile
+
+Task:
+Implement add logging for the User profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,feature"
+TICKET-74,[feature] user-service – Presence status – create migration,"Service: user-service
+
+Component: Presence status
+
+Task:
+Implement create migration for the Presence status module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P1,"user-service,feature"
+TICKET-75,[feature] user-service – Avatar upload – create migration,"Service: user-service
+
+Component: Avatar upload
+
+Task:
+Implement create migration for the Avatar upload module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,feature"
+TICKET-76,[fix] social-service – Block system – create Prisma schema,"Service: social-service
+
+Component: Block system
+
+Task:
+Implement create Prisma schema for the Block system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,fix"
+TICKET-77,[feature] observability – Structured logging – write integration tests,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement write integration tests for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P3,"observability,feature"
+TICKET-78,[feature] infra-devops – Local dev scripts – write integration tests,"Service: infra-devops
+
+Component: Local dev scripts
+
+Task:
+Implement write integration tests for the Local dev scripts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P0,"infra-devops,feature"
+TICKET-79,[feature] observability – Structured logging – create DTO,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement create DTO for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-80,[bug] game-service – Matchmaking – create Prisma schema,"Service: game-service
+
+Component: Matchmaking
+
+Task:
+Implement create Prisma schema for the Matchmaking module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,bug"
+TICKET-81,[fix] social-service – Block system – write integration tests,"Service: social-service
+
+Component: Block system
+
+Task:
+Implement write integration tests for the Block system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P0,"social-service,fix"
+TICKET-82,[bug] auth-service – JWT session issuance – implement controller,"Service: auth-service
+
+Component: JWT session issuance
+
+Task:
+Implement implement controller for the JWT session issuance module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P2,"auth-service,bug"
+TICKET-83,[refactor] auth-service – Auth guards – create Prisma schema,"Service: auth-service
+
+Component: Auth guards
+
+Task:
+Implement create Prisma schema for the Auth guards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,refactor"
+TICKET-84,[feature] user-service – User profile – implement service layer,"Service: user-service
+
+Component: User profile
+
+Task:
+Implement implement service layer for the User profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P3,"user-service,feature"
+TICKET-85,[fix] social-service – Relationship validation – add validation,"Service: social-service
+
+Component: Relationship validation
+
+Task:
+Implement add validation for the Relationship validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,fix"
+TICKET-86,[bug] infra-devops – CI pipelines – add validation,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement add validation for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,bug"
+TICKET-87,[refactor] public-api – Usage metrics – write unit tests,"Service: public-api
+
+Component: Usage metrics
+
+Task:
+Implement write unit tests for the Usage metrics module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P3,"public-api,refactor"
+TICKET-88,[bug] chat-service – Read receipts – create Prisma schema,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement create Prisma schema for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,bug"
+TICKET-89,[bug] public-api – Leaderboard API – create migration,"Service: public-api
+
+Component: Leaderboard API
+
+Task:
+Implement create migration for the Leaderboard API module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,bug"
+TICKET-90,[feature] user-service – User search – create DTO,"Service: user-service
+
+Component: User search
+
+Task:
+Implement create DTO for the User search module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,feature"
+TICKET-91,[fix] public-api – Usage metrics – add logging,"Service: public-api
+
+Component: Usage metrics
+
+Task:
+Implement add logging for the Usage metrics module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,fix"
+TICKET-92,[feature] clan-service – Join requests – implement service layer,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement implement service layer for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,feature"
+TICKET-93,[feature] user-service – Privacy settings – write integration tests,"Service: user-service
+
+Component: Privacy settings
+
+Task:
+Implement write integration tests for the Privacy settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P1,"user-service,feature"
+TICKET-94,[feature] chat-service – Read receipts – add logging,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement add logging for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,feature"
+TICKET-95,[bug] security – JWT validation – create DTO,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement create DTO for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P0,"security,bug"
+TICKET-96,[refactor] infra-devops – Env configuration – add logging,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement add logging for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,refactor"
+TICKET-97,[feature] public-api – Public user profile – create Prisma schema,"Service: public-api
+
+Component: Public user profile
+
+Task:
+Implement create Prisma schema for the Public user profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,feature"
+TICKET-98,[feature] chat-service – Cursor pagination – write unit tests,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement write unit tests for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,feature"
+TICKET-99,[refactor] social-service – Notifications events – create migration,"Service: social-service
+
+Component: Notifications events
+
+Task:
+Implement create migration for the Notifications events module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,refactor"
+TICKET-100,[fix] auth-service – JWT session issuance – implement controller,"Service: auth-service
+
+Component: JWT session issuance
+
+Task:
+Implement implement controller for the JWT session issuance module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,fix"
+TICKET-101,[refactor] bff-gateway – DTO schemas – add OpenAPI schema,"Service: bff-gateway
+
+Component: DTO schemas
+
+Task:
+Implement add OpenAPI schema for the DTO schemas module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P0,"bff-gateway,refactor"
+TICKET-102,[feature] infra-devops – Env configuration – add validation,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement add validation for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,feature"
+TICKET-103,[bug] clan-service – Clan roles – implement service layer,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement implement service layer for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,bug"
+TICKET-104,[bug] auth-service – Audit logs – create DTO,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement create DTO for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,bug"
+TICKET-105,[bug] game-service – Weapon logic – add logging,"Service: game-service
+
+Component: Weapon logic
+
+Task:
+Implement add logging for the Weapon logic module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,bug"
+TICKET-106,[feature] chat-service – Cursor pagination – create DTO,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement create DTO for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,feature"
+TICKET-107,[feature] social-service – Friend list – implement service layer,"Service: social-service
+
+Component: Friend list
+
+Task:
+Implement implement service layer for the Friend list module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P0,"social-service,feature"
+TICKET-108,[fix] chat-service – DM threads – create migration,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement create migration for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,fix"
+TICKET-109,[bug] game-service – Projectile simulation – add validation,"Service: game-service
+
+Component: Projectile simulation
+
+Task:
+Implement add validation for the Projectile simulation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,bug"
+TICKET-110,[feature] auth-service – Audit logs – add OpenAPI schema,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement add OpenAPI schema for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,feature"
+TICKET-111,[bug] bff-gateway – Error translation – implement service layer,"Service: bff-gateway
+
+Component: Error translation
+
+Task:
+Implement implement service layer for the Error translation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,bug"
+TICKET-112,[feature] security – JWT validation – write integration tests,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement write integration tests for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,feature"
+TICKET-113,[refactor] clan-service – Clan roles – add OpenAPI schema,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement add OpenAPI schema for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,refactor"
+TICKET-114,[bug] security – Rate limiting – create migration,"Service: security
+
+Component: Rate limiting
+
+Task:
+Implement create migration for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P2,"security,bug"
+TICKET-115,[bug] clan-service – Clan invites – create DTO,"Service: clan-service
+
+Component: Clan invites
+
+Task:
+Implement create DTO for the Clan invites module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,bug"
+TICKET-116,[feature] infra-devops – Env configuration – create DTO,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement create DTO for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P3,"infra-devops,feature"
+TICKET-117,[feature] public-api – Public clans – create DTO,"Service: public-api
+
+Component: Public clans
+
+Task:
+Implement create DTO for the Public clans module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P2,"public-api,feature"
+TICKET-118,[bug] bff-gateway – DTO schemas – implement service layer,"Service: bff-gateway
+
+Component: DTO schemas
+
+Task:
+Implement implement service layer for the DTO schemas module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,bug"
+TICKET-119,[refactor] chat-service – Cursor pagination – create DTO,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement create DTO for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,refactor"
+TICKET-120,[bug] clan-service – Clan roles – add validation,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement add validation for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,bug"
+TICKET-121,[bug] bff-gateway – Auth forwarding – implement controller,"Service: bff-gateway
+
+Component: Auth forwarding
+
+Task:
+Implement implement controller for the Auth forwarding module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,bug"
+TICKET-122,[fix] observability – Prometheus config – implement controller,"Service: observability
+
+Component: Prometheus config
+
+Task:
+Implement implement controller for the Prometheus config module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,fix"
+TICKET-123,[refactor] security – File upload sanitization – implement service layer,"Service: security
+
+Component: File upload sanitization
+
+Task:
+Implement implement service layer for the File upload sanitization module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,refactor"
+TICKET-124,[refactor] user-service – Privacy settings – add validation,"Service: user-service
+
+Component: Privacy settings
+
+Task:
+Implement add validation for the Privacy settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,refactor"
+TICKET-125,[bug] game-service – Terrain destruction – implement service layer,"Service: game-service
+
+Component: Terrain destruction
+
+Task:
+Implement implement service layer for the Terrain destruction module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,bug"
+TICKET-126,[feature] clan-service – Join requests – create DTO,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement create DTO for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,feature"
+TICKET-127,[feature] user-service – User search – write integration tests,"Service: user-service
+
+Component: User search
+
+Task:
+Implement write integration tests for the User search module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,feature"
+TICKET-128,[feature] infra-devops – CI pipelines – add validation,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement add validation for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P0,"infra-devops,feature"
+TICKET-129,[feature] bff-gateway – Request validation – add OpenAPI schema,"Service: bff-gateway
+
+Component: Request validation
+
+Task:
+Implement add OpenAPI schema for the Request validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P2,"bff-gateway,feature"
+TICKET-130,[fix] clan-service – Join requests – create DTO,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement create DTO for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,fix"
+TICKET-131,[bug] chat-service – Read receipts – add logging,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement add logging for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,bug"
+TICKET-132,[fix] public-api – Usage metrics – create DTO,"Service: public-api
+
+Component: Usage metrics
+
+Task:
+Implement create DTO for the Usage metrics module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,fix"
+TICKET-133,[fix] bff-gateway – Route aggregation – add logging,"Service: bff-gateway
+
+Component: Route aggregation
+
+Task:
+Implement add logging for the Route aggregation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P2,"bff-gateway,fix"
+TICKET-134,[refactor] bff-gateway – Error translation – add validation,"Service: bff-gateway
+
+Component: Error translation
+
+Task:
+Implement add validation for the Error translation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,refactor"
+TICKET-135,[fix] security – Rate limiting – implement controller,"Service: security
+
+Component: Rate limiting
+
+Task:
+Implement implement controller for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P0,"security,fix"
+TICKET-136,[bug] game-service – Inventory system – implement controller,"Service: game-service
+
+Component: Inventory system
+
+Task:
+Implement implement controller for the Inventory system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,bug"
+TICKET-137,[refactor] auth-service – OAuth Google – add validation,"Service: auth-service
+
+Component: OAuth Google
+
+Task:
+Implement add validation for the OAuth Google module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,refactor"
+TICKET-138,[feature] game-service – Inventory system – add validation,"Service: game-service
+
+Component: Inventory system
+
+Task:
+Implement add validation for the Inventory system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,feature"
+TICKET-139,[feature] user-service – User search – create Prisma schema,"Service: user-service
+
+Component: User search
+
+Task:
+Implement create Prisma schema for the User search module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,feature"
+TICKET-140,[fix] observability – Metrics exporters – implement controller,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement implement controller for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,fix"
+TICKET-141,[fix] clan-service – Clan creation – create DTO,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement create DTO for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,fix"
+TICKET-142,[feature] observability – Structured logging – add OpenAPI schema,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add OpenAPI schema for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,feature"
+TICKET-143,[feature] observability – Prometheus config – add validation,"Service: observability
+
+Component: Prometheus config
+
+Task:
+Implement add validation for the Prometheus config module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-144,[refactor] public-api – API keys – create DTO,"Service: public-api
+
+Component: API keys
+
+Task:
+Implement create DTO for the API keys module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,refactor"
+TICKET-145,[fix] clan-service – Clan roles – create Prisma schema,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement create Prisma schema for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,fix"
+TICKET-146,[fix] infra-devops – Docker compose – write unit tests,"Service: infra-devops
+
+Component: Docker compose
+
+Task:
+Implement write unit tests for the Docker compose module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,fix"
+TICKET-147,[fix] observability – Structured logging – add logging,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add logging for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,fix"
+TICKET-148,[fix] security – JWT validation – create DTO,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement create DTO for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P1,"security,fix"
+TICKET-149,[bug] game-service – Game session – implement controller,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement implement controller for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,bug"
+TICKET-150,[bug] observability – Metrics exporters – write unit tests,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement write unit tests for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,bug"
+TICKET-151,[feature] game-service – Weapon logic – add OpenAPI schema,"Service: game-service
+
+Component: Weapon logic
+
+Task:
+Implement add OpenAPI schema for the Weapon logic module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,feature"
+TICKET-152,[fix] game-service – Game session – implement service layer,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement implement service layer for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,fix"
+TICKET-153,[bug] social-service – Friend requests – implement service layer,"Service: social-service
+
+Component: Friend requests
+
+Task:
+Implement implement service layer for the Friend requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,bug"
+TICKET-154,[feature] chat-service – DM threads – implement service layer,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement implement service layer for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,feature"
+TICKET-155,[feature] bff-gateway – Route aggregation – write unit tests,"Service: bff-gateway
+
+Component: Route aggregation
+
+Task:
+Implement write unit tests for the Route aggregation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P0,"bff-gateway,feature"
+TICKET-156,[fix] clan-service – Join requests – create migration,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement create migration for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,fix"
+TICKET-157,[fix] chat-service – Read receipts – write integration tests,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement write integration tests for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,fix"
+TICKET-158,[bug] public-api – API keys – add validation,"Service: public-api
+
+Component: API keys
+
+Task:
+Implement add validation for the API keys module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P2,"public-api,bug"
+TICKET-159,[refactor] public-api – Usage metrics – write integration tests,"Service: public-api
+
+Component: Usage metrics
+
+Task:
+Implement write integration tests for the Usage metrics module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P2,"public-api,refactor"
+TICKET-160,[refactor] observability – Structured logging – write integration tests,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement write integration tests for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,refactor"
+TICKET-161,[bug] observability – Metrics exporters – create DTO,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement create DTO for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,bug"
+TICKET-162,[refactor] infra-devops – Env configuration – add OpenAPI schema,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement add OpenAPI schema for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P0,"infra-devops,refactor"
+TICKET-163,[bug] bff-gateway – DTO schemas – create migration,"Service: bff-gateway
+
+Component: DTO schemas
+
+Task:
+Implement create migration for the DTO schemas module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P0,"bff-gateway,bug"
+TICKET-164,[refactor] observability – Structured logging – write integration tests,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement write integration tests for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,refactor"
+TICKET-165,[refactor] game-service – Projectile simulation – implement service layer,"Service: game-service
+
+Component: Projectile simulation
+
+Task:
+Implement implement service layer for the Projectile simulation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,refactor"
+TICKET-166,[fix] infra-devops – Env configuration – create migration,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement create migration for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,fix"
+TICKET-167,[bug] chat-service – DM threads – write unit tests,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement write unit tests for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,bug"
+TICKET-168,[refactor] bff-gateway – DTO schemas – create DTO,"Service: bff-gateway
+
+Component: DTO schemas
+
+Task:
+Implement create DTO for the DTO schemas module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,refactor"
+TICKET-169,[feature] chat-service – Mute threads – implement service layer,"Service: chat-service
+
+Component: Mute threads
+
+Task:
+Implement implement service layer for the Mute threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,feature"
+TICKET-170,[bug] observability – Prometheus config – add logging,"Service: observability
+
+Component: Prometheus config
+
+Task:
+Implement add logging for the Prometheus config module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P3,"observability,bug"
+TICKET-171,[bug] auth-service – Audit logs – implement service layer,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement implement service layer for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,bug"
+TICKET-172,[fix] clan-service – Join requests – implement service layer,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement implement service layer for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,fix"
+TICKET-173,[bug] social-service – Friend requests – write integration tests,"Service: social-service
+
+Component: Friend requests
+
+Task:
+Implement write integration tests for the Friend requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,bug"
+TICKET-174,[refactor] public-api – Public clans – implement controller,"Service: public-api
+
+Component: Public clans
+
+Task:
+Implement implement controller for the Public clans module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P3,"public-api,refactor"
+TICKET-175,[fix] public-api – Public user profile – create Prisma schema,"Service: public-api
+
+Component: Public user profile
+
+Task:
+Implement create Prisma schema for the Public user profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,fix"
+TICKET-176,[fix] observability – Metrics exporters – create migration,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement create migration for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,fix"
+TICKET-177,[fix] infra-devops – Build images – add validation,"Service: infra-devops
+
+Component: Build images
+
+Task:
+Implement add validation for the Build images module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,fix"
+TICKET-178,[bug] security – Rate limiting – create DTO,"Service: security
+
+Component: Rate limiting
+
+Task:
+Implement create DTO for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,bug"
+TICKET-179,[refactor] bff-gateway – Route aggregation – create Prisma schema,"Service: bff-gateway
+
+Component: Route aggregation
+
+Task:
+Implement create Prisma schema for the Route aggregation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,refactor"
+TICKET-180,[bug] observability – Grafana dashboards – write unit tests,"Service: observability
+
+Component: Grafana dashboards
+
+Task:
+Implement write unit tests for the Grafana dashboards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,bug"
+TICKET-181,[fix] infra-devops – Env configuration – create DTO,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement create DTO for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P3,"infra-devops,fix"
+TICKET-182,[fix] auth-service – Auth guards – implement controller,"Service: auth-service
+
+Component: Auth guards
+
+Task:
+Implement implement controller for the Auth guards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,fix"
+TICKET-183,[refactor] clan-service – Clan roles – create migration,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement create migration for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,refactor"
+TICKET-184,[bug] security – Abuse detection – create migration,"Service: security
+
+Component: Abuse detection
+
+Task:
+Implement create migration for the Abuse detection module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P0,"security,bug"
+TICKET-185,[refactor] observability – Structured logging – write integration tests,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement write integration tests for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,refactor"
+TICKET-186,[feature] bff-gateway – Auth forwarding – add OpenAPI schema,"Service: bff-gateway
+
+Component: Auth forwarding
+
+Task:
+Implement add OpenAPI schema for the Auth forwarding module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,feature"
+TICKET-187,[refactor] bff-gateway – DTO schemas – create DTO,"Service: bff-gateway
+
+Component: DTO schemas
+
+Task:
+Implement create DTO for the DTO schemas module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P2,"bff-gateway,refactor"
+TICKET-188,[bug] chat-service – DM threads – write integration tests,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement write integration tests for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,bug"
+TICKET-189,[refactor] security – Abuse detection – create DTO,"Service: security
+
+Component: Abuse detection
+
+Task:
+Implement create DTO for the Abuse detection module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,refactor"
+TICKET-190,[bug] auth-service – JWT session issuance – create DTO,"Service: auth-service
+
+Component: JWT session issuance
+
+Task:
+Implement create DTO for the JWT session issuance module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,bug"
+TICKET-191,[refactor] game-service – Projectile simulation – create DTO,"Service: game-service
+
+Component: Projectile simulation
+
+Task:
+Implement create DTO for the Projectile simulation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,refactor"
+TICKET-192,[feature] clan-service – Join requests – add validation,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement add validation for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,feature"
+TICKET-193,[feature] auth-service – Rate limiting – add logging,"Service: auth-service
+
+Component: Rate limiting
+
+Task:
+Implement add logging for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,feature"
+TICKET-194,[feature] public-api – Public user profile – implement service layer,"Service: public-api
+
+Component: Public user profile
+
+Task:
+Implement implement service layer for the Public user profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,feature"
+TICKET-195,[refactor] bff-gateway – Request validation – create DTO,"Service: bff-gateway
+
+Component: Request validation
+
+Task:
+Implement create DTO for the Request validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,refactor"
+TICKET-196,[fix] game-service – Game session – implement controller,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement implement controller for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,fix"
+TICKET-197,[bug] observability – Grafana dashboards – add validation,"Service: observability
+
+Component: Grafana dashboards
+
+Task:
+Implement add validation for the Grafana dashboards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P3,"observability,bug"
+TICKET-198,[bug] bff-gateway – Request validation – write integration tests,"Service: bff-gateway
+
+Component: Request validation
+
+Task:
+Implement write integration tests for the Request validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,bug"
+TICKET-199,[fix] clan-service – Clan invites – create migration,"Service: clan-service
+
+Component: Clan invites
+
+Task:
+Implement create migration for the Clan invites module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,fix"
+TICKET-200,[refactor] social-service – Friend requests – write integration tests,"Service: social-service
+
+Component: Friend requests
+
+Task:
+Implement write integration tests for the Friend requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,refactor"
+TICKET-201,[feature] observability – Structured logging – add OpenAPI schema,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add OpenAPI schema for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,feature"
+TICKET-202,[fix] auth-service – Session revocation – create Prisma schema,"Service: auth-service
+
+Component: Session revocation
+
+Task:
+Implement create Prisma schema for the Session revocation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,fix"
+TICKET-203,[bug] clan-service – Clan creation – write unit tests,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement write unit tests for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,bug"
+TICKET-204,[feature] observability – Metrics exporters – implement service layer,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement implement service layer for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-205,[feature] auth-service – Refresh tokens – add logging,"Service: auth-service
+
+Component: Refresh tokens
+
+Task:
+Implement add logging for the Refresh tokens module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,feature"
+TICKET-206,[bug] infra-devops – Service containers – write integration tests,"Service: infra-devops
+
+Component: Service containers
+
+Task:
+Implement write integration tests for the Service containers module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,bug"
+TICKET-207,[refactor] game-service – Turn engine – write unit tests,"Service: game-service
+
+Component: Turn engine
+
+Task:
+Implement write unit tests for the Turn engine module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,refactor"
+TICKET-208,[refactor] user-service – Avatar upload – implement service layer,"Service: user-service
+
+Component: Avatar upload
+
+Task:
+Implement implement service layer for the Avatar upload module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P1,"user-service,refactor"
+TICKET-209,[bug] auth-service – Refresh tokens – implement service layer,"Service: auth-service
+
+Component: Refresh tokens
+
+Task:
+Implement implement service layer for the Refresh tokens module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,bug"
+TICKET-210,[refactor] security – Input validation – add logging,"Service: security
+
+Component: Input validation
+
+Task:
+Implement add logging for the Input validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P0,"security,refactor"
+TICKET-211,[bug] bff-gateway – Route aggregation – write integration tests,"Service: bff-gateway
+
+Component: Route aggregation
+
+Task:
+Implement write integration tests for the Route aggregation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P1,"bff-gateway,bug"
+TICKET-212,[refactor] social-service – Friend list – implement service layer,"Service: social-service
+
+Component: Friend list
+
+Task:
+Implement implement service layer for the Friend list module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,refactor"
+TICKET-213,[bug] auth-service – Refresh tokens – create DTO,"Service: auth-service
+
+Component: Refresh tokens
+
+Task:
+Implement create DTO for the Refresh tokens module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,bug"
+TICKET-214,[feature] auth-service – JWT session issuance – add logging,"Service: auth-service
+
+Component: JWT session issuance
+
+Task:
+Implement add logging for the JWT session issuance module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,feature"
+TICKET-215,[refactor] infra-devops – Env configuration – create migration,"Service: infra-devops
+
+Component: Env configuration
+
+Task:
+Implement create migration for the Env configuration module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,refactor"
+TICKET-216,[refactor] clan-service – Clan membership – write unit tests,"Service: clan-service
+
+Component: Clan membership
+
+Task:
+Implement write unit tests for the Clan membership module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,refactor"
+TICKET-217,[feature] user-service – Profile update – create Prisma schema,"Service: user-service
+
+Component: Profile update
+
+Task:
+Implement create Prisma schema for the Profile update module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,feature"
+TICKET-218,[bug] social-service – Relationship validation – create DTO,"Service: social-service
+
+Component: Relationship validation
+
+Task:
+Implement create DTO for the Relationship validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,bug"
+TICKET-219,[feature] auth-service – Rate limiting – add OpenAPI schema,"Service: auth-service
+
+Component: Rate limiting
+
+Task:
+Implement add OpenAPI schema for the Rate limiting module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P1,"auth-service,feature"
+TICKET-220,[refactor] public-api – Public user profile – implement service layer,"Service: public-api
+
+Component: Public user profile
+
+Task:
+Implement implement service layer for the Public user profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,refactor"
+TICKET-221,[feature] game-service – Match statistics – create DTO,"Service: game-service
+
+Component: Match statistics
+
+Task:
+Implement create DTO for the Match statistics module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,feature"
+TICKET-222,[feature] auth-service – Refresh tokens – add OpenAPI schema,"Service: auth-service
+
+Component: Refresh tokens
+
+Task:
+Implement add OpenAPI schema for the Refresh tokens module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P2,"auth-service,feature"
+TICKET-223,[bug] chat-service – Cursor pagination – create migration,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement create migration for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,bug"
+TICKET-224,[fix] game-service – Inventory system – add logging,"Service: game-service
+
+Component: Inventory system
+
+Task:
+Implement add logging for the Inventory system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,fix"
+TICKET-225,[refactor] infra-devops – Build images – write integration tests,"Service: infra-devops
+
+Component: Build images
+
+Task:
+Implement write integration tests for the Build images module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P3,"infra-devops,refactor"
+TICKET-226,[feature] game-service – Inventory system – create Prisma schema,"Service: game-service
+
+Component: Inventory system
+
+Task:
+Implement create Prisma schema for the Inventory system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P0,"game-service,feature"
+TICKET-227,[bug] clan-service – Clan creation – create Prisma schema,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement create Prisma schema for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,bug"
+TICKET-228,[fix] auth-service – OAuth Google – add OpenAPI schema,"Service: auth-service
+
+Component: OAuth Google
+
+Task:
+Implement add OpenAPI schema for the OAuth Google module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,fix"
+TICKET-229,[bug] observability – Grafana dashboards – add logging,"Service: observability
+
+Component: Grafana dashboards
+
+Task:
+Implement add logging for the Grafana dashboards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P2,"observability,bug"
+TICKET-230,[fix] infra-devops – Service containers – create DTO,"Service: infra-devops
+
+Component: Service containers
+
+Task:
+Implement create DTO for the Service containers module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,fix"
+TICKET-231,[feature] social-service – Friend requests – write integration tests,"Service: social-service
+
+Component: Friend requests
+
+Task:
+Implement write integration tests for the Friend requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P3,"social-service,feature"
+TICKET-232,[feature] infra-devops – Build images – add OpenAPI schema,"Service: infra-devops
+
+Component: Build images
+
+Task:
+Implement add OpenAPI schema for the Build images module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,feature"
+TICKET-233,[refactor] social-service – Relationship validation – add logging,"Service: social-service
+
+Component: Relationship validation
+
+Task:
+Implement add logging for the Relationship validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,refactor"
+TICKET-234,[fix] game-service – Terrain destruction – create migration,"Service: game-service
+
+Component: Terrain destruction
+
+Task:
+Implement create migration for the Terrain destruction module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,fix"
+TICKET-235,[feature] game-service – Lobby system – implement service layer,"Service: game-service
+
+Component: Lobby system
+
+Task:
+Implement implement service layer for the Lobby system module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,feature"
+TICKET-236,[feature] clan-service – Clan membership – implement service layer,"Service: clan-service
+
+Component: Clan membership
+
+Task:
+Implement implement service layer for the Clan membership module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,feature"
+TICKET-237,[fix] game-service – Terrain destruction – write integration tests,"Service: game-service
+
+Component: Terrain destruction
+
+Task:
+Implement write integration tests for the Terrain destruction module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P1,"game-service,fix"
+TICKET-238,[fix] clan-service – Join requests – write unit tests,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement write unit tests for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P1,"clan-service,fix"
+TICKET-239,[bug] chat-service – DM threads – create migration,"Service: chat-service
+
+Component: DM threads
+
+Task:
+Implement create migration for the DM threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,bug"
+TICKET-240,[refactor] auth-service – Auth guards – write unit tests,"Service: auth-service
+
+Component: Auth guards
+
+Task:
+Implement write unit tests for the Auth guards module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P2,"auth-service,refactor"
+TICKET-241,[refactor] infra-devops – Local dev scripts – write unit tests,"Service: infra-devops
+
+Component: Local dev scripts
+
+Task:
+Implement write unit tests for the Local dev scripts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,refactor"
+TICKET-242,[bug] chat-service – Message sending – create Prisma schema,"Service: chat-service
+
+Component: Message sending
+
+Task:
+Implement create Prisma schema for the Message sending module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,bug"
+TICKET-243,[fix] infra-devops – Docker compose – add validation,"Service: infra-devops
+
+Component: Docker compose
+
+Task:
+Implement add validation for the Docker compose module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,fix"
+TICKET-244,[feature] auth-service – Audit logs – create Prisma schema,"Service: auth-service
+
+Component: Audit logs
+
+Task:
+Implement create Prisma schema for the Audit logs module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,feature"
+TICKET-245,[bug] chat-service – Mute threads – write integration tests,"Service: chat-service
+
+Component: Mute threads
+
+Task:
+Implement write integration tests for the Mute threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P1,"chat-service,bug"
+TICKET-246,[refactor] security – JWT validation – write unit tests,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement write unit tests for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P2,"security,refactor"
+TICKET-247,[refactor] security – File upload sanitization – create Prisma schema,"Service: security
+
+Component: File upload sanitization
+
+Task:
+Implement create Prisma schema for the File upload sanitization module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P3,"security,refactor"
+TICKET-248,[fix] public-api – Leaderboard API – create DTO,"Service: public-api
+
+Component: Leaderboard API
+
+Task:
+Implement create DTO for the Leaderboard API module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P0,"public-api,fix"
+TICKET-249,[bug] observability – Metrics exporters – write unit tests,"Service: observability
+
+Component: Metrics exporters
+
+Task:
+Implement write unit tests for the Metrics exporters module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,bug"
+TICKET-250,[refactor] security – JWT validation – implement service layer,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement implement service layer for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P2,"security,refactor"
+TICKET-251,[fix] clan-service – Clan roles – write integration tests,"Service: clan-service
+
+Component: Clan roles
+
+Task:
+Implement write integration tests for the Clan roles module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P3,"clan-service,fix"
+TICKET-252,[fix] clan-service – Clan membership – add logging,"Service: clan-service
+
+Component: Clan membership
+
+Task:
+Implement add logging for the Clan membership module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,fix"
+TICKET-253,[feature] bff-gateway – Route aggregation – add logging,"Service: bff-gateway
+
+Component: Route aggregation
+
+Task:
+Implement add logging for the Route aggregation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,feature"
+TICKET-254,[fix] security – JWT validation – write unit tests,"Service: security
+
+Component: JWT validation
+
+Task:
+Implement write unit tests for the JWT validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P1,"security,fix"
+TICKET-255,[feature] infra-devops – CI pipelines – add logging,"Service: infra-devops
+
+Component: CI pipelines
+
+Task:
+Implement add logging for the CI pipelines module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P1,"infra-devops,feature"
+TICKET-256,[bug] social-service – Friend list – write unit tests,"Service: social-service
+
+Component: Friend list
+
+Task:
+Implement write unit tests for the Friend list module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P2,"social-service,bug"
+TICKET-257,[bug] infra-devops – Local dev scripts – implement service layer,"Service: infra-devops
+
+Component: Local dev scripts
+
+Task:
+Implement implement service layer for the Local dev scripts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",infra-devops,P2,"infra-devops,bug"
+TICKET-258,[feature] bff-gateway – Auth forwarding – implement service layer,"Service: bff-gateway
+
+Component: Auth forwarding
+
+Task:
+Implement implement service layer for the Auth forwarding module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,feature"
+TICKET-259,[bug] game-service – Game session – create DTO,"Service: game-service
+
+Component: Game session
+
+Task:
+Implement create DTO for the Game session module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P2,"game-service,bug"
+TICKET-260,[bug] observability – Structured logging – add OpenAPI schema,"Service: observability
+
+Component: Structured logging
+
+Task:
+Implement add OpenAPI schema for the Structured logging module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P1,"observability,bug"
+TICKET-261,[feature] observability – Prometheus config – add validation,"Service: observability
+
+Component: Prometheus config
+
+Task:
+Implement add validation for the Prometheus config module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",observability,P0,"observability,feature"
+TICKET-262,[fix] user-service – Profile update – add logging,"Service: user-service
+
+Component: Profile update
+
+Task:
+Implement add logging for the Profile update module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P1,"user-service,fix"
+TICKET-263,[bug] user-service – User profile – create migration,"Service: user-service
+
+Component: User profile
+
+Task:
+Implement create migration for the User profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,bug"
+TICKET-264,[fix] chat-service – Mute threads – write integration tests,"Service: chat-service
+
+Component: Mute threads
+
+Task:
+Implement write integration tests for the Mute threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P2,"chat-service,fix"
+TICKET-265,[bug] public-api – Leaderboard API – add validation,"Service: public-api
+
+Component: Leaderboard API
+
+Task:
+Implement add validation for the Leaderboard API module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P2,"public-api,bug"
+TICKET-266,[refactor] auth-service – OAuth Google – create DTO,"Service: auth-service
+
+Component: OAuth Google
+
+Task:
+Implement create DTO for the OAuth Google module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,refactor"
+TICKET-267,[bug] chat-service – Read receipts – add OpenAPI schema,"Service: chat-service
+
+Component: Read receipts
+
+Task:
+Implement add OpenAPI schema for the Read receipts module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,bug"
+TICKET-268,[refactor] auth-service – Password reset – create Prisma schema,"Service: auth-service
+
+Component: Password reset
+
+Task:
+Implement create Prisma schema for the Password reset module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P3,"auth-service,refactor"
+TICKET-269,[fix] bff-gateway – Request validation – create Prisma schema,"Service: bff-gateway
+
+Component: Request validation
+
+Task:
+Implement create Prisma schema for the Request validation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",bff-gateway,P3,"bff-gateway,fix"
+TICKET-270,[feature] public-api – API keys – add logging,"Service: public-api
+
+Component: API keys
+
+Task:
+Implement add logging for the API keys module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",public-api,P1,"public-api,feature"
+TICKET-271,[refactor] auth-service – Session revocation – add validation,"Service: auth-service
+
+Component: Session revocation
+
+Task:
+Implement add validation for the Session revocation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",auth-service,P0,"auth-service,refactor"
+TICKET-272,[refactor] clan-service – Join requests – implement service layer,"Service: clan-service
+
+Component: Join requests
+
+Task:
+Implement implement service layer for the Join requests module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P0,"clan-service,refactor"
+TICKET-273,[fix] security – Abuse detection – create Prisma schema,"Service: security
+
+Component: Abuse detection
+
+Task:
+Implement create Prisma schema for the Abuse detection module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",security,P2,"security,fix"
+TICKET-274,[refactor] user-service – User profile – add OpenAPI schema,"Service: user-service
+
+Component: User profile
+
+Task:
+Implement add OpenAPI schema for the User profile module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P2,"user-service,refactor"
+TICKET-275,[refactor] clan-service – Clan creation – add logging,"Service: clan-service
+
+Component: Clan creation
+
+Task:
+Implement add logging for the Clan creation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",clan-service,P2,"clan-service,refactor"
+TICKET-276,[fix] chat-service – Cursor pagination – add OpenAPI schema,"Service: chat-service
+
+Component: Cursor pagination
+
+Task:
+Implement add OpenAPI schema for the Cursor pagination module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P3,"chat-service,fix"
+TICKET-277,[bug] chat-service – Mute threads – create DTO,"Service: chat-service
+
+Component: Mute threads
+
+Task:
+Implement create DTO for the Mute threads module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",chat-service,P0,"chat-service,bug"
+TICKET-278,[refactor] game-service – Projectile simulation – add logging,"Service: game-service
+
+Component: Projectile simulation
+
+Task:
+Implement add logging for the Projectile simulation module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",game-service,P3,"game-service,refactor"
+TICKET-279,[refactor] user-service – User settings – write integration tests,"Service: user-service
+
+Component: User settings
+
+Task:
+Implement write integration tests for the User settings module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",user-service,P0,"user-service,refactor"
+TICKET-280,[refactor] social-service – Notifications events – implement service layer,"Service: social-service
+
+Component: Notifications events
+
+Task:
+Implement implement service layer for the Notifications events module.
+
+Requirements:
+- Follow NestJS module structure (controller/service/module).
+- Use Prisma ORM for database access.
+- Follow internal REST contracts and DTO schemas.
+- Ensure compatibility with BFF gateway endpoints.
+- Add structured logging and error handling.
+
+Acceptance Criteria:
+- Code compiles and passes CI pipeline.
+- Unit tests added where applicable.
+- OpenAPI spec updated if endpoint involved.
+- Docker service builds successfully.
+",social-service,P1,"social-service,refactor"
