@@ -1,0 +1,60 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach BFF",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9229,
+      "restart": true,
+      "protocol": "inspector",
+      "localRoot": "${workspaceFolder}/apps/bff",
+      "remoteRoot": "/app"
+    },
+    {
+      "name": "Attach Auth Service",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9230,
+      "restart": true,
+      "protocol": "inspector",
+      "localRoot": "${workspaceFolder}/apps/auth-user",
+      "remoteRoot": "/app"
+    },
+    {
+      "name": "Attach Game Service",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9231,
+      "restart": true,
+      "protocol": "inspector",
+      "localRoot": "${workspaceFolder}/apps/game",
+      "remoteRoot": "/app"
+    },
+    {
+      "name": "Attach Social Service",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9232,
+      "restart": true,
+      "protocol": "inspector",
+      "localRoot": "${workspaceFolder}/apps/social",
+      "remoteRoot": "/app"
+    },
+    {
+      "name": "Attach Stats Service",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 9233,
+      "restart": true,
+      "protocol": "inspector",
+      "localRoot": "${workspaceFolder}/apps/stats",
+      "remoteRoot": "/app"
+    }
+  ]
+}
