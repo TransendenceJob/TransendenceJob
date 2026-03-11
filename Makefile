@@ -1,40 +1,47 @@
-# Base compose file(s)
+# ---------- Files ----------
 ENV_FILE ?= .env
-COMPOSE_BASE = docker/compose.yml
+COMPOSE_BASE = docker/compose.infra.yml
 COMPOSE_DEV  = docker/compose.dev.yml
 COMPOSE_PROD = docker/compose.prod.yml
 
-# Compose command helpers
+# ---------- Compose commands ----------
 DC_BASE = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)
-DC_DEV  = $(DC_BASE) -f $(COMPOSE_DEV)  --profile dev
-DC_PROD = $(DC_BASE) -f $(COMPOSE_PROD) --profile prod
-DC_OBS  = $(DC_BASE) --profile dev --profile obs
+DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_DEV) --profile dev
+DC_PROD = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) --profile prod
+DC_OBS  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) --profile dev --profile obs
 
-# Default service for exec/sh if not provided:
-SVC ?= nginx
+# Optional service selector:
+SVC ?=
+CMD ?= sh
 
-.PHONY: help check-env up down ps logs health reset 
-		dev prod debug obs rebuild pull restart exec sh
+.PHONY: help check-env up down down-base down-dev down-prod down-all \
+        ps logs health reset dev prod debug obs rebuild pull restart exec sh
 
 help:
 	@echo "Targets:"
-	@echo "  make dev        - Start dev stack (hot reload, etc.)"
-	@echo "  make prod       - Start prod-like stack"
-	@echo "  make debug      - Start dev stack + debug ports (if configured)"
-	@echo "  make obs        - Start observability profile (prom/grafana, etc.)"
-	@echo "  make down       - Stop stack"
-	@echo "  make ps         - Show status"
-	@echo "  make logs       - Follow logs (set SVC=... for one service)"
-	@echo "  make restart    - Restart (SVC=... optional)"
-	@echo "  make rebuild    - Build images (no cache optional: NOCACHE=1)"
-	@echo "  make exec       - Exec into running container (SVC=..., CMD=...)"
-	@echo "  make sh         - Shell into running container (SVC=...)"
-	@echo "  make reset      - Down + delete volumes (DANGEROUS)"
+	@echo "  make dev         - Start dev stack"
+	@echo "  make prod        - Start prod-like stack"
+	@echo "  make debug       - Start dev stack with debug config"
+	@echo "  make obs         - Start infra + observability"
+	@echo "  make down        - Stop dev stack"
+	@echo "  make down-base   - Stop base infra only"
+	@echo "  make down-dev    - Stop dev stack"
+	@echo "  make down-prod   - Stop prod stack"
+	@echo "  make down-all    - Stop everything defined by all compose files"
+	@echo "  make ps          - Show compose status"
+	@echo "  make logs        - Follow logs for all services"
+	@echo "  make logs SVC=x  - Follow logs for one service"
+	@echo "  make restart     - Restart all services in dev stack"
+	@echo "  make restart SVC=x - Restart one service in dev stack"
+	@echo "  make exec SVC=x CMD='...' - Exec command in service"
+	@echo "  make sh SVC=x    - Shell into service"
+	@echo "  make rebuild     - Build images"
+	@echo "  make reset       - Down all + delete volumes"
 
 check-env:
 	@test -f $(ENV_FILE) || (echo "❌ $(ENV_FILE) missing. Run: cp .env.example $(ENV_FILE)" && exit 1)
 
-# Keep your original 'up' as a sane default (dev)
+# Default
 up: dev
 
 dev: check-env
@@ -43,26 +50,42 @@ dev: check-env
 prod: check-env
 	$(DC_PROD) up -d
 
-# debug is just dev + whatever you define in compose.dev.yml (ports/command)
 debug: check-env
 	$(DC_DEV) up -d
 
-# Bring up observability profile (can be used with dev/prod too)
 obs: check-env
 	$(DC_OBS) up -d
 
-down:
+# ---------- Down targets ----------
+down: down-dev
+
+down-base:
 	$(DC_BASE) down
 
-ps:
-	$(DC_BASE) ps
+down-dev:
+	$(DC_DEV) down
 
-# Logs: default all, or set SVC=api for a single service
+down-prod:
+	$(DC_PROD) down
+
+down-all:
+	docker compose --env-file $(ENV_FILE) \
+		-f $(COMPOSE_BASE) \
+		-f $(COMPOSE_DEV) \
+		-f $(COMPOSE_PROD) \
+		--profile dev \
+		--profile prod \
+		--profile obs \
+		down --remove-orphans
+
+ps:
+	$(DC_DEV) ps
+
 logs:
-ifeq ($(origin SVC), undefined)
-	$(DC_BASE) logs -f --tail=100
+ifdef SVC
+	$(DC_DEV) logs -f --tail=100 $(SVC)
 else
-	$(DC_BASE) logs -f --tail=100 $(SVC)
+	$(DC_DEV) logs -f --tail=100
 endif
 
 health:
@@ -70,41 +93,50 @@ health:
 	@docker ps
 	@echo ""
 	@echo "== Compose status =="
-	@$(DC_BASE) ps
+	@$(DC_DEV) ps
 	@echo ""
 	@echo "== Prometheus targets check =="
 	@echo "Open: http://localhost:$${PROMETHEUS_PORT:-9090}/targets"
 	@echo "== Grafana check =="
-	@echo "Open: http://localhost:$${GRAFANA_PORT:-3000} (admin/admin by default)"
+	@echo "Open: http://localhost:$${GRAFANA_PORT:-3000}"
 
-# Rebuild images (optionally without cache: make rebuild NOCACHE=1)
 rebuild: check-env
 ifeq ($(NOCACHE),1)
-	$(DC_BASE) build --no-cache
+	$(DC_DEV) build --no-cache
 else
-	$(DC_BASE) build
+	$(DC_DEV) build
 endif
 
 pull: check-env
-	$(DC_BASE) pull
+	$(DC_DEV) pull
 
-# Restart whole stack or one service: make restart SVC=api
 restart:
-ifeq ($(origin SVC), undefined)
-	$(DC_BASE) restart
+ifdef SVC
+	$(DC_DEV) restart $(SVC)
 else
-	$(DC_BASE) restart $(SVC)
+	$(DC_DEV) restart
 endif
 
-# Exec: make exec SVC=api CMD="ls -la"
-CMD ?= sh
 exec:
-	$(DC_BASE) exec $(SVC) $(CMD)
+ifndef SVC
+	$(error Please provide SVC=<service>, e.g. make exec SVC=nginx CMD="nginx -t")
+endif
+	$(DC_DEV) exec $(SVC) $(CMD)
 
 sh:
-	$(DC_BASE) exec $(SVC) sh
+ifndef SVC
+	$(error Please provide SVC=<service>, e.g. make sh SVC=nginx)
+endif
+	$(DC_DEV) exec $(SVC) sh
 
 reset:
 	@echo "⚠️  This will DELETE ALL DATA (volumes). Ctrl+C to abort. 10 seconds..."
 	@sleep 10
-	$(DC_BASE) down -v
+	docker compose --env-file $(ENV_FILE) \
+		-f $(COMPOSE_BASE) \
+		-f $(COMPOSE_DEV) \
+		-f $(COMPOSE_PROD) \
+		--profile dev \
+		--profile prod \
+		--profile obs \
+		down -v --remove-orphans
