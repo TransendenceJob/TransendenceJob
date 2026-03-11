@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug 0.0.0.0:9231 --watch"
+  }
+}

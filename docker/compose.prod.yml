@@ -76,7 +76,7 @@ services:
   auth_service:
     profiles: ["prod"]
     build:
-      context: ../backend/auth
+      context: ../apps/auth-user
       dockerfile: Dockerfile
     container_name: auth_service
     environment:
@@ -107,7 +107,7 @@ services:
   social_service:
     profiles: ["prod"]
     build:
-      context: ../backend/social
+      context: ../apps/social
       dockerfile: Dockerfile
     container_name: social_service
     environment:
@@ -142,7 +142,7 @@ services:
   stats_service:
     profiles: ["prod"]
     build:
-      context: ../backend/stats
+      context: ../apps/stats
       dockerfile: Dockerfile
     container_name: stats_service
     environment:
@@ -173,7 +173,7 @@ services:
   game_service:
     profiles: ["prod"]
     build:
-      context: ../backend/game
+      context: ../apps/game
       dockerfile: Dockerfile
     container_name: game_service
     environment:
