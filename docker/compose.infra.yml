@@ -5,7 +5,6 @@ services:
 
   # ---------- Databases (one Postgres per service: clear ownership) ----------
   postgres_auth:
-    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_auth
     environment:
@@ -29,7 +28,6 @@ services:
         max-file: "3"
   
   postgres_game:
-    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_game
     environment:
@@ -54,7 +52,6 @@ services:
 
 
   postgres_social:
-    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_social
     environment:
@@ -78,7 +75,6 @@ services:
         max-file: "3"
 
   postgres_stats:
-    profiles: ["dev"]
     image: postgres:16-alpine
     container_name: postgres_stats
     environment:
@@ -102,7 +98,6 @@ services:
         max-file: "3"
   # ---------- Redis (sessions/caching/ephemeral matchmaking state) ----------
   redis:
-    profiles: ["dev"]
     image: redis:7-alpine
     container_name: redis
     command: ["redis-server", "--appendonly", "yes"]
@@ -124,7 +119,6 @@ services:
 
   # ---------- RabbitMQ (async events: match.finished etc.) ----------
   rabbitmq:
-    profiles: ["dev"]
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     environment:
