@@ -1,0 +1,255 @@
+services:
+  nginx:
+    profiles: ["dev"]
+    image: nginx:1.27-alpine
+    container_name: nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:${NGINX_INTERNAL_PORT:-80}"
+    environment:
+      NGINX_INTERNAL_PORT: ${NGINX_INTERNAL_PORT:-80}
+      FRONTEND_INTERNAL_PORT: ${FRONTEND_INTERNAL_PORT:-3000}
+      BFF_INTERNAL_PORT: ${BFF_INTERNAL_PORT:-3000}
+      GAME_INTERNAL_PORT: ${GAME_INTERNAL_PORT:-3001}
+    volumes:
+      - ../infra/nginx/nginx.dev.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - nginx_maps:/usr/share/nginx/html/maps
+    depends_on:
+      - frontend
+      - bff
+      - game_service
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    profiles: ["dev"]
+    build:
+      context: ../apps/frontend
+      target: development
+    container_name: frontend
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${FRONTEND_INTERNAL_PORT:-3000}
+    volumes:
+      - ../apps/frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
+    command: ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  bff:
+    profiles: ["dev"]
+    build:
+      context: ../apps/BFF
+      target: development
+    container_name: bff
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${BFF_INTERNAL_PORT:-3000}
+      AUTH_SERVICE_URL: http://auth_service:${AUTH_INTERNAL_PORT:-3000}
+      SOCIAL_SERVICE_URL: http://social_service:${SOCIAL_INTERNAL_PORT:-3000}
+      STATS_SERVICE_URL: http://stats_service:${STATS_INTERNAL_PORT:-3000}
+      GAME_SERVICE_HTTP_URL: http://game_service:${GAME_INTERNAL_PORT:-3001}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/BFF:/app
+      - bff_node_modules:/app/node_modules
+    ports:
+      - "${BFF_HOST_PORT:-3000}:${BFF_INTERNAL_PORT:-3000}"
+      - "${BFF_DEBUG_HOST_PORT:-9229}:9229"
+    command: ["npm", "run", "start:debug"]
+    depends_on:
+      postgres_auth:
+        condition: service_healthy
+      postgres_social:
+        condition: service_healthy
+      postgres_stats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  auth_service:
+    profiles: ["dev"]
+    build:
+      context: ../apps/auth-user
+      target: development
+    container_name: auth_service
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${AUTH_INTERNAL_PORT:-3000}
+      DB_HOST: postgres_auth
+      DB_PORT: 5432
+      DB_USER: ${AUTH_DB_USER}
+      DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      DB_NAME: ${AUTH_DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+    volumes:
+      - ../apps/auth-user:/app
+      - auth_node_modules:/app/node_modules
+    ports:
+      - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
+      - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
+    command: ["npm", "run", "start:debug"]
+    depends_on:
+      postgres_auth:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  social_service:
+    profiles: ["dev"]
+    build:
+      context: ../apps/social
+      target: development
+    container_name: social_service
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${SOCIAL_INTERNAL_PORT:-3000}
+      DB_HOST: postgres_social
+      DB_PORT: 5432
+      DB_USER: ${SOCIAL_DB_USER}
+      DB_PASSWORD: ${SOCIAL_DB_PASSWORD}
+      DB_NAME: ${SOCIAL_DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/social:/app
+      - social_node_modules:/app/node_modules
+    ports:
+      - "${SOCIAL_HOST_PORT:-3002}:${SOCIAL_INTERNAL_PORT:-3000}"
+      - "${SOCIAL_DEBUG_HOST_PORT:-9232}:9229"
+    command: ["npm", "run", "start:debug"]
+    depends_on:
+      postgres_social:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  stats_service:
+    profiles: ["dev"]
+    build:
+      context: ../apps/stats
+      target: development
+    container_name: stats_service
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${STATS_INTERNAL_PORT:-3000}
+      DB_HOST: postgres_stats
+      DB_PORT: 5432
+      DB_USER: ${STATS_DB_USER}
+      DB_PASSWORD: ${STATS_DB_PASSWORD}
+      DB_NAME: ${STATS_DB_NAME}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/stats:/app
+      - stats_node_modules:/app/node_modules
+    ports:
+      - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
+      - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
+    command: ["npm", "run", "start:debug"]
+    depends_on:
+      postgres_stats:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  game_service:
+    profiles: ["dev"]
+    build:
+      context: ../apps/game
+      target: development
+    container_name: game_service
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: ${GAME_INTERNAL_PORT:-3001}
+      DEBUG_PORT: ${GAME_DEBUG_INTERNAL_PORT:-9231}
+      DB_HOST: postgres_game
+      DB_PORT: 5432
+      DB_USER: ${GAME_DB_USER}
+      DB_PASSWORD: ${GAME_DB_PASSWORD}
+      DB_NAME: ${GAME_DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+      MAP_EXPORT_DIR: /app/generated/maps
+    volumes:
+      - ../apps/game:/app
+      - game_node_modules:/app/node_modules
+      - nginx_maps:/app/generated/maps
+    ports:
+      - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
+      - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
+    command: ["npm", "run", "start:debug"]
+    depends_on:
+      postgres_game:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  nginx_maps:
+  frontend_node_modules:
+  bff_node_modules:
+  auth_node_modules:
+  social_node_modules:
+  stats_node_modules:
+  game_node_modules:
