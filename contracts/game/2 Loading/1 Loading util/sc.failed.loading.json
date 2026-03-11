@@ -1,0 +1,11 @@
+{
+	"type": "sc.failed.loading",
+	"matchId": 0,
+	"msg": "",
+	"lobbyData": {
+		"players": [
+			{"userKey": 0, "name": "", "indexInLobby": 0}
+		]
+	},
+	"seq": [0]
+}

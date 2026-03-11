@@ -1,0 +1,10 @@
+{
+	"type": "cs.worm.move",
+	"matchId": 0,
+	"wormId": 0,
+	"inputs": {
+		"left": false,
+		"right": false,
+		"jump": false
+	}
+}

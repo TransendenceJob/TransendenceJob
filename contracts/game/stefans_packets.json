@@ -1,0 +1,200 @@
+Server -> Client : turn start 
+{
+  "t": "turn.start",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "activePlayerId": "pA",
+  "activeWormId": "wA1",
+  "phase": "MOVE",
+  "phaseDeadlineMs": 15000,
+  "seq": 1200,
+  "stateHash": "h_before_7"
+}
+Client ( active player ) -> Server : move/jump inputs ( multiple packages ) 
+move right :
+{
+  "t": "turn.input",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "phase": "MOVE",
+  "clientCommandId": "c1",
+  "input": { "right": true, "left": false, "jump": false },
+  "clientTimeMs": 17345123
+}
+jump :
+{
+  "t": "turn.input",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "phase": "MOVE",
+  "clientCommandId": "c2",
+  "input": { "right": true, "left": false, "jump": true },
+  "clientTimeMs": 17345210
+}
+Server-> Clients: movement result ( coarse / milestone approach ) 
+{
+  "t": "turn.events",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "seqFrom": 1201,
+  "events": [
+    {
+      "type": "WORM_POSE",
+      "wormId": "wA1",
+      "pos": [12.40, 5.10],
+      "vel": [1.20, 0.00],
+      "onGround": true
+    },
+    {
+      "type": "WORM_POSE",
+      "wormId": "wA1",
+      "pos": [13.05, 5.35],
+      "vel": [0.40, 2.80],
+      "onGround": false
+    }
+  ],
+  "seqTo": 1202
+}
+Client -> Server : select weapon + aim + fire ( commit , aka selection done we locked in decision )
+
+select bazooka
+{
+  "t": "turn.command",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "clientCommandId": "c3",
+  "cmd": { "type": "SELECT_WEAPON", "weaponId": "bazooka" }
+}
+aim ( optional , if we want reconnect , spectators, obeservers we can have it )
+{
+  "t": "turn.command",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "clientCommandId": "c4",
+  "cmd": { "type": "SET_AIM", "angleDeg": 35.0, "power": 0.78 }
+}
+fire ( real moment when we commit )
+
+{
+  "t": "turn.command",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "clientCommandId": "c5",
+  "cmd": { "type": "FIRE", "weaponId": "bazooka", "angleDeg": 35.0, "power": 0.78 }
+}
+
+Server -> Clients : phase change to Resolve + projectile spawn for everybody 
+
+{
+  "t": "turn.events",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "seqFrom": 1203,
+  "events": [
+    { "type": "WEAPON_SELECTED", "wormId": "wA1", "weaponId": "bazooka" },
+    { "type": "AIM_SET", "wormId": "wA1", "angleDeg": 35.0, "power": 0.78 },
+
+    { "type": "PHASE_CHANGED", "phase": "RESOLVE" },
+
+    {
+      "type": "PROJECTILE_SPAWNED",
+      "projId": "pr_9001",
+      "kind": "bazooka_rocket",
+      "origin": [13.05, 5.35],
+      "velocity": [7.20, 6.10],
+
+      "animHint": {
+        "clientSimMs": 2200,
+        "sampleEveryMs": 100
+      }
+    }
+  ],
+  "seqTo": 1206,
+  "ack": ["c3", "c4", "c5"],
+  "stateHashAfter": "h_mid_7"
+}
+Clients can  do a local pretty trajectory animation , server decides the hit 
+
+Server -> Clients : explosion + terrain deformation + damage ( milestones ) 
+
+A second big packages when projectile hits
+{
+  "t": "turn.events",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "seqFrom": 1207,
+  "events": [
+    {
+      "type": "PROJECTILE_HIT",
+      "projId": "pr_9001",
+      "hitPos": [20.20, 6.00],
+      "hitNormal": [-0.40, 0.92]
+    },
+    {
+      "type": "EXPLOSION",
+      "pos": [20.20, 6.00],
+      "radius": 2.8,
+      "impulse": 9.5
+    },
+
+    {
+      "type": "TERRAIN_OP",
+      "op": "subtractCircle",
+      "center": [20.20, 6.00],
+      "radius": 2.8,
+      "opId": "top_771"
+    },
+
+    {
+      "type": "DAMAGE_APPLIED",
+      "wormId": "wB2",
+      "amount": 38,
+      "cause": { "type": "EXPLOSION", "projId": "pr_9001" }
+    },
+
+    {
+      "type": "WORM_POSE",
+      "wormId": "wB2",
+      "pos": [21.10, 5.60],
+      "vel": [2.10, 3.40],
+      "onGround": false
+    }
+  ],
+  "seqTo": 1211,
+  "stateHashAfter": "h_after_explosion_7"
+}
+
+Server -> Clients: settle physics+ deaths + end turn 
+{
+  "t": "turn.events",
+  "matchId": "m_42",
+  "turnNumber": 7,
+  "seqFrom": 1212,
+  "events": [
+    {
+      "type": "WORM_POSE",
+      "wormId": "wA1",
+      "pos": [13.20, 5.10],
+      "vel": [0.00, 0.00],
+      "onGround": true
+    },
+    {
+      "type": "WORM_POSE",
+      "wormId": "wB2",
+      "pos": [21.60, 4.10],
+      "vel": [0.00, 0.00],
+      "onGround": true
+    },
+
+    { "type": "PHASE_CHANGED", "phase": "TURN_END" },
+
+    {
+      "type": "TURN_ENDED",
+      "nextPlayerId": "pB",
+      "nextWormId": "wB2",
+      "nextTurnNumber": 8
+    }
+  ],
+  "seqTo": 1215,
+  "stateHashAfter": "h_after_7"
+}

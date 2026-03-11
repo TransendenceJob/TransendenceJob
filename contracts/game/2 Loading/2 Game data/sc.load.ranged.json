@@ -1,0 +1,9 @@
+{
+	"type": "sc.load.ranged",
+	"id": 0,
+	"name": "",
+	"controls": "",
+	"allowedAngleMin": 0,
+	"allowedAngleMax": 0,
+	"seq": [0]
+}

@@ -1,0 +1,9 @@
+{
+    "type": "sc.shooting.result",
+    "matchId": 0,
+    "wormId": 0,
+    "weapon": "",
+    "success": false,
+	"msg": "",
+    "seq": [0]
+}

@@ -1,0 +1,9 @@
+{
+	"type": "sc.load.controls.json",
+	"id": 0,
+	"name": "",
+	"pickPosition": false,
+	"switchDirection": false,
+	"aimAngle": false,
+	"seq": [0]
+}

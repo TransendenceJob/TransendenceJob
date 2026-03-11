@@ -1,0 +1,11 @@
+{
+	"type": "cs.aiming.data",
+	"matchId": 0,
+	"userKey": 0,
+	"wormId": 0,
+	"weapon": "",
+	"aimData": {
+		"position": [0.0, 0.0],
+		"angle": 0
+	}
+}

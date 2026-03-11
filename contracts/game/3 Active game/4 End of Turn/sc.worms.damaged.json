@@ -1,0 +1,10 @@
+{
+	"type": "sc.worms.damaged",
+	"matchId": 0,
+	"damages" :{
+		"wormId": [0],
+		"damage": [0],
+		"newHealth": [0]
+	},
+	"seq": [0]
+}

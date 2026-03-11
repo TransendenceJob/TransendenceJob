@@ -1,0 +1,10 @@
+{
+	"type": "sc.worm.move",
+	"matchId": 0,
+	"wormId": 0,
+	"position": [0.0, 0.0],
+	"movement": {
+		"direction": [0.0, 0.0],
+		 "speed": 0 },
+	"seq": [0]
+}
