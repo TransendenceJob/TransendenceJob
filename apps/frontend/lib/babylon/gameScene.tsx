@@ -272,10 +272,17 @@ function createCamera(scene: Scene, canvas: HTMLCanvasElement, posX = 0, posY = 
   camera.fov = 1;
 
   scene.onBeforeRenderObservable.add(() => {
-    const width = camera.upperRadiusLimit * 0.74 - 1.475;
-    const zoomRatio =
-      1 - (camera.radius - camera.lowerRadiusLimit) / (camera.upperRadiusLimit - camera.lowerRadiusLimit);
-    const xLimit = width * zoomRatio;
+   const upperRadiusLimit = camera.upperRadiusLimit;
+  const lowerRadiusLimit = camera.lowerRadiusLimit;
+
+  if (upperRadiusLimit == null || lowerRadiusLimit == null) {
+    return;
+  }
+
+  const width = upperRadiusLimit * 0.74 - 1.475;
+  const zoomRatio =
+    1 - (camera.radius - lowerRadiusLimit) / (upperRadiusLimit - lowerRadiusLimit);
+  const xLimit = width * zoomRatio;
 
     if (camera.target.x < -xLimit) camera.target.x = -xLimit;
     if (camera.target.x > xLimit) camera.target.x = xLimit;
