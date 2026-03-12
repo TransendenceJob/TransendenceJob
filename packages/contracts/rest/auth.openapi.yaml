@@ -1,379 +1,868 @@
 openapi: 3.0.3
 info:
   title: Auth Service
-  version: 0.1.0
+  version: 0.2.0
+  description: |
+    Internal Auth Service contract used primarily by the BFF service and trusted backend services.
+    Public browser-facing authentication routes stay in the BFF API gateway and are translated to these internal endpoints.
 servers:
-- url: http://auth-service:8080
+  - url: http://auth_service:3000
+    description: Docker internal network address used by BFF and internal services
+
+tags:
+  - name: InternalAuth
+    description: Endpoints consumed by BFF / trusted services only
+  - name: InternalAdmin
+    description: Admin-only internal auth operations
+
 paths:
   /internal/auth/register:
     post:
-      summary: Register (internal)
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAuth]
+      summary: Register user (internal)
+      description: Creates an auth identity and returns session tokens. Usually called by BFF after validating public input.
+      operationId: registerInternalAuthUser
       security: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              default:
+                value:
+                  email: stefan@example.com
+                  password: StrongPassword123!
+                  displayName: Stefan
+                  username: theochiper
+      responses:
+        '201':
+          description: User registered and session created
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
   /internal/auth/login:
     post:
-      summary: Login (internal)
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAuth]
+      summary: Login user (internal)
+      description: Verifies credentials and creates a new session.
+      operationId: loginInternalAuthUser
       security: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              default:
+                value:
+                  email: stefan@example.com
+                  password: StrongPassword123!
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
   /internal/auth/logout:
     post:
-      summary: Logout (internal)
+      tags: [InternalAuth]
+      summary: Logout session (internal)
+      description: Revokes the current session or all sessions for the authenticated user.
+      operationId: logoutInternalAuthUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              singleSession:
+                value:
+                  refreshToken: rt_opaque_token_value
+                  logoutAll: false
       responses:
         '200':
-          description: OK
+          description: Logout successful
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/LogoutResponse'
         '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+          $ref: '#/components/responses/Unauthorized'
+
   /internal/auth/refresh:
     post:
-      summary: Refresh (internal)
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAuth]
+      summary: Refresh session tokens (internal)
+      description: Rotates the refresh token and returns a new access token pair.
+      operationId: refreshInternalAuthSession
       security: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token pair refreshed
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
   /internal/auth/verify:
     get:
-      summary: Verify token (internal)
+      tags: [InternalAuth]
+      summary: Verify access token (internal)
+      description: Used by BFF and trusted services to validate an access token and retrieve normalized identity claims.
+      operationId: verifyInternalAccessToken
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+        - name: audience
+          in: query
+          required: false
+          description: Optional expected token audience, useful when BFF validates tokens issued for a specific service audience.
+          schema:
+            type: string
+            example: bff
       responses:
         '200':
-          description: OK
+          description: Token is valid
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/VerifyResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security: []
+          $ref: '#/components/responses/Forbidden'
+
   /internal/auth/google/exchange:
     post:
-      summary: Google exchange (internal)
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAuth]
+      summary: Exchange Google auth for local session (internal)
+      description: Final OAuth exchange step used by BFF callback handlers.
+      operationId: exchangeGoogleAuthInternal
       security: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/GoogleExchangeRequest'
+            examples:
+              authorizationCode:
+                value:
+                  provider: google
+                  authorizationCode: 4/0AQSTgQ...
+                  redirectUri: https://example.com/auth/google/callback
+      responses:
+        '200':
+          description: OAuth exchange succeeded
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
   /internal/auth/users/{userId}/disable:
     post:
-      summary: Disable user
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAdmin]
+      summary: Disable user account
+      description: Disables the auth identity and can revoke all active sessions.
+      operationId: disableInternalAuthUser
       security:
-      - BearerAuth: []
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-      parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+              $ref: '#/components/schemas/DisableUserRequest'
+      responses:
+        '200':
+          description: User disabled
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDisabledResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /internal/auth/users/{userId}/role:
     post:
-      summary: Set user role
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+      tags: [InternalAdmin]
+      summary: Replace user roles
+      description: Replaces the current set of roles for the specified user.
+      operationId: replaceInternalUserRoles
       security:
-      - BearerAuth: []
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-      parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+              $ref: '#/components/schemas/SetUserRolesRequest'
+            examples:
+              default:
+                value:
+                  roles:
+                    - user
+                    - moderator
+      responses:
+        '200':
+          description: Roles updated
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /internal/auth/users/{userId}/sessions/revoke:
     post:
-      summary: Revoke user sessions
+      tags: [InternalAdmin]
+      summary: Revoke all user sessions
+      description: Revokes all sessions for a given user.
+      operationId: revokeInternalUserSessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeSessionsRequest'
       responses:
         '200':
-          description: OK
+          description: Sessions revoked
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/RevokeSessionsResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
-      parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /internal/auth/audit:
     get:
-      summary: Audit log
+      tags: [InternalAdmin]
+      summary: List auth audit entries
+      description: Paged audit feed for login, logout, token, and admin auth events.
+      operationId: listInternalAuthAudit
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/XRequestId'
+        - $ref: '#/components/parameters/XServiceName'
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            example: usr_123
+        - name: action
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AuditAction'
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            example: audit_20260312_0001
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
-          description: OK
+          description: Audit page returned
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/AuditListResponse'
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+          $ref: '#/components/responses/Forbidden'
+
 components:
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    ApiKeyAuth:
-      type: apiKey
+
+  parameters:
+    XRequestId:
+      name: X-Request-Id
       in: header
-      name: X-API-Key
+      required: false
+      description: Correlation id propagated by nginx/BFF across internal service calls.
+      schema:
+        type: string
+        format: uuid
+    XServiceName:
+      name: X-Service-Name
+      in: header
+      required: false
+      description: Name of the caller service, normally set by BFF or another trusted service.
+      schema:
+        type: string
+        example: bff
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: usr_123
+
+  headers:
+    XRequestId:
+      description: Correlation id for tracing.
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            unauthorized:
+              value:
+                code: UNAUTHORIZED
+                message: Authentication is required or the token is invalid.
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
   schemas:
     Error:
       type: object
+      required: [code, message]
       properties:
         code:
           type: string
+          example: INVALID_CREDENTIALS
         message:
           type: string
+          example: Email or password is incorrect.
         details:
           type: object
-      required:
-      - code
-      - message
+          nullable: true
+          additionalProperties: true
+
+    UserStatus:
+      type: string
+      enum: [active, disabled, pending]
+
+    UserRole:
+      type: string
+      enum: [user, moderator, admin]
+
+    AuditAction:
+      type: string
+      enum:
+        - REGISTER
+        - LOGIN_SUCCESS
+        - LOGIN_FAILED
+        - LOGOUT
+        - TOKEN_REFRESH
+        - GOOGLE_EXCHANGE
+        - USER_DISABLED
+        - ROLE_UPDATED
+        - SESSIONS_REVOKED
+
+    UserAuthView:
+      type: object
+      required: [id, email, status, roles]
+      properties:
+        id:
+          type: string
+          example: usr_123
+        email:
+          type: string
+          format: email
+          example: stefan@example.com
+        displayName:
+          type: string
+          nullable: true
+          example: Stefan
+        username:
+          type: string
+          nullable: true
+          example: theochiper
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    ProviderLink:
+      type: object
+      required: [name, providerUserId]
+      properties:
+        name:
+          type: string
+          example: google
+        providerUserId:
+          type: string
+          example: google_abc123
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, expiresIn, tokenType]
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          example: rt_opaque_token_value
+        expiresIn:
+          type: integer
+          description: Access token lifetime in seconds.
+          example: 900
+        tokenType:
+          type: string
+          example: Bearer
+
+    SessionInfo:
+      type: object
+      required: [id, expiresAt]
+      properties:
+        id:
+          type: string
+          example: sess_456
+        expiresAt:
+          type: string
+          format: date-time
+        revoked:
+          type: boolean
+          nullable: true
+
+    AuthSuccessResponse:
+      type: object
+      required: [user, tokens, session]
+      properties:
+        user:
+          allOf:
+            - $ref: '#/components/schemas/UserAuthView'
+            - type: object
+              properties:
+                providers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProviderLink'
+        tokens:
+          $ref: '#/components/schemas/TokenPair'
+        session:
+          $ref: '#/components/schemas/SessionInfo'
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 32
+        username:
+          type: string
+          minLength: 3
+          maxLength: 24
+          pattern: '^[a-zA-Z0-9_]+$'
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+
+    LogoutRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+        logoutAll:
+          type: boolean
+          default: false
+
+    LogoutResponse:
+      type: object
+      required: [success, revokedSessionIds]
+      properties:
+        success:
+          type: boolean
+          example: true
+        revokedSessionIds:
+          type: array
+          items:
+            type: string
+          example: [sess_456]
+
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          example: rt_opaque_token_value
+
+    RefreshResponse:
+      type: object
+      required: [tokens, session]
+      properties:
+        tokens:
+          $ref: '#/components/schemas/TokenPair'
+        session:
+          $ref: '#/components/schemas/SessionInfo'
+
+    VerifyClaims:
+      type: object
+      required: [sub, iat, exp, iss]
+      properties:
+        sub:
+          type: string
+          example: usr_123
+        iat:
+          type: integer
+          example: 1773330000
+        exp:
+          type: integer
+          example: 1773330900
+        iss:
+          type: string
+          example: auth_service
+        aud:
+          type: string
+          nullable: true
+          example: bff
+
+    VerifyResponse:
+      type: object
+      required: [valid, user, session, claims]
+      properties:
+        valid:
+          type: boolean
+          example: true
+        user:
+          $ref: '#/components/schemas/UserAuthView'
+        session:
+          $ref: '#/components/schemas/SessionInfo'
+        claims:
+          $ref: '#/components/schemas/VerifyClaims'
+
+    GoogleExchangeRequest:
+      type: object
+      required: [provider]
+      properties:
+        provider:
+          type: string
+          enum: [google]
+        authorizationCode:
+          type: string
+          description: OAuth authorization code received by BFF callback.
+        idToken:
+          type: string
+          description: Optional direct Google ID token if you choose token-based exchange.
+        redirectUri:
+          type: string
+          format: uri
+      oneOf:
+        - required: [provider, authorizationCode, redirectUri]
+        - required: [provider, idToken]
+
+    DisableUserRequest:
+      type: object
+      required: [reason, revokeSessions]
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 255
+        revokeSessions:
+          type: boolean
+          default: true
+
+    UserDisabledResponse:
+      type: object
+      required: [userId, status, revokedSessions]
+      properties:
+        userId:
+          type: string
+          example: usr_123
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        revokedSessions:
+          type: integer
+          example: 4
+
+    SetUserRolesRequest:
+      type: object
+      required: [roles]
+      properties:
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/UserRole'
+
+    UserRolesResponse:
+      type: object
+      required: [userId, roles, updatedAt]
+      properties:
+        userId:
+          type: string
+          example: usr_123
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRole'
+        updatedAt:
+          type: string
+          format: date-time
+
+    RevokeSessionsRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+          example: Security action
+
+    RevokeSessionsResponse:
+      type: object
+      required: [userId, revokedSessions]
+      properties:
+        userId:
+          type: string
+          example: usr_123
+        revokedSessions:
+          type: integer
+          example: 3
+
+    AuditLogItem:
+      type: object
+      required: [id, action, createdAt]
+      properties:
+        id:
+          type: string
+          example: audit_01
+        userId:
+          type: string
+          nullable: true
+          example: usr_123
+        actorUserId:
+          type: string
+          nullable: true
+          example: usr_admin_1
+        action:
+          $ref: '#/components/schemas/AuditAction'
+        ip:
+          type: string
+          nullable: true
+          example: 10.0.0.15
+        userAgent:
+          type: string
+          nullable: true
+          example: Mozilla/5.0
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    PageInfo:
+      type: object
+      required: [hasNextPage]
+      properties:
+        nextCursor:
+          type: string
+          nullable: true
+        hasNextPage:
+          type: boolean
+          example: true
+
+    AuditListResponse:
+      type: object
+      required: [items, pageInfo]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLogItem'
+        pageInfo:
+          $ref: '#/components/schemas/PageInfo'
