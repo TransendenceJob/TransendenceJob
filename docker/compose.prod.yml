@@ -9,7 +9,7 @@ services:
       BFF_INTERNAL_PORT: ${BFF_INTERNAL_PORT:-3000}
       GAME_INTERNAL_PORT: ${GAME_INTERNAL_PORT:-3001}
     volumes:
-      - ../infra/nginx/nginx.dev.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ../infra/nginx/nginx.prod.conf.template:/etc/nginx/templates/default.conf.template:ro
       - nginx_maps:/usr/share/nginx/html/maps
     depends_on:
       - frontend
@@ -33,7 +33,6 @@ services:
       PORT : 3000
     expose:
       - "3000"
-    command: ["sh" ,"-c","npm run && build && npm run start"]
     networks: [backend]
     logging:
       driver: "json-file"
@@ -56,7 +55,7 @@ services:
       GAME_SERVICE_HTTP_URL: http://game_service:${GAME_INTERNAL_PORT:-3002}
       REDIS_HOST : redis
       REDIS_PORT : 6379
-      RABBITMQ_HOST : RABBITMQ_HOST
+      RABBITMQ_HOST : rabbitmq
       RABIITMQ_PORT :  5672
     expose:
       - "3000"
@@ -72,6 +71,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   auth_service:
     profiles: ["prod"]
@@ -208,6 +213,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
+networks:
+  backend:
+    driver: bridge
 
 volumes:
   nginx_maps:
