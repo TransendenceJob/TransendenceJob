@@ -39,7 +39,7 @@ services:
       - frontend_node_modules:/app/node_modules
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
-    command: ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
+    command: ["sh", "-c", "npm ci && npm run dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
     networks: [backend]
     logging:
       driver: "json-file"
