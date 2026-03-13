@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /* Set up the canvas to be using the whole page */
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+    </style>
+  </head>
+  
+  <body>
+  	<!-- Socket.io Connection -->
+	  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <!-- Babylon functions -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+
+    <!-- Main script -->
+    <script>
+
+	function initWebSocket(url) {
+		const socket = io(url, {
+			transports: ['websocket']
+		});
+
+		socket.on("connect", () => {
+			console.log("Connected to Backend");
+		});
+		
+		socket.on("msgToClient", (data) => {
+			console.log(`Message from server ${data}`);
+		});
+		
+		socket.on("connect_error", (error) => {
+			console.log("Error with websocket: ", error);
+		});
+		
+		socket.on("disconnect", () => {
+			console.log("Connection closed");
+		});
+
+		return (socket);
+	}
+
+	function circlingWrapper(scene, diameterBigBoll, diameterSmolBoll) {
+		let i = 0;
+		const speed = Math.PI / 120;
+		const distance = (diameterBigBoll + diameterSmolBoll + 2) / 2;
+		const sphere = scene.getMeshByName("sphere");
+		const spherexy = scene.getMeshByName("sphere_xy");
+		const spherexz = scene.getMeshByName("sphere_xz");
+		const sphereyz = scene.getMeshByName("sphere_yz");
+		if (scene.actionManager == undefined)
+			scene.actionManager = new BABYLON.ActionManager();
+		scene.actionManager.registerAction(new BABYLON.ExecuteCodeAction(
+			BABYLON.ActionManager.OnEveryFrameTrigger,
+			() => {
+				i = (i + speed) % (Math.PI * 2);
+				let a = -Math.sin(i) * distance;
+				let b = Math.cos(i) * distance;
+				let c = Math.sin(i) * distance;
+				spherexy.position = new BABYLON.Vector3(a, b, c);
+				spherexy.rotation = new BABYLON.Vector3(i, 0, 0)
+				spherexz.position = new BABYLON.Vector3(b, c, a);
+				spherexz.rotation = new BABYLON.Vector3(0, 0, i)
+				sphereyz.position = new BABYLON.Vector3(c, a, b);
+				sphereyz.rotation = new BABYLON.Vector3(i, 0, 0);
+				sphere.rotation.y = i;
+			}
+		));
+	}
+
+	function createSmolBoll(name, diameter, texturePath, scene) {
+		const sphere = BABYLON.MeshBuilder.CreateSphere("sphere_" + name, {diameter: diameter, segments: 32}, scene);
+		sphere.material = new BABYLON.StandardMaterial(name, scene);
+		sphere.material.diffuseTexture = new BABYLON.Texture(texturePath);
+		return (sphere);
+	}
+
+	function createScene() {
+		var scene = new BABYLON.Scene(engine);
+		var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+		camera.setTarget(BABYLON.Vector3.Zero());
+		var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+		light.intensity = 0.7;
+
+		const diameterBigBoll = 3;
+		const diameterSmolBoll = 1.0;
+		const textGrass = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/cbd75522-12e3-4d63-884f-2f584ec6aa18/d7n655f-fbf58852-8d43-4217-909d-05212f9f813b.png/v1/fit/w_400,h_400,q_70,strp/grass_hand_painted_texture_by_kirrkirr_d7n655f-375w-2x.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9NDAwIiwicGF0aCI6Ii9mL2NiZDc1NTIyLTEyZTMtNGQ2My04ODRmLTJmNTg0ZWM2YWExOC9kN242NTVmLWZiZjU4ODUyLThkNDMtNDIxNy05MDlkLTA1MjEyZjlmODEzYi5wbmciLCJ3aWR0aCI6Ijw9NDAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.JEwIMXv_IooiZT2Qgi7YXd2NEVkAXnkt_pLWAH-PZrk";
+		const textLava = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/dea1f4a6-17f4-4114-b200-43ab8aade832/d8dqux9-50c97ec1-d53f-4159-aea3-ebaa6e3e4596.jpg/v1/fill/w_1264,h_632,q_70,strp/lava_texture_by_beijing54_d8dqux9-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MjAwMCIsInBhdGgiOiIvZi9kZWExZjRhNi0xN2Y0LTQxMTQtYjIwMC00M2FiOGFhZGU4MzIvZDhkcXV4OS01MGM5N2VjMS1kNTNmLTQxNTktYWVhMy1lYmFhNmUzZTQ1OTYuanBnIiwid2lkdGgiOiI8PTQwMDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.ZDrtT8tm58phgXKU5MhJDKsQvaFdgqhax2B4sjwuCbI";
+		const textRock = "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/e1af5341-94c9-4f7c-b3b5-794f7b3ac690/d39vfot-603b0ab6-78e9-4ff5-a70a-5c63ee317dd2.jpg/v1/fill/w_894,h_894,q_70,strp/stone_texture___seamless_by_agf81_d39vfot-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9OTAwIiwicGF0aCI6Ii9mL2UxYWY1MzQxLTk0YzktNGY3Yy1iM2I1LTc5NGY3YjNhYzY5MC9kMzl2Zm90LTYwM2IwYWI2LTc4ZTktNGZmNS1hNzBhLTVjNjNlZTMxN2RkMi5qcGciLCJ3aWR0aCI6Ijw9OTAwIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmltYWdlLm9wZXJhdGlvbnMiXX0.SPIlcN9JWCPtX6LUrCNeoctBo2Rl90GSenx8FqbNMkY";
+		const textIce = "https://static.vecteezy.com/system/resources/previews/000/210/025/large_2x/vector-ice-texture-background.jpg";
+
+		var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: diameterBigBoll, segments: 32}, scene);
+		sphere.material = new BABYLON.StandardMaterial("main_material", scene);
+		sphere.material.diffuseTexture = new BABYLON.Texture(textGrass);
+		createSmolBoll("xy", diameterSmolBoll, textLava, scene);
+		createSmolBoll("xz", diameterSmolBoll, textRock, scene);
+		createSmolBoll("yz", diameterSmolBoll, textIce, scene);
+		circlingWrapper(scene, diameterBigBoll, diameterSmolBoll);
+
+		return scene;
+	};
+
+	const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+	const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+	const socket = initWebSocket("ws://localhost:$NGINX_PORT");
+
+	// Create meshes
+	const scene = createScene();
+
+
+	// Register a render loop to repeatedly render the scene
+	engine.runRenderLoop(function () {
+	scene.render();
+	});
+
+	// Watch for browser/canvas resize events
+	window.addEventListener("resize", function () {
+	engine.resize();
+	});
+    </script>
+  </body>
+</html>
