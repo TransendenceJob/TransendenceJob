@@ -57,23 +57,18 @@ jobs:
       - name: Auto-triage issue (labels + project fields)
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECTS_PAT  }}
+          github-token: ${{ secrets.PROJECTS_PAT }}
           script: |
             const repo = context.repo;
             const issue = context.payload.issue;
             const issue_number = issue.number;
             const issue_node_id = issue.node_id;
 
-            const title = (issue.title || '');
-            const body = (issue.body || '');
+            const title = String(issue.title || '');
+            const body = String(issue.body || '');
 
-            // ---------- Helpers ----------
             const norm = (s) => String(s ?? '').trim();
             const lower = (s) => norm(s).toLowerCase();
-
-            function hasTag(text, tag) {
-              return lower(text).includes(`[${lower(tag)}]`);
-            }
 
             function pickFirstNonEmpty(...vals) {
               for (const v of vals) {
@@ -83,25 +78,22 @@ jobs:
               return '';
             }
 
-            function isFixIssue() {
-              const fixLabel = lower(process.env.LABEL_FIX || 'fix');
-              const currentLabels = (issue.labels || []).map(l => lower(l.name));
-              return lower(title).includes('[fix]') || currentLabels.includes(fixLabel);
-            }
-
             async function ensureLabels(labelNames) {
               const unique = [...new Set(labelNames.map(norm).filter(Boolean))];
               if (!unique.length) return;
 
               try {
-                await github.rest.issues.addLabels({ ...repo, issue_number, labels: unique });
+                await github.rest.issues.addLabels({
+                  ...repo,
+                  issue_number,
+                  labels: unique,
+                });
                 core.info(`Added labels: ${unique.join(', ')}`);
               } catch (e) {
                 core.warning(`Failed to add labels: ${e.message}`);
               }
             }
 
-            // Project helpers: resolve field IDs + option IDs by NAME (no hardcoded IDs)
             async function getProjectMeta(projectId) {
               const q = `
                 query($id:ID!){
@@ -123,12 +115,15 @@ jobs:
                   }
                 }`;
               const r = await github.graphql(q, { id: projectId });
-              if (!r?.node?.id) throw new Error('Could not load ProjectV2. Check PROJECT_V2_ID and token permissions.');
+              if (!r?.node?.id) {
+                throw new Error('Could not load ProjectV2. Check PROJECT_V2_ID and token permissions.');
+              }
               return r.node;
             }
 
-            async function findOrAddIssueItem(projectId, issueNodeId) {
+            async function findProjectItem(projectId, issueNodeId) {
               let after = null;
+
               while (true) {
                 const q = `
                   query($id:ID!, $after:String){
@@ -138,76 +133,116 @@ jobs:
                           pageInfo { hasNextPage endCursor }
                           nodes {
                             id
-                            content { ... on Issue { id } }
+                            fieldValues(first: 50) {
+                              nodes {
+                                __typename
+                                ... on ProjectV2ItemFieldSingleSelectValue {
+                                  field {
+                                    ... on ProjectV2SingleSelectField {
+                                      id
+                                      name
+                                    }
+                                  }
+                                  name
+                                  optionId
+                                }
+                              }
+                            }
+                            content {
+                              ... on Issue { id }
+                            }
                           }
                         }
                       }
                     }
                   }`;
                 const r = await github.graphql(q, { id: projectId, after });
-                const nodes = r.node.items.nodes || [];
-                const found = nodes.find(n => n.content?.id === issueNodeId);
-                if (found) return found.id;
+                const nodes = r?.node?.items?.nodes || [];
+                const found = nodes.find((n) => n.content?.id === issueNodeId);
+                if (found) return found;
 
-                const pi = r.node.items.pageInfo;
-                if (!pi.hasNextPage) break;
+                const pi = r?.node?.items?.pageInfo;
+                if (!pi?.hasNextPage) break;
                 after = pi.endCursor;
               }
 
+              return null;
+            }
+
+            async function addIssueItem(projectId, issueNodeId) {
               const m = `
                 mutation($projectId:ID!, $contentId:ID!){
                   addProjectV2ItemById(input:{ projectId:$projectId, contentId:$contentId }) {
                     item { id }
                   }
                 }`;
-              const add = await github.graphql(m, { projectId, contentId: issueNodeId });
+              const add = await github.graphql(m, {
+                projectId,
+                contentId: issueNodeId,
+              });
               return add.addProjectV2ItemById.item.id;
+            }
+
+            function getCurrentSingleSelectValue(item, fieldName) {
+              const values = item?.fieldValues?.nodes || [];
+              const match = values.find(
+                (v) =>
+                  v.__typename === 'ProjectV2ItemFieldSingleSelectValue' &&
+                  v.field?.name === fieldName
+              );
+              return match?.name || '';
             }
 
             async function setSingleSelect(projectId, itemId, fieldName, optionName, project) {
               if (!norm(fieldName) || !norm(optionName)) return;
 
-              const field = project.fields.nodes.find(f =>
-                f.__typename === 'ProjectV2SingleSelectField' && f.name === fieldName
+              const field = project.fields.nodes.find(
+                (f) =>
+                  f.__typename === 'ProjectV2SingleSelectField' &&
+                  f.name === fieldName
               );
               if (!field) {
                 core.warning(`Field not found: ${fieldName}`);
                 return;
               }
-              const opt = (field.options || []).find(o => o.name === optionName);
+
+              const opt = (field.options || []).find((o) => o.name === optionName);
               if (!opt) {
                 core.warning(`Option not found for "${fieldName}": "${optionName}"`);
-                core.info(`Available options: ${(field.options||[]).map(o=>o.name).join(' | ')}`);
+                core.info(`Available options: ${(field.options || []).map((o) => o.name).join(' | ')}`);
                 return;
               }
 
               const m = `
                 mutation($input: UpdateProjectV2ItemFieldValueInput!) {
-                  updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } }
+                  updateProjectV2ItemFieldValue(input: $input) {
+                    projectV2Item { id }
+                  }
                 }`;
               await github.graphql(m, {
                 input: {
                   projectId,
                   itemId,
                   fieldId: field.id,
-                  value: { singleSelectOptionId: opt.id }
-                }
+                  value: { singleSelectOptionId: opt.id },
+                },
               });
+
               core.info(`Set ${fieldName} = ${optionName}`);
             }
 
-            // ---------- 1) Label assignment based on title tags ----------
+            // ---------- 1) Labels from title ----------
             const labelsToAdd = [];
+            const lowerTitle = lower(title);
 
-            if (lower(title).includes('[feature]')) labelsToAdd.push(process.env.LABEL_FEATURE || 'feature');
-            if (lower(title).includes('[bug]')) labelsToAdd.push(process.env.LABEL_BUG || 'bug');
-            if (lower(title).includes('[refactor]')) labelsToAdd.push(process.env.LABEL_REFACTOR || 'refactor');
-            if (lower(title).includes('[fix]')) labelsToAdd.push(process.env.LABEL_FIX || 'fix');
+            if (lowerTitle.includes('[feature]')) labelsToAdd.push(process.env.LABEL_FEATURE || 'feature');
+            if (lowerTitle.includes('[bug]')) labelsToAdd.push(process.env.LABEL_BUG || 'bug');
+            if (lowerTitle.includes('[refactor]')) labelsToAdd.push(process.env.LABEL_REFACTOR || 'refactor');
+            if (lowerTitle.includes('[fix]')) labelsToAdd.push(process.env.LABEL_FIX || 'fix');
 
             await ensureLabels(labelsToAdd);
 
-            // ---------- 2) Parse fields from description ----------
-            // Priority: allow either {P0..P3} OR [Importance:] Urgent/Main/Sidetrack/Overlooked
+            // ---------- 2) Parse body ----------
             const b = lower(body);
 
             const priorityField = norm(process.env.PROJECT_FIELD_PRIORITY_NAME);
@@ -215,21 +250,18 @@ jobs:
             const importanceField = norm(process.env.PROJECT_FIELD_IMPORTANCE_NAME);
             const statusField = norm(process.env.PROJECT_FIELD_STATUS_NAME);
 
-            // Priority from {p0..p3}
             let priorityOpt = '';
             if (b.includes('{p0}')) priorityOpt = norm(process.env.PRIORITY_P0);
             else if (b.includes('{p1}')) priorityOpt = norm(process.env.PRIORITY_P1);
             else if (b.includes('{p2}')) priorityOpt = norm(process.env.PRIORITY_P2);
             else if (b.includes('{p3}')) priorityOpt = norm(process.env.PRIORITY_P3);
 
-            // Importance from [Importance:]
             let importanceOpt = '';
             if (b.includes('[importance:] urgent')) importanceOpt = norm(process.env.IMPORTANCE_URGENT);
             else if (b.includes('[importance:] main')) importanceOpt = norm(process.env.IMPORTANCE_MAIN);
             else if (b.includes('[importance:] sidetrack')) importanceOpt = norm(process.env.IMPORTANCE_SIDETRACK);
             else if (b.includes('[importance:] overlooked')) importanceOpt = norm(process.env.IMPORTANCE_OVERLOOKED);
 
-            // Size from [Duration:]
             let sizeOpt = '';
             if (b.includes('[duration:] 1 day')) sizeOpt = norm(process.env.SIZE_FAST);
             else if (b.includes('[duration:] 3 days')) sizeOpt = norm(process.env.SIZE_1_3_DAYS);
@@ -237,7 +269,7 @@ jobs:
             else if (b.includes('[duration:] 1 week')) sizeOpt = norm(process.env.SIZE_1_WEEK);
             else if (b.includes('[duration:] 2 weeks')) sizeOpt = norm(process.env.SIZE_2_WEEKS_PLUS);
 
-            // ---------- 3) Ensure in Project and set fields ----------
+            // ---------- 3) Project sync ----------
             const projectId = norm(process.env.PROJECT_V2_ID);
             if (!projectId) {
               core.warning('PROJECT_V2_ID not set; skipping project updates.');
@@ -245,18 +277,44 @@ jobs:
             }
 
             const project = await getProjectMeta(projectId);
-            const itemId = await findOrAddIssueItem(projectId, issue_node_id);
 
-            // Status: set to Backlog if configured; otherwise set to Ready (safe default)
-            const statusBacklog = norm(process.env.STATUS_BACKLOG);
-            const statusReady = norm(process.env.STATUS_READY);
+            let existingItem = await findProjectItem(projectId, issue_node_id);
+            let itemId;
+            let wasAddedNow = false;
 
-            const targetStatus = pickFirstNonEmpty(statusBacklog, statusReady);
-            if (targetStatus) {
-              await setSingleSelect(projectId, itemId, statusField, targetStatus, project);
+            if (existingItem) {
+              itemId = existingItem.id;
+            } else {
+              itemId = await addIssueItem(projectId, issue_node_id);
+              wasAddedNow = true;
+              existingItem = { id: itemId, fieldValues: { nodes: [] } };
+              core.info(`Added issue #${issue_number} to project`);
             }
 
-            // Set priority/importance/size if configured and parsed
-            if (priorityField && priorityOpt) await setSingleSelect(projectId, itemId, priorityField, priorityOpt, project);
-            if (importanceField && importanceOpt) await setSingleSelect(projectId, itemId, importanceField, importanceOpt, project);
-            if (sizeField && sizeOpt) await setSingleSelect(projectId, itemId, sizeField, sizeOpt, project);
+            // ---------- 4) Status logic ----------
+            // Only set default status when:
+            // - item was just added to the project, or
+            // - status is currently empty
+            const currentStatus = getCurrentSingleSelectValue(existingItem, statusField);
+            const statusBacklog = norm(process.env.STATUS_BACKLOG);
+            const statusReady = norm(process.env.STATUS_READY);
+            const defaultStatus = pickFirstNonEmpty(statusBacklog, statusReady);
+
+            if (statusField && defaultStatus) {
+              if (wasAddedNow || !currentStatus) {
+                await setSingleSelect(projectId, itemId, statusField, defaultStatus, project);
+              } else {
+                core.info(`Keeping existing status: ${currentStatus}`);
+              }
+            }
+
+            // ---------- 5) Other fields ----------
+            if (priorityField && priorityOpt) {
+              await setSingleSelect(projectId, itemId, priorityField, priorityOpt, project);
+            }
+            if (importanceField && importanceOpt) {
+              await setSingleSelect(projectId, itemId, importanceField, importanceOpt, project);
+            }
+            if (sizeField && sizeOpt) {
+              await setSingleSelect(projectId, itemId, sizeField, sizeOpt, project);
+            }

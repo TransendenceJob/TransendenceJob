@@ -1,0 +1,99 @@
+name: Create draft PR on "in review" label
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-draft-pr:
+    if: ${{ github.event.label.name == vars.LABEL_IN_REVIEW || github.event.label.name == 'in review' }}
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_BASE_BRANCH: ${{ vars.DEFAULT_BASE_BRANCH }}
+      MAIN_BRANCH: ${{ vars.MAIN_BRANCH }}
+      LABEL_FIX: ${{ vars.LABEL_FIX }}
+      LABEL_IN_REVIEW: ${{ vars.LABEL_IN_REVIEW }}
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECTS_PAT }}
+          script: |
+            const repo = context.repo;
+            const issue = context.payload.issue;
+
+            const norm = (s) => String(s ?? '').trim();
+            const lower = (s) => norm(s).toLowerCase();
+
+            const main = norm(process.env.MAIN_BRANCH || 'main');
+            const dev = norm(process.env.DEFAULT_BASE_BRANCH || 'development');
+            const fixLabel = lower(process.env.LABEL_FIX || 'fix');
+
+            const issueNumber = issue.number;
+            const issueTitle = issue.title || `Issue #${issueNumber}`;
+            const assignee = issue.assignees?.[0]?.login;
+
+            if (!assignee) {
+              core.info(`Issue #${issueNumber} has no assignee; skipping PR creation.`);
+              return;
+            }
+
+            const labels = (issue.labels || []).map(l => lower(typeof l === 'string' ? l : l.name));
+            const isFix = labels.includes(fixLabel) || lower(issueTitle).includes('[fix]');
+            const base = isFix ? main : dev;
+            const branchName = `${issueNumber}_${assignee}`.toLowerCase();
+
+            async function branchExists(branch) {
+              try {
+                await github.rest.git.getRef({
+                  ...repo,
+                  ref: `heads/${branch}`,
+                });
+                return true;
+              } catch {
+                return false;
+              }
+            }
+
+            async function findExistingPr(branch) {
+              const prs = await github.rest.pulls.list({
+                ...repo,
+                state: 'open',
+                head: `${repo.owner}:${branch}`,
+              });
+              return prs.data[0] || null;
+            }
+
+            if (!(await branchExists(branchName))) {
+              core.info(`Branch ${branchName} does not exist; skipping.`);
+              return;
+            }
+
+            const existingPr = await findExistingPr(branchName);
+            if (existingPr) {
+              core.info(`PR already exists for ${branchName}: #${existingPr.number}`);
+              return;
+            }
+
+            const created = await github.rest.pulls.create({
+              ...repo,
+              title: `Draft: ${issueTitle}`,
+              head: branchName,
+              base,
+              draft: true,
+              body: `Closes #${issueNumber}`,
+            });
+
+            const prUrl = created.data.html_url;
+
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number: issueNumber,
+              body: `🔗 Draft PR created: ${prUrl}`,
+            });
+
+            core.info(`Created draft PR #${created.data.number} for issue #${issueNumber}`);
