@@ -8,6 +8,7 @@ import { GlobalExceptionFilter } from './modules/common/filters/global-exception
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	app.setGlobalPrefix('/internal/auth')
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
