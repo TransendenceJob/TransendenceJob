@@ -1,13 +1,11 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { RequestIdMiddleware } from './modules/common/middleware/request-id.middleware';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [HealthModule],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
