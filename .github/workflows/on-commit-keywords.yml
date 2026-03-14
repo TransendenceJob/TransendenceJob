@@ -18,6 +18,7 @@ jobs:
       STATUS_IN_REVIEW: ${{ vars.STATUS_IN_REVIEW }}
       COMMIT_KEYWORD_START: ${{ vars.COMMIT_KEYWORD_START }}
       COMMIT_KEYWORD_END: ${{ vars.COMMIT_KEYWORD_END }}
+      LABEL_IN_REVIEW: ${{vars.LABEL_IN_REVIEW}}
     steps:
       - uses: actions/github-script@v7
         with:
@@ -32,28 +33,38 @@ jobs:
 
             const startKey = norm(process.env.COMMIT_KEYWORD_START || '[New]');
             const endKey   = norm(process.env.COMMIT_KEYWORD_END || '[END]');
+            const inReviewLabel = norm(process.env.LABEL_IN_REVIEW || 'in review');
 
-            const newRe = new RegExp(`\${startKey}\s*\[#(\\d+)\]`, 'i');
-            const endRe = new RegExp(`\${endKey}\s*\[#(\\d+)\]`, 'i');
+            const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+            const newRe = new RegExp(`${escapeRegex(startKey)}\\s*\\[#(\\d+)\\]`, 'i');
+            const endRe = new RegExp(`${escapeRegex(endKey)}\\s*\\[#(\\d+)\\]`, 'i');
+
+            core.info(`Commit message: ${msg}`);
 
             const newMatch = msg.match(newRe);
             const endMatch = msg.match(endRe);
 
             const issueNumber = Number((newMatch?.[1]) || (endMatch?.[1]) || 0);
-            if (!issueNumber) { core.info('No issue reference found in latest commit message.'); return; }
+            if (!issueNumber) {
+              core.info('No issue reference found in latest commit message.');
+              return;
+            }
 
-            const targetStatusName = newMatch ? norm(process.env.STATUS_IN_PROGRESS) : norm(process.env.STATUS_IN_REVIEW);
+            const movingToInReview = Boolean(endMatch);
+            const targetStatusName = newMatch
+              ? norm(process.env.STATUS_IN_PROGRESS)
+              : norm(process.env.STATUS_IN_REVIEW);
+
             const statusFieldName = norm(process.env.PROJECT_FIELD_STATUS_NAME || 'Status');
             const projectId = norm(process.env.PROJECT_V2_ID);
 
             if (!projectId) { core.warning('PROJECT_V2_ID not set; skipping.'); return; }
             if (!targetStatusName) { core.warning('Target status name not set; skipping.'); return; }
 
-            // Fetch issue node_id
             const issue = await github.rest.issues.get({ ...repo, issue_number: issueNumber });
             const issueNodeId = issue.data.node_id;
 
-            // Project meta
             async function getProjectMeta(projectId) {
               const q = `
                 query($id:ID!){
@@ -112,22 +123,50 @@ jobs:
             }
 
             async function setStatus(projectId, itemId, project, fieldName, optionName) {
-              const field = project.fields.nodes.find(f => f.__typename === 'ProjectV2SingleSelectField' && f.name === fieldName);
+              const field = project.fields.nodes.find(
+                f => f.__typename === 'ProjectV2SingleSelectField' && f.name === fieldName
+              );
               if (!field) throw new Error(`Field "${fieldName}" not found`);
+
               const opt = (field.options || []).find(o => o.name === optionName);
               if (!opt) throw new Error(`Option "${optionName}" not found for "${fieldName}"`);
+
               const m = `
                 mutation($input: UpdateProjectV2ItemFieldValueInput!) {
                   updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } }
                 }`;
-              await github.graphql(m, { input: { projectId, itemId, fieldId: field.id, value: { singleSelectOptionId: opt.id } } });
+              await github.graphql(m, {
+                input: {
+                  projectId,
+                  itemId,
+                  fieldId: field.id,
+                  value: { singleSelectOptionId: opt.id }
+                }
+              });
             }
 
             try {
               const project = await getProjectMeta(projectId);
               const itemId = await findOrAddIssueItem(projectId, issueNodeId);
               await setStatus(projectId, itemId, project, statusFieldName, targetStatusName);
-              core.info(`Updated issue #${issueNumber} status -> "${targetStatusName}"`);
+              core.info(`Moved issue #${issueNumber} to ${targetStatusName}`);
+
+              if (movingToInReview && inReviewLabel) {
+                const existingLabels = (issue.data.labels || []).map(l =>
+                  typeof l === 'string' ? l.toLowerCase() : String(l.name || '').toLowerCase()
+                );
+
+                if (!existingLabels.includes(inReviewLabel.toLowerCase())) {
+                  await github.rest.issues.addLabels({
+                    ...repo,
+                    issue_number: issueNumber,
+                    labels: [inReviewLabel],
+                  });
+                  core.info(`Added label "${inReviewLabel}" to issue #${issueNumber}`);
+                } else {
+                  core.info(`Issue #${issueNumber} already has "${inReviewLabel}" label`);
+                }
+              }
             } catch (e) {
-              core.warning(`Failed to update project status: ${e.message}`);
+              core.warning(`Failed to update project: ${e.message}`);
             }
