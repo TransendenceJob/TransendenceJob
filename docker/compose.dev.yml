@@ -13,6 +13,7 @@ services:
     volumes:
       - ../infra/nginx/nginx.dev.conf.template:/etc/nginx/templates/default.conf.template:ro
       - nginx_maps:/usr/share/nginx/html/maps
+      - nginx_game_files:/usr/share/nginx/html/static_game_files
     depends_on:
       - frontend
       - bff
@@ -226,7 +227,7 @@ services:
     volumes:
       - ../apps/game:/app
       - game_node_modules:/app/node_modules
-      - nginx_maps:/app/generated/maps
+      - nginx_game_files:/app/static_game_files
     ports:
       - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
       - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
@@ -253,3 +254,4 @@ volumes:
   social_node_modules:
   stats_node_modules:
   game_node_modules:
+  nginx_game_files:

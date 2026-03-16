@@ -21,7 +21,7 @@ export class LobbyManager {
 	 */
 	serveGame(res: Response) {
 		console.log(process.cwd());
-		const filePath: string = process.cwd() + "/client_scripts/raw.html";
+		const filePath: string = process.cwd() + "/static_game_files/raw.html";
 		try {
 			const stat = fs.statSync(filePath);
 			if (stat.isFile())
