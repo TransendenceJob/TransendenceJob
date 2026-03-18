@@ -18,6 +18,10 @@ ENV PORT=3000
 EXPOSE 3000
 EXPOSE 9229
 
+COPY scripts/prismarun.sh .
+RUN chmod +x /app/scripts/prismarun.sh
+
+ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
 CMD ["npm", "run", "start:debug"]
 
 # ---------- build ----------
@@ -46,4 +50,7 @@ COPY --from=build /app/package*.json ./
 
 EXPOSE 3000
 
+COPY scripts/prismarun.sh .
+RUN chmod +x /app/scripts/prismarun.sh
+ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
 CMD ["node", "dist/main.js"]
