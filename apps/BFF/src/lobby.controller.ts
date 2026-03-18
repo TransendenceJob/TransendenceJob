@@ -10,8 +10,9 @@ export class LobbyController {
   
   @Get("/bff/lobby")
   async getHello() {
-    const response = await axios.get("http://game_service:3001/");
-    console.log(response.data)
+    const url: string = process.env.GAME_SERVICE_HTTP_URL ?? "https://localhost:3001";
+    const response = await axios.get(url);
+    console.log(response.data);
     return (response.data);
   }
 }
