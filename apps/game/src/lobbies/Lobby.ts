@@ -20,31 +20,37 @@ enum LobbyStateEnum {
  * Coincidentally, the properties are the only place I found, 
  * where variables dont go out of scope for our functions and main loop
  */
-export class GameLobby {
-	private state: LobbyStateEnum;
+export class Lobby {
+	public state: LobbyStateEnum;
+	public lobbyId: number;
 	private engine: BABYLON.NullEngine;
 	private scene: BABYLON.Scene;
 	private camera: BABYLON.ArcRotateCamera;
 
 	/**
-	 * Not much to be said for this really
-	 * We set up the bare minimum stuff for our Babylon Scene
-	 * Then call the function that calls our main code
-	 * Our main code (startLoop()) can run some stuff once,
-	 * and then binds some code which handles our central loop,
-	 * to the engine, which calls that code every frame
+	 * On Lobby Creation, call the constructor,
+	 * which sets up the basic data and calls functions,
+	 * to register loops
+	 * @param id unique number identifier for this lobby
 	 */
-	constructor() {
+	constructor(id) {
 		this.state = LobbyStateEnum.ClosedLobby;
+		this.lobbyId = id;
 		this.engine = new BABYLON.NullEngine();
-		this.startLoop();
+		this.scene = new BABYLON.Scene(this.engine);
+		this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), this.scene);
+		this.registerLoop();
 	}
 
 	/**
 	 * This is where we put code that is triggered only once (stuff like initial mesh creation, positioning, sizing etc)
 	 */
-	private startLoop() {
+	private registerLoop() {
 		this.engine.runRenderLoop(() => {
+			// This calls the Babylon Renderer
+			this.scene.render();
+
+			// This is where we can register custom code
 			this.gameServerLoop();
 		});
 	}
@@ -53,11 +59,12 @@ export class GameLobby {
 	 * This is where we would put our code that should be run each frame (Interactions, Inputs, Timers etc.)
 	 */
 	gameServerLoop() {
+
 	}
 
 	/**
-	 * Just a random example function to show, that the server is running our scene and this code in the background
-	 * Going to localhost:3000 when this application is live, will show the current counter
+	 * Called when the lobby is requested from the client
+	 * Serves the files for each state
 	 */
 	accessLobby(res: Response) {
 		switch (this.state) {
@@ -71,8 +78,6 @@ export class GameLobby {
 				break;
 			case LobbyStateEnum.Loading :
 				this.state++;
-				this.scene = new BABYLON.Scene(this.engine);
-				this.camera = new BABYLON.ArcRotateCamera("Camera", 0, 0.8, 100, BABYLON.Vector3.Zero(), this.scene);
 				this.lobbyloading(res);
 				break;
 			case LobbyStateEnum.Game :
@@ -83,15 +88,15 @@ export class GameLobby {
 	}
 
 	lobbyClosed(res: Response) {
-		res.send("Lobby closed!");
+		res.send("Lobby closed (Reload to move to next state)");
 	}
 
 	lobbyOpen(res: Response) {
-		res.send("Lobby is open!");
+		res.send("Lobby is open (Reload to move to next state)");
 	}
 
 	lobbyloading(res: Response) {
-		res.send("Lobby is loading");
+		res.send("Lobby is loading (Reload to move to next state)");
 	}
 
 	lobbyGame(res: Response) {
