@@ -33,8 +33,10 @@ jobs:
             const startKey = norm(process.env.COMMIT_KEYWORD_START || '[New]');
             const endKey   = norm(process.env.COMMIT_KEYWORD_END || '[END]');
 
-            const newRe = new RegExp(`\${startKey}\s*\[#(\\d+)\]`, 'i');
-            const endRe = new RegExp(`\${endKey}\s*\[#(\\d+)\]`, 'i');
+            // Escape special regex characters in keywords
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const newRe = new RegExp(`${escapeRegex(startKey)}\\s*\\[#(\\d+)\\]`, 'i');
+            const endRe = new RegExp(`${escapeRegex(endKey)}\\s*\\[#(\\d+)\\]`, 'i');
 
             const newMatch = msg.match(newRe);
             const endMatch = msg.match(endRe);
