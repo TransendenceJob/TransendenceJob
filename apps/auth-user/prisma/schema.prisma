@@ -12,18 +12,24 @@ datasource db {
   provider = "postgresql"
 }
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
+model UserCredential {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  author    User    @relation(fields: [authorId], references: [id]) 
-  authorId  Int
-} 
+  sessions     Session[]
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userCredentialId String
+  refreshTokenHash String?
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  userCredential   UserCredential @relation(fields: [userCredentialId], references: [id], onDelete: Cascade)
+
+  @@index([userCredentialId])
+}
