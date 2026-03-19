@@ -1,12 +1,12 @@
-name: Create draft PR on "in review" label
+name: Post draft PR link on "in review" label
 
 on:
   issues:
     types: [labeled]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
   issues: write
 
 jobs:
@@ -79,21 +79,31 @@ jobs:
               return;
             }
 
-            const created = await github.rest.pulls.create({
+            const prTitle = `Draft: ${issueTitle}`;
+            const prBody = `Closes #${issueNumber}`;
+            const compareUrl = `https://github.com/${repo.owner}/${repo.repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(branchName)}?expand=1&title=${encodeURIComponent(prTitle)}&body=${encodeURIComponent(prBody)}`;
+
+            const existingComments = await github.rest.issues.listComments({
               ...repo,
-              title: `Draft: ${issueTitle}`,
-              head: branchName,
-              base,
-              draft: true,
-              body: `Closes #${issueNumber}`,
+              issue_number: issueNumber,
             });
 
-            const prUrl = created.data.html_url;
+            const alreadyPosted = existingComments.data.some((c) =>
+              (c.body || '').includes(compareUrl)
+            );
+
+            if (alreadyPosted) {
+              core.info(`Draft PR link already posted for issue #${issueNumber}`);
+              return;
+            }
 
             await github.rest.issues.createComment({
               ...repo,
               issue_number: issueNumber,
-              body: `🔗 Draft PR created: ${prUrl}`,
+              body:
+                `🔗 @${assignee} open your draft PR from this link:\n\n` +
+                `${compareUrl}\n\n` +
+                `This keeps PR ownership under your account.`,
             });
 
-            core.info(`Created draft PR #${created.data.number} for issue #${issueNumber}`);
+            core.info(`Posted draft PR creation link for issue #${issueNumber}`);
