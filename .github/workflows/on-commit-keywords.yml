@@ -49,8 +49,21 @@ jobs:
             if (!projectId) { core.warning('PROJECT_V2_ID not set; skipping.'); return; }
             if (!targetStatusName) { core.warning('Target status name not set; skipping.'); return; }
 
-            // Fetch issue node_id
+            // Fetch issue to validate it has a type label
             const issue = await github.rest.issues.get({ ...repo, issue_number: issueNumber });
+            const issueLabels = (issue.data.labels || []).map(l => typeof l === 'string' ? l : l.name);
+            const labelFeature = norm(process.env.LABEL_FEATURE || 'feature');
+            const labelBug = norm(process.env.LABEL_BUG || 'bug');
+            const labelRefactor = norm(process.env.LABEL_REFACTOR || 'refactor');
+            const labelFix = norm(process.env.LABEL_FIX || 'fix');
+            const validTypes = [labelFeature, labelBug, labelRefactor, labelFix];
+            const hasValidLabel = issueLabels.some(l => validTypes.includes(norm(l)));
+
+            if (!hasValidLabel) {
+              core.warning(`Issue #${issueNumber} does not have a valid type label (feature/bug/refactor/fix). Skipping status update.`);
+              return;
+            }
+
             const issueNodeId = issue.data.node_id;
 
             // Project meta
