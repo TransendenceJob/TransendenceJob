@@ -1,4 +1,4 @@
-name: Post draft PR link on "in review" label
+name: Post PR link on "in review" label
 
 on:
   issues:
@@ -10,7 +10,7 @@ permissions:
   issues: write
 
 jobs:
-  create-draft-pr:
+  post-pr-link:
     if: ${{ github.event.label.name == vars.LABEL_IN_REVIEW || github.event.label.name == 'in review' }}
     runs-on: ubuntu-latest
     env:
@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.PROJECTS_PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const repo = context.repo;
             const issue = context.payload.issue;
@@ -76,34 +76,33 @@ jobs:
             const existingPr = await findExistingPr(branchName);
             if (existingPr) {
               core.info(`PR already exists for ${branchName}: #${existingPr.number}`);
-              return;
             }
 
-            const prTitle = `Draft: ${issueTitle}`;
-            const prBody = `Closes #${issueNumber}`;
-            const compareUrl = `https://github.com/${repo.owner}/${repo.repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(branchName)}?expand=1&title=${encodeURIComponent(prTitle)}&body=${encodeURIComponent(prBody)}`;
+            const compareUrl = `https://github.com/${repo.owner}/${repo.repo}/compare/${base}...${repo.owner}:${branchName}?expand=1`;
+            const marker = `<!-- pr-owner-link:${issueNumber}:${base}:${branchName} -->`;
+            const suggestedTitle = `[#${issueNumber}] ${issueTitle}`;
+            const suggestedBody = `Closes #${issueNumber}`;
 
-            const existingComments = await github.rest.issues.listComments({
+            const comment = existingPr
+              ? `${marker}\n✅ Open PR already exists: **[#${existingPr.number}](${existingPr.html_url})**\n\nNo automatic PR was created by workflow (teammates should own their PRs).`
+              : `${marker}\n🚀 Ready for review. Open the PR as your own user account:\n\n- **Create PR**: ${compareUrl}\n- **Base**: \`${base}\`\n- **Head**: \`${branchName}\`\n- **Suggested title**: \`${suggestedTitle}\`\n- **Suggested body**: \`${suggestedBody}\``;
+
+            const comments = await github.rest.issues.listComments({
               ...repo,
               issue_number: issueNumber,
+              per_page: 100,
             });
 
-            const alreadyPosted = existingComments.data.some((c) =>
-              (c.body || '').includes(compareUrl)
-            );
-
+            const alreadyPosted = comments.data.some(c => (c.body || '').includes(marker));
             if (alreadyPosted) {
-              core.info(`Draft PR link already posted for issue #${issueNumber}`);
+              core.info(`PR guidance comment already posted for issue #${issueNumber}`);
               return;
             }
 
             await github.rest.issues.createComment({
               ...repo,
               issue_number: issueNumber,
-              body:
-                `🔗 @${assignee} open your draft PR from this link:\n\n` +
-                `${compareUrl}\n\n` +
-                `This keeps PR ownership under your account.`,
+              body: comment,
             });
 
-            core.info(`Posted draft PR creation link for issue #${issueNumber}`);
+            core.info(`Posted PR creation link for issue #${issueNumber}`);

@@ -53,13 +53,30 @@ jobs:
             const labels = (issue.labels || []).map(l => lower(l.name));
             const title = lower(issue.title || '');
 
-            const isFix = title.includes('[fix]') || labels.includes(labelFix);
-            const hasValidType = labels.some(l => [labelFeature, labelBug, labelRefactor, labelFix].includes(l)) || title.includes('[fix]') || title.includes('[feature]') || title.includes('[bug]') || title.includes('[refactor]');
+            // Determine type from title tags or existing labels
+            let typeLabel = '';
+            if (title.includes('[feature]') || labels.includes(labelFeature)) typeLabel = process.env.LABEL_FEATURE || 'feature';
+            else if (title.includes('[bug]') || labels.includes(labelBug)) typeLabel = process.env.LABEL_BUG || 'bug';
+            else if (title.includes('[refactor]') || labels.includes(labelRefactor)) typeLabel = process.env.LABEL_REFACTOR || 'refactor';
+            else if (title.includes('[fix]') || labels.includes(labelFix)) typeLabel = process.env.LABEL_FIX || 'fix';
 
-            if (!hasValidType) {
+            if (!typeLabel) {
               core.info("Issue doesn't have a recognized type tag/label ([feature]/[bug]/[refactor]/[fix]); skipping branch creation.");
               return;
             }
+
+            // Ensure the type label is added to the issue if missing
+            const currentLabels = (issue.labels || []).map(l => lower(l.name));
+            if (!currentLabels.includes(lower(typeLabel))) {
+              try {
+                await github.rest.issues.addLabels({ ...repo, issue_number, labels: [typeLabel] });
+                core.info(`Added label: ${typeLabel}`);
+              } catch (e) {
+                core.warning(`Failed to add label: ${e.message}`);
+              }
+            }
+
+            const isFix = title.includes('[fix]') || typeLabel.toLowerCase().includes('fix');
 
             const issue_number = issue.number;
             const issue_node_id = issue.node_id;
