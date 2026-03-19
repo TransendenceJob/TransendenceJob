@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { Lobby } from './Lobby';
 import type { Response } from 'express';
+import { EventEmitter } from 'stream';
 
 /**
  * Service that administrates multiple lobbies at the same time
@@ -8,17 +9,33 @@ import type { Response } from 'express';
  */
 
 @Injectable()
-export class LobbyManager {
-	private lobbies: Lobby[];
-	constructor () {
-		const amount = 1;
-		this.lobbies = new Array(amount);
-		for (let i = 0; i < amount; i++)
-			this.lobbies[i] = new Lobby(i);
-	}
+export class LobbyManager extends EventEmitter {
+  private lobbies: Lobby[];
+  constructor() {
+    super();
+    const amount = 1;
+    this.lobbies = new Array<Lobby>(amount);
+    // Set up Lobby with a callback to send data to Socket via EventEmitter inherited func
+    for (let i = 0; i < amount; i++) {
+      this.lobbies[i] = new Lobby(i, (payload: string) => {
+        this.emit('dataToEmit', payload);
+      });
+    }
+  }
 
-	serveLobby(res: Response) {
-		this.lobbies[0].accessLobby(res);
-	}
+  /**
+   * @brief Get Page to be displayed for Lobby
+   * @param res Response that needs to be set
+   */
+  servePage(res: Response) {
+    this.lobbies[0].servePage(res);
+  }
 
+  /**
+   * @brief Send Client Websocket packet to Server
+   * @param data Raw string of packet, should be in json format
+   */
+  msgToServer(data: string) {
+    this.lobbies[0].msgToServer(data);
+  }
 }

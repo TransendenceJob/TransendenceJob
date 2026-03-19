@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LobbyModule } from './lobbies/lobby.module';
-import { MainController } from "./main.controller"
+import { MainController } from './main.controller';
 
 @Module({
   imports: [LobbyModule],
@@ -8,5 +8,3 @@ import { MainController } from "./main.controller"
   providers: [],
 })
 export class MainModule {}
-
-
