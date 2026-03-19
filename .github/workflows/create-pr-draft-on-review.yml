@@ -13,6 +13,12 @@ permissions:
 jobs:
   create-draft-pr:
     runs-on: ubuntu-latest
+    env:
+      COMMIT_KEYWORD_END: ${{ vars.COMMIT_KEYWORD_END }}
+      LABEL_FEATURE: ${{ vars.LABEL_FEATURE }}
+      LABEL_BUG: ${{ vars.LABEL_BUG }}
+      LABEL_REFACTOR: ${{ vars.LABEL_REFACTOR }}
+      LABEL_FIX: ${{ vars.LABEL_FIX }}
     steps:
       - uses: actions/github-script@v7
         with:
@@ -28,7 +34,10 @@ jobs:
             const msg = commit.message || '';
             const norm = (s) => String(s ?? '').trim();
             const endKey = norm(process.env.COMMIT_KEYWORD_END || '[END]');
-            const endRe = new RegExp(`${endKey}\\s*\\[#(\\d+)\\]`, 'i');
+            
+            // Escape special regex characters in keyword (same as on-commit-keywords.yml)
+            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const endRe = new RegExp(`${escapeRegex(endKey)}\\s*\\[#(\\d+)\\]`, 'i');
             const endMatch = msg.match(endRe);
 
             if (!endMatch) {
@@ -134,5 +143,3 @@ jobs:
             } catch (e) {
               core.warning(`Failed to create/link PR: ${e.message}`);
             }
-        env:
-          COMMIT_KEYWORD_END: ${{ vars.COMMIT_KEYWORD_END }}
