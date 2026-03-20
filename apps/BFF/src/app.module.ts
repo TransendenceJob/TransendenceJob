@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LobbyModule  } from "./lobby.module"; 
+import { LobbyModule } from './lobby.module';
 
 @Module({
   imports: [LobbyModule],
