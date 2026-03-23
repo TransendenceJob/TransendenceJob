@@ -1,32 +1,38 @@
-import { INestApplication, Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
+import {
+  INestApplication,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit , OnModuleDestroy{
-	constructor() {
-		const connectionString = process.env.DATABASE_URL;
-		if (!connectionString) {
-			throw new Error("DATABASE_URL is not set");
-		}
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  constructor() {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('DATABASE_URL is not set');
+    }
 
-		const adapter = new PrismaPg({ connectionString });
-		super({ adapter });
-	}
+    const adapter = new PrismaPg({ connectionString });
+    super({ adapter });
+  }
 
-	
-	async onModuleInit(): Promise<void> {
-		await this.$connect();
-	}
-	
-	async onModuleDestroy(): Promise<void> {
-		await this.$disconnect();
-	}
+  async onModuleInit(): Promise<void> {
+    await this.$connect();
+  }
 
-	async enableShutdownHooks(app: INestApplication): Promise<void>{
-		process.on('beforeExit', async () =>{
-			await app.close();
-		});
-	}
+  async onModuleDestroy(): Promise<void> {
+    await this.$disconnect();
+  }
+
+  enableShutdownHooks(app: INestApplication): void {
+    process.on('beforeExit', () => {
+      void app.close();
+    });
+  }
 }
