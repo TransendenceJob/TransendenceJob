@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation"; //used for placeholder
+import { signIn } from "next-auth/react";
 
 export default function AuthModal({
                                       isOpen,
@@ -41,7 +42,7 @@ export default function AuthModal({
                 </div>
                 {/*<form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}> /!* prevent refresh of the whole page*!/*/}
                 <form className="flex flex-col gap-4" onSubmit={handleSubmit}> {/* trigger placeholder */}
-                    <input type="email" placeholder="Email Address"
+                    <input type="email" placeholder="Email Address" autoComplete="email"
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
 
                     {type === 'Register' && (
@@ -49,7 +50,7 @@ export default function AuthModal({
                                className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
                     )}
 
-                    <input type="password" placeholder="Password"
+                    <input type="password" placeholder="Password" autoComplete="current-password"
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
 
                     {type === 'Register' && (
@@ -63,6 +64,20 @@ export default function AuthModal({
                     </button>
                 </form>
 
+                {/* Google Sign In Button */}
+                <button
+                    onClick={() => signIn("google", { callbackUrl: "/homepage" })}
+                    type="button"
+                    className="w-full flex items-center justify-center gap-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all mb-4"
+                >
+                    <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-5 h-5" />
+                    Continue with Google
+                </button>
+
+                <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200 dark:border-zinc-800"></span></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-zinc-900 px-2 text-zinc-500">Or continue with email</span></div>
+                </div>
                 <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 text-center">
                     <p className="text-sm text-zinc-500">
                         {type === 'Login' ? "Don't have an account?" : "Already have an account?"}
