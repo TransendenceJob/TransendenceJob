@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Lobby from '@/src/components/lobby2/Lobby';
-import Loading from '@/src/components/lobby2/Loading';
+import SubPages from './SubPages';
 
 export default function Page() {
   const [state, setState] = useState('LOBBY');
