@@ -1,4 +1,4 @@
-export function setupSocket(socket, gui) {
+export default function setupSocket(socket, gui, onNavigate) {
 	const socket_status = gui.getControlByName("socket_status");
 	const receiveButton = gui.getControlByName("receive");
 
@@ -12,6 +12,8 @@ export function setupSocket(socket, gui) {
 		console.log(`Message from server ${data}`);
 		const dataObj = JSON.parse(data);
 		receiveButton.textBlock.text = "Received: [" + JSON.stringify(dataObj) + "]";
+		if (dataObj.type == "sc.DEV.finish.game")
+			onNavigate("ENDSCREEN")
 	});
 	
 	socket.on("connect_error", (error) => {

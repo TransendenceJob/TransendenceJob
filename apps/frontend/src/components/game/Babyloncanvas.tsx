@@ -5,7 +5,11 @@ import { Engine } from "@babylonjs/core" ;
 import { createScene } from "@/lib/babylon/createScene";
 import { io } from "socket.io-client";
 
-export default function BabylonCanvas() {
+interface LobbyProps {
+  onNavigate: (newState: string) => void; 
+}
+
+export default function BabylonCanvas({ onNavigate }: LobbyProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -18,7 +22,7 @@ export default function BabylonCanvas() {
 
     const socket = io("ws://localhost:8080", {transports: ['websocket']});
 
-    createScene(canvas, engine, socket).then((scene) => {
+    createScene(canvas, engine, socket, onNavigate).then((scene) => {
       if (disposed) {
         scene.dispose();
         engine.dispose();

@@ -10,6 +10,10 @@ enum LobbyStateEnum {
   Game = 3,
 }
 
+interface JsonPacket {
+  type: string,
+}
+
 /**
  * An Object representing one Lobby, which goes through different states,
  * as our game progresses
@@ -153,7 +157,16 @@ export class Lobby {
    * @param raw_data string in json format sent on the socket
    */
   msgToServer(raw_data: string) {
-    const data: unknown = JSON.parse(raw_data);
+    const data: JsonPacket = JSON.parse(raw_data);
     console.log('Lobby received message: ', data);
+
+    // Should be removed late, only exists to move through game and lobby states as developer
+    if (data.type == "cs.DEV.finish.game") {
+      const response = {
+        type: "sc.DEV.finish.game"
+      }
+      this.msgToClient(JSON.stringify(response));
+      console.log(`Sending: ${response.type}`)
+    }
   }
 }
