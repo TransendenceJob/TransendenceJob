@@ -1,15 +1,20 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Get a free hosted Postgres database in seconds: `npx create-db`
 
-Primsa ORM command to run to generate migrations:
+generator client {
+  provider = "prisma-client-js"
+}
 
-docker exec -it <container_name> npx prisma migrate dev --name <migration name>
-
-docker exec -it auth_service sh -lc "cd /app && npx prisma migrate dev --name <change_name>"
-
+datasource db {
+  provider = "postgresql"
+}
 
 model UserCredential {
   id           String   @id @default(cuid())
   email        String   @unique
+  passwordHash String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
