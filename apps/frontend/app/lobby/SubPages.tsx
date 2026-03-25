@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import LobbyPage from '@/src/components/lobby2/LobbyPage';
 import LoadingPage from '@/src/components/lobby2/LoadingPage';
+import BabylonCanvas from "@/src/components/game/Babyloncanvas";
 
 export default function SubPages() {
   const [state, setState] = useState('LOBBY');
@@ -13,6 +14,13 @@ export default function SubPages() {
   else if (state === 'LOADING') {
     return <LoadingPage onNavigate={setState}/>
   }
+  else if (state === 'LOADING') {
+    return <BabylonCanvas />
+  }
+  else if (state === 'LOADING') {
+    return <LoadingPage onNavigate={setState}/>
+  }
+  else return null;
 
   // else if (state === 'GAME') {
   //   return <GamePage />

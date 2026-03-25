@@ -5,8 +5,8 @@ interface LobbyProps {
 export default function Lobby({ onNavigate }: LobbyProps) {
   return (
     <div>
-      <h1>Loading...</h1>
-      <button onClick={() => {onNavigate("GAME")}}>Start Game</button>
+      <h1>End Screen</h1>
+      <button onClick={() => {onNavigate("LOBBY")}}>Start Game</button>
     </div>
     );
 }
