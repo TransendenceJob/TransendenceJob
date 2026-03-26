@@ -2,6 +2,13 @@ export default function setupSocket(socket, gui, msgToServer) {
 	const socket_status = gui.getControlByName("socket_status");
 	const receiveButton = gui.getControlByName("receive");
 
+	if (socket && socket.connected)
+	{
+		console.log("Connected to Backend");
+		socket_status.text = "Connection Status: Connected";
+		socket_status.color = "green";
+	}
+
 	socket.on("connect", () => {
 		console.log("Connected to Backend");
 		socket_status.text = "Connection Status: Connected";
