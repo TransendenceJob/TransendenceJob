@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import io from 'socket.io-client';
 import LobbyPage from '@/src/components/game/lobby/LobbyPage';
 import LoadingPage from '@/src/components/game/lobby/LoadingPage';
@@ -59,12 +59,10 @@ export default function SubPages() {
     };
   }, [])
 
-  const msgToServer = (data: string) => {
+  const msgToServer = useCallback((data: string) => {
     if (socket && socket.connected)
       socket.emit('msgToServer', data);
-    else
-      console.error("Error: Client tried sending data, but websocket is not connected");
-  };
+  }, []);
 
   if (state === 'LOBBY') {
     return <LobbyPage onNavigate={setState} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
