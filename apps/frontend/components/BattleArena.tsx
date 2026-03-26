@@ -11,7 +11,7 @@ export default function BattleArena() {
 
         if (status === "loading") return;
 
-        // if (status === "unauthenticated") { // added check which is not triggered yet until db connection works
+        // if (status === "unauthenticated") { // added check which is not triggered yet until db connection works but would work with login with google now
         //     alert("Please login first!");
         //     return;
         // }
