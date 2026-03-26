@@ -6,10 +6,12 @@ import { createScene } from "@/lib/babylon/createScene";
 import { io } from "socket.io-client";
 
 interface LobbyProps {
-  onNavigate: (newState: string) => void; 
+  msgToServer: (data: string) => void;
+  lastReceivedMsg: string;
+  socket: any;
 }
 
-export default function BabylonCanvas({ onNavigate }: LobbyProps) {
+export default function BabylonCanvas({ msgToServer, lastReceivedMsg, socket }: LobbyProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -20,9 +22,7 @@ export default function BabylonCanvas({ onNavigate }: LobbyProps) {
     const engine = new Engine(canvas, true);
     let disposed = false;
 
-    const socket = io("ws://localhost:8080", {transports: ['websocket']});
-
-    createScene(canvas, engine, socket, onNavigate).then((scene) => {
+    createScene(canvas, engine, socket, msgToServer).then((scene) => {
       if (disposed) {
         scene.dispose();
         engine.dispose();

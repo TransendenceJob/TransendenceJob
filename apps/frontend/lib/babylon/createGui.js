@@ -38,6 +38,7 @@ export default function createGui(scene, canvas, socket)
 	receiveButton.color = "#FFF";
 	gui.addControl(receiveButton);
 
+	// only exists for development, and moving through states by force
 	const endGameButton = Button.CreateSimpleButton("endGame", "End Game");
 	setButtonSize(endGameButton, canvas, 0.2, 0.2);
 	setButtonPos(endGameButton, canvas, -1, 0.5);
@@ -45,7 +46,7 @@ export default function createGui(scene, canvas, socket)
 	endGameButton.onPointerUpObservable.add(() => {
 		const data = {
 			// will need lobbyId field
-			type: "cs.DEV.finish.game",
+			type: "cs.DEV.start.endscreen",
 			};
 			if (socket && socket.connected) {
 				socket.emit('msgToServer', JSON.stringify(data));

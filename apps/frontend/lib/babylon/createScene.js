@@ -8,7 +8,7 @@ import {
 import createGui from "./createGui";
 import setupSocket from "./setupSocket";
 
-export async function createScene(canvas, engine, socket, onNavigate) {
+export async function createScene(canvas, engine, socket, msgToServer) {
 	var scene = new Scene(engine);
 	var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
 	camera.setTarget(Vector3.Zero());
@@ -16,7 +16,7 @@ export async function createScene(canvas, engine, socket, onNavigate) {
 	light.intensity = 0.7;
 
 	const gui = createGui(scene, canvas, socket);
-	setupSocket(socket, gui, onNavigate);
+	setupSocket(socket, gui, msgToServer);
 
 	return scene;
 };

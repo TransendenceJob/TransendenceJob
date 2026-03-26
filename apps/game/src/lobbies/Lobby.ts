@@ -159,12 +159,19 @@ export class Lobby {
   msgToServer(raw_data: string) {
     const data: JsonPacket = JSON.parse(raw_data);
     console.log('Lobby received message: ', data);
+    let response: JsonPacket = {type: ""};
 
-    // Should be removed late, only exists to move through game and lobby states as developer
-    if (data.type == "cs.DEV.finish.game") {
-      const response = {
-        type: "sc.DEV.finish.game"
-      }
+    // Most of theese should be removed later, 
+    // only exists to move through game and lobby states as developer
+    if (data.type == "cs.DEV.start.loading")
+      response.type = "sc.start.loading";
+    else if (data.type == "cs.DEV.start.game")
+      response.type = "sc.start.game";
+    else if (data.type == "cs.DEV.start.endscreen")
+      response.type = "sc.game.finished"
+    else if (data.type == "cs.DEV.start.lobby")
+      response.type = "sc.DEV.start.lobby"
+    if (response.type != "") {
       this.msgToClient(JSON.stringify(response));
       console.log(`Sending: ${response.type}`)
     }
