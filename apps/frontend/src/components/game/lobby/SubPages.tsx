@@ -65,16 +65,16 @@ export default function SubPages() {
   }, []);
 
   if (state === 'LOBBY') {
-    return <LobbyPage onNavigate={setState} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <LobbyPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
   }
   else if (state === 'LOADING') {
-    return <LoadingPage onNavigate={setState} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <LoadingPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
   }
   else if (state === 'GAME') {
-    return <BabylonCanvas onNavigate={setState} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
+    return <BabylonCanvas msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
   }
   else if (state === 'ENDSCREEN') {
-    return <EndPage onNavigate={setState} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <EndPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
   }
   else return <ErrorPage />;
 }
