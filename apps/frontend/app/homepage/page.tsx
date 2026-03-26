@@ -1,6 +1,6 @@
 "use client";
 
-// need to add darkmode theme
+import BattleArena from "@/components/BattleArena";
 export default function HomePage() {
     return (
         <div className="max-w-7xl mx-auto p-4 md:p-8 h-[calc(100vh-80px)] flex flex-col gap-6">
@@ -17,25 +17,7 @@ export default function HomePage() {
 
             {/* Main Content , big game button*/}
             <div className="flex flex-col lg:flex-row gap-6 flex-grow overflow-hidden">
-
-                <div
-                    className="flex-[2] relative rounded-3xl bg-zinc-100 dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-800 flex flex-col items-center justify-center overflow-hidden group">
-                    <div
-                        className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"/>
-
-                    <div className="z-10 text-center">
-                        <div
-                            className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/40">
-                            <span className="text-white text-3xl">🚀</span>
-                        </div>
-                        <h2 className="text-xl font-bold mb-2">Battle Arena</h2>
-                        <p className="text-zinc-500 mb-6 text-sm">Physics engine initializing...</p>
-                        <button
-                            className="px-8 py-3 bg-foreground text-background rounded-full font-black uppercase tracking-widest hover:scale-105 transition-transform active:scale-95">
-                            Launch Game
-                        </button>
-                    </div>
-                </div>
+                <BattleArena />
 
                 {/* Chat Window Component*/}
                 <div
