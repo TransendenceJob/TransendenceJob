@@ -1,77 +1,40 @@
-"use client";
-
-import { useState, useEffect, useCallback } from 'react';
-import io from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import LobbyPage from '@/src/components/game/lobby/LobbyPage';
 import LoadingPage from '@/src/components/game/lobby/LoadingPage';
 import BabylonCanvas from "@/src/components/game/babylon/Babyloncanvas";
 import EndPage from "@/src/components/game/lobby/EndPage";
 import ErrorPage from '@/src/components/game/lobby/ErrorPage';
+import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
 
 
 interface LobbyProps {
-  onNavigate: (newState: string) => void; 
+  state: string;
+  setState: (data: string) => void;
   msgToServer: (data: string) => void;
   lastReceivedMsg: string;
+  socket: Socket;
+  isConnected: boolean;
 }
 
 
-interface JsonPacket {
-  type: string;
-}
+export default function SubPages({state, 
+                                  setState,
+                                  msgToServer, 
+                                  lastReceivedMsg, 
+                                  socket,
+                                  isConnected }: LobbyProps) {
 
-
-// !!!Look up right type!!!
-const socket = io("ws://localhost:8080", {transports: ['websocket']});
-
-
-export default function SubPages() {
-  const [state, setState] = useState('LOBBY');
-  const [lastReceivedMsg, setlastReceivedMsg] = useState(null);
-
-
-  /**
-   * This will only be executed once on startup, regardless of re-rendering
-   * This is important, because otherwise we keep adding new listeners
-  */
-  useEffect(() => {
-    const msgToClient = (data: string) => {
-      const dataObj: JsonPacket = JSON.parse(data);
-      console.log("received obj on client: ", data);
-      setlastReceivedMsg(data);
-      if (dataObj.type == "sc.start.loading")
-        setState("LOADING");
-      else if (dataObj.type == "sc.start.game")
-        setState("GAME");
-      else if (dataObj.type == "sc.game.finished")
-        setState("ENDSCREEN");
-      else if (dataObj.type == "sc.DEV.start.lobby")
-        setState("LOBBY");
-      else
-        console.log("Received unhandled package type: ", dataObj);
-    }
-
-    socket.on('msgToClient', msgToClient);
-
-    // Cleanup
-    return () => {
-      socket.off('msgToClient', msgToClient)
-    };
-  }, [])
-
-  const msgToServer = useCallback((data: string) => {
-    if (socket && socket.connected)
-      socket.emit('msgToServer', data);
-  }, []);
-
-  if (state === 'LOBBY') {
-    return <LobbyPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
+  if (state == 'CONNECTING') {
+    return <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>
+  }
+  else if (state === 'LOBBY') {
+    return <LobbyPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
   }
   else if (state === 'LOADING') {
     return <LoadingPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
   }
   else if (state === 'GAME') {
-    return <BabylonCanvas msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
+    return <BabylonCanvas moveToEndscreen={() => {setState('ENDSCREEN')}} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
   }
   else if (state === 'ENDSCREEN') {
     return <EndPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>

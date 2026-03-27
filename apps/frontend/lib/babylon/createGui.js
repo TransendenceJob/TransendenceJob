@@ -16,7 +16,7 @@ function setButtonPos(button, canvas, pos_x, pos_y)
 	button.top =  pos_y * ((canvas.height - button.heightInPixels) / 2);
 }
 
-export default function createGui(scene, canvas, socket)
+export default function createGui(scene, canvas, socket, moveToEndscreen)
 {
 	let count = 0;
 	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
@@ -53,7 +53,8 @@ export default function createGui(scene, canvas, socket)
 			} else {
 				console.warn("No Websocket Connection established");
 			}
-		})
+		moveToEndscreen();
+		});
 	gui.addControl(endGameButton);
 
 

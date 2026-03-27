@@ -12,8 +12,4 @@ export class LobbyController {
    * and put it as param into the function, so we can set it in there,
    * to the content we wanna give back
    */
-  @Get('/lobby')
-  getGame(@Res() res: Response) {
-    this.lobbyManager.servePage(res);
-  }
 }

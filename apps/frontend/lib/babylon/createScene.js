@@ -8,14 +8,14 @@ import {
 import createGui from "./createGui";
 import setupSocket from "./setupSocket";
 
-export async function createScene(canvas, engine, socket, msgToServer) {
+export async function createScene(canvas, engine, socket, msgToServer, moveToEndscreen) {
 	var scene = new Scene(engine);
 	var camera = new FreeCamera("camera1", new Vector3(0, 5, -10), scene);
 	camera.setTarget(Vector3.Zero());
 	var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;
 
-	const gui = createGui(scene, canvas, socket);
+	const gui = createGui(scene, canvas, socket, moveToEndscreen);
 	setupSocket(socket, gui, msgToServer);
 
 	return scene;

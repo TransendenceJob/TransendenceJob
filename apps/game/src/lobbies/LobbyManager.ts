@@ -24,14 +24,6 @@ export class LobbyManager extends EventEmitter {
   }
 
   /**
-   * @brief Get Page to be displayed for Lobby
-   * @param res Response that needs to be set
-   */
-  servePage(res: Response) {
-    this.lobbies[0].servePage(res);
-  }
-
-  /**
    * @brief Send Client Websocket packet to Server
    * @param data Raw string of packet, should be in json format
    */

@@ -31,8 +31,6 @@ export class EventSocket
     this.logger.log(`Message received: ${payload}`);
     // Handle Event
     this.lobbyManager.msgToServer(payload);
-    // Give Response back to Client (should be overhauled with the proper response, not just a copy)
-    this.server.emit('msgToClient', `${payload}`);
   }
 
   afterInit() {
