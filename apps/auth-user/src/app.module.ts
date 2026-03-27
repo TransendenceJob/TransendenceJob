@@ -14,6 +14,8 @@ import { AuthController } from './modules/auth/auth.controller';
 import { RedisModule } from './modules/redis/redis.module';
 import { AuthPersistenceModule } from './modules/persistence/auth-persistence.module';
 import { UserAgentMiddleware } from './modules/common/middleware/user-agent.middleware';
+import { UsersAuthModule } from './modules/users-auth/users-auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { UserAgentMiddleware } from './modules/common/middleware/user-agent.midd
     AppConfigModule,
 
     AuthPersistenceModule,
+    UsersAuthModule,
     AuthModule,
     RedisModule,
   ],

@@ -19,6 +19,7 @@ import { LogoutResponseDto } from './contracts/dto/logout-response.dto';
 import { VerifyQueryDto } from './contracts/dto/verify-query.dto';
 import { VerifyResponseDto } from './contracts/dto/verify-response.dto';
 import { AuthService } from './services/auth.service';
+import { LoginRequestDto } from './contracts/dto/login-request.dto';
 
 @Controller()
 export class AuthController {
@@ -78,5 +79,11 @@ export class AuthController {
       token: req.bearerToken,
       audience: query.audience,
     });
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: LoginRequestDto) {
+    return this.authService.login(loginDto.email, LoginDto.password);
   }
 }
