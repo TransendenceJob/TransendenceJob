@@ -1,10 +1,8 @@
-// 1. Define the "Struct" for our arguments (Props)
-interface LobbyProps {
+interface Params {
   msgToServer: (data: string) => void;
-  lastReceivedMsg: string;
 }
 
-export default function Lobby({ msgToServer, lastReceivedMsg }: LobbyProps) {
+export default function Lobby({ msgToServer }: Params) {
   return (
     <div>
       <h1 className="text-blue-500">Loading...</h1>

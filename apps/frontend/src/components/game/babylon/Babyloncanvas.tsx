@@ -5,20 +5,19 @@ import { Engine } from "@babylonjs/core" ;
 import { createScene } from "@/lib/babylon/createScene";
 import { Socket } from 'socket.io-client';
 
-interface LobbyProps {
-  moveToEndscreen: () => void;
+interface Params {
   msgToServer: (data: string) => void;
-  lastReceivedMsg: string;
   socket: Socket;
+  DEBUG: boolean;
 }
 
-export default function BabylonCanvas({ moveToEndscreen, msgToServer, lastReceivedMsg, socket }: LobbyProps) {
+export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
  
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
   // Essentially this ensures that our msgToServer function will always get a stable socket connection
-  const msgRef = useRef('msgToServer');
+  const msgRef = useRef(msgToServer);
   useEffect(() => {
     msgRef.current = msgToServer;
   }, [msgToServer]);
@@ -31,7 +30,7 @@ export default function BabylonCanvas({ moveToEndscreen, msgToServer, lastReceiv
     const engine = new Engine(canvas, true);
     let disposed = false;
 
-    createScene(canvas, engine, socket, msgRef.current, moveToEndscreen).then((scene) => {
+    createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene) => {
       if (disposed) {
         scene.dispose();
         engine.dispose();

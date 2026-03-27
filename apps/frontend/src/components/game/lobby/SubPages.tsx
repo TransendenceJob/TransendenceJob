@@ -7,37 +7,38 @@ import ErrorPage from '@/src/components/game/lobby/ErrorPage';
 import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
 
 
-interface LobbyProps {
+interface Params {
   state: string;
-  setState: (data: string) => void;
   msgToServer: (data: string) => void;
-  lastReceivedMsg: string;
   socket: Socket;
   isConnected: boolean;
+  DEBUG: boolean;
 }
 
 
-export default function SubPages({state, 
-                                  setState,
-                                  msgToServer, 
-                                  lastReceivedMsg, 
+export default function SubPages({state,
+                                  msgToServer,
                                   socket,
-                                  isConnected }: LobbyProps) {
+                                  isConnected,
+                                  DEBUG,
+  }: Params) {
 
   if (state == 'CONNECTING') {
     return <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>
   }
   else if (state === 'LOBBY') {
-    return <LobbyPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <LobbyPage msgToServer={msgToServer}/>
   }
   else if (state === 'LOADING') {
-    return <LoadingPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <LoadingPage msgToServer={msgToServer} />
   }
   else if (state === 'GAME') {
-    return <BabylonCanvas moveToEndscreen={() => {setState('ENDSCREEN')}} msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg} socket={socket}/>
+    return <BabylonCanvas msgToServer={msgToServer}
+                          socket={socket}
+                          DEBUG={DEBUG}/>
   }
   else if (state === 'ENDSCREEN') {
-    return <EndPage msgToServer={msgToServer} lastReceivedMsg={lastReceivedMsg}/>
+    return <EndPage msgToServer={msgToServer}/>
   }
   else return <ErrorPage />;
 }

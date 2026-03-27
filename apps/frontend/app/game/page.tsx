@@ -10,23 +10,23 @@ interface JsonPacket {
 }
 
 const socket: Socket = io("ws://localhost:8080", {transports: ['websocket']});
+const DEBUG: boolean = (process.env.NODE_ENV == "development");
 
 export default function LobbyPage() {
+  /** State of the Page */
   const [state, setState] = useState("CONNECTING");
-  const [isConnected, setIsConnected] = useState(false);
-  const [lastReceivedMsg, setlastReceivedMsg] = useState(null);
 
+  /** bool wether websocket is connected */
+  const [isConnected, setIsConnected] = useState(false);
 
   /**
    * This will only be executed once on startup, regardless of re-rendering
    * This is important, because otherwise we keep adding new listeners
   */
   useEffect(() => {
-
     const msgToClient = (data: string) => {
+      if (DEBUG) console.log("NEXT: Client received packet: ", data);
       const dataObj: JsonPacket = JSON.parse(data);
-      console.log("received obj on client: ", data);
-      setlastReceivedMsg(data);
       if (dataObj.type == "sc.DEV.start.lobby")
         setState("LOBBY");
       else if (dataObj.type == "sc.start.loading")
@@ -37,42 +37,46 @@ export default function LobbyPage() {
         setState("ENDSCREEN");
       else if (dataObj.type == "sc.DEV.start.connecting")
         setState("CONNECTING");
-      else
-        console.log("Received unhandled package type: ", dataObj);
+      else {
+        if (DEBUG) console.log("NEXT: Received unhandled package type: ");
+      }
     }
 
-    socket.on('msgToClient', msgToClient);
-    socket.on('connect', () => {setIsConnected(true)});
-    socket.on('disconnect', () => {setIsConnected(false)});
+    // Create fixed setter functions for binding to evens
+    const onConnect = () => {setIsConnected(true)};
+    const onDisconnect = () => {setIsConnected(false)};
 
-    // Cleanup
+    // Bind functions to events
+    socket.on('msgToClient', msgToClient);
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    // Cleanup bound events
     return () => {
       socket.off('msgToClient', msgToClient)
-      socket.off('connect', () => {setIsConnected(true)});
-      socket.off('disconnect', () => {setIsConnected(false)});
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
     };
   }, [])
 
+  // Create Callback function so components can send to Server
   const msgToServer = useCallback((data: string) => {
-    if (socket && socket.connected)
+    if (socket && socket.connected) {
       socket.emit('msgToServer', data);
+      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", data);
+    }
   }, []);
 
-  const checkSocket = useCallback(() => {
-    return (socket && socket.connected);
-  }, []);
-
+  // JSX element for displaying page
   return (
     <main className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
-  
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
-                setState={setState}
                 msgToServer={msgToServer} 
-                lastReceivedMsg={lastReceivedMsg} 
                 socket={socket}
-                isConnected={isConnected}/>
-
+                isConnected={isConnected}
+                DEBUG={DEBUG}
+                />
     </main>
   )
 }

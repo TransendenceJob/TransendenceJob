@@ -16,7 +16,7 @@ function setButtonPos(button, canvas, pos_x, pos_y)
 	button.top =  pos_y * ((canvas.height - button.heightInPixels) / 2);
 }
 
-export default function createGui(scene, canvas, socket, moveToEndscreen)
+export default function createGui(scene, canvas, socket)
 {
 	let count = 0;
 	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
@@ -50,10 +50,7 @@ export default function createGui(scene, canvas, socket, moveToEndscreen)
 			};
 			if (socket && socket.connected) {
 				socket.emit('msgToServer', JSON.stringify(data));
-			} else {
-				console.warn("No Websocket Connection established");
 			}
-		moveToEndscreen();
 		});
 	gui.addControl(endGameButton);
 
@@ -65,14 +62,12 @@ export default function createGui(scene, canvas, socket, moveToEndscreen)
 	button.onPointerUpObservable.add(() => {
 		count++;
 		const data = {
-			type: "User clicked",
+			type: "cs.DEV.buttonPress",
 			timestamp: Date.now(),
 			message: `User pressed button for the ${count} time`,
 			};
 			if (socket && socket.connected) {
 				socket.emit('msgToServer', JSON.stringify(data));
-			} else {
-				console.warn("No Websocket Connection established");
 			}
 		})
 	gui.addControl(button);

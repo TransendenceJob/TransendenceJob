@@ -12,6 +12,8 @@ enum LobbyStateEnum {
 
 interface JsonPacket {
   type: string,
+  timestamp: number,
+  message: string,
 }
 
 /**
@@ -22,7 +24,6 @@ interface JsonPacket {
  */
 function translateLobbyState(state: LobbyStateEnum): string
 {
-  console.log("State currenyly is: ", state);
   switch (state) {
     case LobbyStateEnum.OpenLobby:
       return ("sc.DEV.start.lobby");
@@ -97,10 +98,10 @@ export class Lobby {
    */
   gameServerLoop() {
     if (
-      this.state == LobbyStateEnum.ClosedLobby &&
+      this.state == LobbyStateEnum.Game &&
       Date.now() > this.lastTimestamp
     ) {
-      this.msgToClient('{"msg": "5 Seconds have passed"}');
+      this.msgToClient('{"type": "sc.DEV.repeat", "msg": "5 Seconds have passed"}');
       this.lastTimestamp = Date.now() + 5000;
     }
   }
@@ -111,8 +112,7 @@ export class Lobby {
    */
   msgToServer(raw_data: string) {
     const data: JsonPacket = JSON.parse(raw_data);
-    console.log('Lobby received message: ', data);
-    let response: JsonPacket = {type: ""};
+    let response: JsonPacket = {type: "", timestamp: 0, message: ""};
 
     // Most of theese should be removed later, 
     // only exists to move through game and lobby states as developer
@@ -138,13 +138,19 @@ export class Lobby {
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
     else if (data.type == "cs.DEV.start.endscreen") {
+      response.type = "sc.game.finished";
       this.state = LobbyStateEnum.OpenLobby;
+    }
+    // For the button to send to Server, just send back a copy
+    else if (data.type == 'cs.DEV.buttonPress') {
+      response.type = "sc.DEV.buttonPress";
+      response.timestamp = data.timestamp;
+      response.message = data.message;
     }
 
     // If Response set, send it out
     if (response.type != "") {
       this.msgToClient(JSON.stringify(response));
-      console.log(`Sending: ${response.type}`)
     }
   }
 }
