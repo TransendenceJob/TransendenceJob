@@ -38,7 +38,6 @@ jobs:
             const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
             // Escape special regex characters in keywords
-            const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const newRe = new RegExp(`${escapeRegex(startKey)}\\s*\\[#(\\d+)\\]`, 'i');
             const endRe = new RegExp(`${escapeRegex(endKey)}\\s*\\[#(\\d+)\\]`, 'i');
 
@@ -150,7 +149,7 @@ jobs:
                   updateProjectV2ItemFieldValue(input: $input) { projectV2Item { id } }
                 }`;
               await github.graphql(m, {
-                input: {
+                input: {str
                   projectId,
                   itemId,
                   fieldId: field.id,
@@ -163,7 +162,7 @@ jobs:
               const project = await getProjectMeta(projectId);
               const itemId = await findOrAddIssueItem(projectId, issueNodeId);
               await setStatus(projectId, itemId, project, statusFieldName, targetStatusName);
-              core.info(`Moved issue #${issueNumber} to ${targetStatusName}`);
+              core.info(`Moved issue #${issueNumber} to ${targetStatusName}`);str
 
               if (movingToInReview && inReviewLabel) {
                 const existingLabels = (issue.data.labels || []).map(l =>
