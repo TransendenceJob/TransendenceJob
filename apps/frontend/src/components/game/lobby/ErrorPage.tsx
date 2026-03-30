@@ -1,3 +1,7 @@
+/**
+ * Component for page, that is served in case the Servers state machine
+ * reaches an invalid state
+ */
 export default function ErrorPage() {
   return (
     <div>

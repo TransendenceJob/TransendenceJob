@@ -41,8 +41,8 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
         scene.render();
       });
 
-    const resize = () => engine.resize();
-    window.addEventListener("resize", resize);
+      const resize = () => engine.resize();
+      window.addEventListener("resize", resize);
 
       const cleanup = () => {
         window.removeEventListener("resize", resize);

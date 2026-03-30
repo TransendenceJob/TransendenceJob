@@ -3,13 +3,12 @@ import { Lobby } from './Lobby';
 import { EventEmitter } from 'stream';
 import { Logger } from '@nestjs/common';
 
+const DEBUG: boolean = (process.env.NODE_ENV == "development");
+
 /**
  * Service that administrates multiple lobbies at the same time
  * Since we only plan on using 1, this is just passing stuff through
  */
-
-const DEBUG: boolean = (process.env.NODE_ENV == "development");
-
 @Injectable()
 export class LobbyManager extends EventEmitter {
   private lobbies: Lobby[];
@@ -23,7 +22,7 @@ export class LobbyManager extends EventEmitter {
       this.lobbies[i] = new Lobby(i, (payload: string) => {
         this.emit('dataToEmit', payload);
         if (DEBUG)
-          this.logger.log(new Date(Date.now()), "Sending to Client: ", payload);
+          this.logger.log(new Date(Date.now()), "Server -> Client: ", payload);
       });
     }
   }
@@ -35,6 +34,6 @@ export class LobbyManager extends EventEmitter {
   msgToServer(data: string) {
     this.lobbies[0].msgToServer(data);
     if (DEBUG)
-      this.logger.log(new Date(Date.now()), "Received from Client: ", data);
+      this.logger.log(new Date(Date.now()), "Client -> Server: ", data);
   }
 }

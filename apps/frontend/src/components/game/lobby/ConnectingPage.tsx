@@ -1,13 +1,20 @@
 import { useEffect } from 'react';
 
-// 1. Define the "Struct" for our arguments (Props)
-interface LobbyProps {
+interface Params {
   msgToServer: (data: string) => void;
   isConnected: boolean
 }
 
-
-export default function ConnectingPage({ msgToServer, isConnected }: LobbyProps) {
+/**
+ * Component for page, that the user gets served in the beginning
+ * Sends a packet to the Server, notifying it in which state it is,
+ * so the Page may move on to that state
+ * @param msgToServer function for sending packet to server
+ * @param isConnected boolean wether the socket is connected
+ * @note Putting the Code for sending in a useEffect with our params as arguments,
+ * makes it so the function is only called initially and whenever one of the params changes
+ */
+export default function ConnectingPage({ msgToServer, isConnected }: Params) {
   useEffect(() => {
     if (isConnected)
     {

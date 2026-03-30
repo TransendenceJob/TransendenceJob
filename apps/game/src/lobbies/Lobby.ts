@@ -1,7 +1,5 @@
 import '@babylonjs/loaders/glTF';
 import * as BABYLON from 'babylonjs';
-import * as fs from 'fs';
-import type { Response } from 'express';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -43,7 +41,6 @@ function translateLobbyState(state: LobbyStateEnum): string
  * Use msgToClient() to send a json packet to the Client
  * msgToServer() will trigger when json packet sent to server
  * gameServerLoop() triggers events periodically
- * servePage() sets the Response to a web page based on current state
  */
 export class Lobby {
   public state: LobbyStateEnum;

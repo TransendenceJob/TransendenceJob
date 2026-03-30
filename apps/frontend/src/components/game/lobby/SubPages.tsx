@@ -6,7 +6,6 @@ import EndPage from "@/src/components/game/lobby/EndPage";
 import ErrorPage from '@/src/components/game/lobby/ErrorPage';
 import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
 
-
 interface Params {
   state: string;
   msgToServer: (data: string) => void;
@@ -15,7 +14,15 @@ interface Params {
   DEBUG: boolean;
 }
 
-
+/**
+ * Component that serves different Components,
+ * based on the given state
+ * @param state string that specifies State
+ * @param msgToServer function for sending packet to server
+ * @param socket Socket.io Socket object for Babylon Canvas
+ * @param isConnected boolean, wether socket connection is established
+ * @param DEBUG boolean wether Debug messages should be printed
+ */
 export default function SubPages({state,
                                   msgToServer,
                                   socket,
@@ -24,7 +31,8 @@ export default function SubPages({state,
   }: Params) {
 
   if (state == 'CONNECTING') {
-    return <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>
+    return <ConnectingPage msgToServer={msgToServer} 
+                            isConnected={isConnected}/>
   }
   else if (state === 'LOBBY') {
     return <LobbyPage msgToServer={msgToServer}/>
