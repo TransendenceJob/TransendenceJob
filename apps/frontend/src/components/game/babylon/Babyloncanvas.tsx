@@ -16,7 +16,8 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
  
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
-  // Essentially this ensures that our msgToServer function will always get a stable socket connection
+  // Essentially this ensures,
+  //  that our msgToServer function will always get a stable socket connection
   const msgRef = useRef(msgToServer);
   useEffect(() => {
     msgRef.current = msgToServer;
@@ -28,7 +29,7 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
     if (!canvas) return;
 
     const engine = new Engine(canvas, true);
-    let disposed = false;
+    const disposed = false;
 
     createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene) => {
       if (disposed) {
