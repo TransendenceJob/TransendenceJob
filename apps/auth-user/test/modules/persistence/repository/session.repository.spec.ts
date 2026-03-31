@@ -1,5 +1,5 @@
-import { SessionRepository } from './session.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { SessionRepository } from '../../../../src/modules/persistence/repositories/session.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('SessionRepository', () => {
   const prisma = {

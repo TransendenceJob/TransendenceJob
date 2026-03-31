@@ -1,5 +1,5 @@
-import { AuditLogRepository } from './audit-log.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { AuditLogRepository } from '../../../../src/modules/persistence/repositories/audit-log.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('AuditLogRepository', () => {
   const prisma = {

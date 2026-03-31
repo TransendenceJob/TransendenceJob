@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { type AuditAction, type AuditLog } from '@prisma/client';
+import { type AuditAction, type AuditLog, type Prisma } from '@prisma/client';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { type DbClient } from './repository.types';
 import { PRISMA_DB } from '../persistence.tokens';
@@ -29,7 +29,7 @@ export class AuditLogRepository {
       actorUserId?: string | null;
       ip?: string | null;
       userAgent?: string | null;
-      metadataJson?: unknown;
+      metadataJson?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
     },
     db?: DbClient,
   ): Promise<AuditLog> {

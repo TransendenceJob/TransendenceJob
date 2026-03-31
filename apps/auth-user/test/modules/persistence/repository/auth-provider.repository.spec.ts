@@ -1,5 +1,5 @@
-import { AuthProviderRepository } from './auth-provider.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { AuthProviderRepository } from '../../../../src/modules/persistence/repositories/auth-provider.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('AuthProviderRepository', () => {
   const prisma = {

@@ -1,8 +1,8 @@
-import { SessionRepository } from './session.repository';
-import { RoleRepository } from './role.repository';
-import { AuditLogRepository } from './audit-log.repository';
-import { UserRepository } from './user.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { SessionRepository } from '../../../../src/modules/persistence/repositories/session.repository';
+import { RoleRepository } from '../../../../src/modules/persistence/repositories/role.repository';
+import { AuditLogRepository } from '../../../../src/modules/persistence/repositories/audit-log.repository';
+import { UserRepository } from '../../../../src/modules/persistence/repositories/user.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('Persistence composition (integration-style with transaction client)', () => {
   const tx = {

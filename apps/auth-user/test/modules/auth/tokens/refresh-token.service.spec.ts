@@ -1,7 +1,7 @@
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { RefreshTokenService } from '../../../../src/modules/auth/tokens/refresh-token.service';
 import { type AuthConfigService } from '../../../../src/modules/config/auth-config.service';
-import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
+import { type SessionRepository } from '../../../../src/modules/persistence/repositories/session.repository';
 import { randomBytes } from 'node:crypto';
 
 describe('RefreshTokenService - Comprehensive Unit Tests', () => {
@@ -14,16 +14,36 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
   } as AuthConfigService;
 
   let service: RefreshTokenService;
-  let mockPrisma: PrismaService;
+  let mockPrisma: SessionRepository & {
+    session: {
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+  };
 
   beforeEach(() => {
+    const create = jest.fn();
+    const findUnique = jest.fn();
+    const update = jest.fn();
+
     mockPrisma = {
+      createSession: create,
+      findById: findUnique,
+      updateRefreshTokenHash: update,
+      revokeSession: update,
       session: {
-        create: jest.fn(),
-        findUnique: jest.fn(),
-        update: jest.fn(),
+        create,
+        findUnique,
+        update,
       },
-    } as unknown as PrismaService;
+    } as unknown as SessionRepository & {
+      session: {
+        create: jest.Mock;
+        findUnique: jest.Mock;
+        update: jest.Mock;
+      };
+    };
 
     service = new RefreshTokenService(mockConfig, mockPrisma);
   });
@@ -211,7 +231,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
 
   describe('BLACKBOX: createSessionWithRefreshToken - Session Creation', () => {
     it('should create session in database', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -226,7 +246,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
     });
 
     it('should return plain refresh token (not hash)', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -240,7 +260,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
     });
 
     it('should store hashed token in database', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -248,15 +268,15 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
         userId: 'user-123',
       });
 
-      const callArg = (mockPrisma.session.create as jest.Mock).mock.calls[0][0];
-      const storedHash = callArg.data.refreshTokenHash;
+      const callArg = mockPrisma.session.create.mock.calls[0][0];
+      const storedHash = callArg.refreshTokenHash;
 
       // Hash should be hex format (64 chars for SHA256)
       expect(/^[a-f0-9]{64}$/.test(storedHash)).toBe(true);
     });
 
     it('should include userId, userAgent, and ipAddress', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -266,15 +286,15 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
         ipAddress: '10.0.0.1',
       });
 
-      const callArg = (mockPrisma.session.create as jest.Mock).mock.calls[0][0];
+      const callArg = mockPrisma.session.create.mock.calls[0][0];
 
-      expect(callArg.data.userId).toBe('user-456');
-      expect(callArg.data.userAgent).toBe('Chrome/91.0');
-      expect(callArg.data.ipAddress).toBe('10.0.0.1');
+      expect(callArg.userId).toBe('user-456');
+      expect(callArg.userAgent).toBe('Chrome/91.0');
+      expect(callArg.ipAddress).toBe('10.0.0.1');
     });
 
     it('should return expiration date', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -292,14 +312,14 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const oldToken = service.generateOpaqueRefreshToken();
       const oldHash = service.hashRefreshToken(oldToken);
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: oldHash,
         revokedAt: null,
         expiresAt: new Date(Date.now() + 60_000),
       });
 
-      (mockPrisma.session.update as jest.Mock).mockResolvedValue({
+      mockPrisma.session.update.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -313,29 +333,30 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const oldToken = service.generateOpaqueRefreshToken();
       const oldHash = service.hashRefreshToken(oldToken);
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: oldHash,
         revokedAt: null,
         expiresAt: new Date(Date.now() + 60_000),
       });
 
-      (mockPrisma.session.update as jest.Mock).mockResolvedValue({
+      mockPrisma.session.update.mockResolvedValue({
         id: 'session-123',
       });
 
       await service.rotateRefreshToken('session-123', oldToken);
 
       expect(mockPrisma.session.update).toHaveBeenCalledTimes(1);
-      const updateCall = (mockPrisma.session.update as jest.Mock).mock
-        .calls[0][0];
+      const updateCall = mockPrisma.session.update.mock.calls[0];
 
-      expect(updateCall.data.refreshTokenHash).toBeTruthy();
-      expect(updateCall.data.refreshTokenHash).not.toBe(oldHash);
+      expect(updateCall[0]).toBe('session-123');
+      expect(updateCall[1]).toBeTruthy();
+      expect(updateCall[1]).not.toBe(oldHash);
+      expect(updateCall[2]).toBeInstanceOf(Date);
     });
 
     it('should throw NotFoundException for missing session', async () => {
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue(null);
+      mockPrisma.session.findUnique.mockResolvedValue(null);
 
       await expect(
         service.rotateRefreshToken('missing-session', 'token'),
@@ -346,7 +367,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const oldToken = service.generateOpaqueRefreshToken();
       const oldHash = service.hashRefreshToken(oldToken);
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: oldHash,
         revokedAt: new Date(),
@@ -362,7 +383,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const oldToken = service.generateOpaqueRefreshToken();
       const oldHash = service.hashRefreshToken(oldToken);
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: oldHash,
         revokedAt: null,
@@ -379,7 +400,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const correctHash = service.hashRefreshToken(correctToken);
       const wrongToken = service.generateOpaqueRefreshToken();
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: correctHash,
         revokedAt: null,
@@ -393,34 +414,22 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
   });
 
   describe('BLACKBOX: revokeSession - Session Revocation', () => {
-    it('should update session with revokedAt timestamp', async () => {
-      (mockPrisma.session.update as jest.Mock).mockResolvedValue(undefined);
+    it('should delegate revoke to session repository', async () => {
+      mockPrisma.session.update.mockResolvedValue(undefined);
 
       await service.revokeSession('session-123');
 
       expect(mockPrisma.session.update).toHaveBeenCalledTimes(1);
-      const updateCall = (mockPrisma.session.update as jest.Mock).mock
-        .calls[0][0];
-
-      expect(updateCall.where.id).toBe('session-123');
-      expect(updateCall.data.revokedAt).toBeInstanceOf(Date);
+      expect(mockPrisma.session.update).toHaveBeenCalledWith('session-123');
     });
 
-    it('should set revokedAt to current time', async () => {
-      (mockPrisma.session.update as jest.Mock).mockResolvedValue(undefined);
+    it('should call revoke for the provided session id', async () => {
+      mockPrisma.session.update.mockResolvedValue(undefined);
 
-      const beforeRevoke = new Date();
       await service.revokeSession('session-123');
-      const afterRevoke = new Date();
 
-      const updateCall = (mockPrisma.session.update as jest.Mock).mock
-        .calls[0][0];
-      const revokedAt = updateCall.data.revokedAt;
-
-      expect(revokedAt.getTime()).toBeGreaterThanOrEqual(
-        beforeRevoke.getTime(),
-      );
-      expect(revokedAt.getTime()).toBeLessThanOrEqual(afterRevoke.getTime());
+      expect(mockPrisma.session.update).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.session.update).toHaveBeenCalledWith('session-123');
     });
   });
 
@@ -438,7 +447,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
 
   describe('WHITEBOX: Edge Cases & Security', () => {
     it('should handle empty userAgent', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -452,7 +461,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
     });
 
     it('should handle various IP formats', async () => {
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -490,7 +499,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
       const oldToken = service.generateOpaqueRefreshToken();
       const oldHash = service.hashRefreshToken(oldToken);
 
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: 'session-123',
         refreshTokenHash: oldHash,
         revokedAt: null,
@@ -554,7 +563,7 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
   describe('WHITEBOX: Session Lifecycle', () => {
     it('should handle full session lifecycle', async () => {
       // Create session
-      (mockPrisma.session.create as jest.Mock).mockResolvedValue({
+      mockPrisma.session.create.mockResolvedValue({
         id: 'session-123',
       });
 
@@ -568,14 +577,14 @@ describe('RefreshTokenService - Comprehensive Unit Tests', () => {
 
       // Rotate token
       const tokenHash = service.hashRefreshToken(refreshToken);
-      (mockPrisma.session.findUnique as jest.Mock).mockResolvedValue({
+      mockPrisma.session.findUnique.mockResolvedValue({
         id: sessionId,
         refreshTokenHash: tokenHash,
         revokedAt: null,
         expiresAt: new Date(Date.now() + 60_000),
       });
 
-      (mockPrisma.session.update as jest.Mock).mockResolvedValue({
+      mockPrisma.session.update.mockResolvedValue({
         id: sessionId,
       });
 

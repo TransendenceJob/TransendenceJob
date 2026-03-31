@@ -1,5 +1,5 @@
-import { PasswordResetTokenRepository } from './password-reset-token.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { PasswordResetTokenRepository } from '../../../../src/modules/persistence/repositories/password-reset-token.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('PasswordResetTokenRepository', () => {
   const prisma = {

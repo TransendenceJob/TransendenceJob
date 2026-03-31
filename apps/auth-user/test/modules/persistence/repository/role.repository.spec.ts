@@ -1,5 +1,5 @@
-import { RoleRepository } from './role.repository';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { RoleRepository } from '../../../../src/modules/persistence/repositories/role.repository';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('RoleRepository', () => {
   const prisma = {
