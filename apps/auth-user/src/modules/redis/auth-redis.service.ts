@@ -86,7 +86,7 @@ export class AuthRedisService implements OnModuleInit, OnModuleDestroy {
    * }
    */
   isHealthy(): boolean {
-    return this.connected && this.client.isReady;
+    return (this.connected || this.client.isOpen) && this.client.isReady;
   }
 
   /**

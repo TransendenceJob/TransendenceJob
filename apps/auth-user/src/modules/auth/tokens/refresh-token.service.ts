@@ -57,7 +57,14 @@ export class RefreshTokenService {
    */
   verifyRefreshToken(token: string, tokenHash: string): boolean {
     const candidate = this.hashRefreshToken(token);
-    return timingSafeEqual(Buffer.from(candidate), Buffer.from(tokenHash));
+    const candidateBuffer = Buffer.from(candidate);
+    const tokenHashBuffer = Buffer.from(tokenHash);
+
+    if (candidateBuffer.length !== tokenHashBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(candidateBuffer, tokenHashBuffer);
   }
 
   /**
