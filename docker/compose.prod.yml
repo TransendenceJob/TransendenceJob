@@ -94,9 +94,10 @@ services:
       DB_NAME: ${AUTH_DB_NAME}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
     expose:
       - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
+    command: ["sh", "-c", "node dist/src/main.js"]
     depends_on:
       postgres_auth:
         condition: service_healthy

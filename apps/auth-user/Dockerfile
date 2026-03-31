@@ -55,4 +55,4 @@ EXPOSE 3000
 
 RUN chmod +x /app/scripts/prismarun.sh
 ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]

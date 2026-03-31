@@ -46,8 +46,8 @@ server {
     # -------------------------------
     # Game WebSocket
     # -------------------------------
-    location /ws/ {
-        proxy_pass http://game_service:${GAME_INTERNAL_PORT}/;
+    location /socket.io/ {
+        proxy_pass http://game_service:${GAME_INTERNAL_PORT};
 
         proxy_http_version 1.1;
 
