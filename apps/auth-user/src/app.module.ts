@@ -4,9 +4,16 @@ import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { AppConfigModule } from './modules/config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { RedisModule } from './modules/redis/redis.module';
 
 @Module({
-  imports: [HealthModule, PrismaModule, AppConfigModule, AuthModule],
+  imports: [
+    HealthModule,
+    PrismaModule,
+    AppConfigModule,
+    AuthModule,
+    RedisModule,
+  ],
   controllers: [],
   providers: [],
 })

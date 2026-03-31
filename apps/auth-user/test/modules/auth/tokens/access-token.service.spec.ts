@@ -1,7 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common';
-import { AccessTokenService } from './access-token.service';
-import { type AuthConfigService } from '../../config/auth-config.service';
+import { AccessTokenService } from '../../../../src/modules/auth/tokens/access-token.service';
+import { type AuthConfigService } from '../../../../src/modules/config/auth-config.service';
 
 describe('AccessTokenService', () => {
   const jwtService = new JwtService();

@@ -3,6 +3,14 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+	/**
+	 * Catches all exceptions and formats them as JSON responses.
+	 * HttpExceptions are returned with their configured status and message.
+	 * Unknown errors default to 500 Internal Server Error.
+	 * @param exception - The thrown exception (caught by NestJS)
+	 * @param host - The execution context containing request/response objects
+	 * @returns JSON-formatted error response sent to client
+	 */
 	catch(exception: any, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const res = ctx.getResponse();

@@ -1,7 +1,7 @@
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { RefreshTokenService } from './refresh-token.service';
-import { type AuthConfigService } from '../../config/auth-config.service';
-import { type PrismaService } from '../../prisma/prisma.service';
+import { RefreshTokenService } from '../../../../src/modules/auth/tokens/refresh-token.service';
+import { type AuthConfigService } from '../../../../src/modules/config/auth-config.service';
+import { type PrismaService } from '../../../../src/modules/prisma/prisma.service';
 
 describe('RefreshTokenService', () => {
   const config = {
