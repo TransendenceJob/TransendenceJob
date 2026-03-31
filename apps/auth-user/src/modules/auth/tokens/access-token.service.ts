@@ -32,14 +32,17 @@ export class AccessTokenService {
   }
 
   async verifyAccessToken(token: string): Promise<AccessTokenClaims> {
-    const payload = await this.jwtService.verifyAsync<AccessTokenClaims>(
-      token,
-      {
+    let payload: AccessTokenClaims;
+
+    try {
+      payload = await this.jwtService.verifyAsync<AccessTokenClaims>(token, {
         secret: this.config.jwt.accessSecret,
         issuer: this.config.jwt.issuer,
         audience: this.config.jwt.audience,
-      },
-    );
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid access token');
+    }
 
     if (
       !payload?.sub ||
