@@ -3,7 +3,7 @@
 	"matchId": 0,
 	"lobbyData": {
 		"players": [
-			{"userKey": 0, "name": "", "indexInLobby": 0}
+			{"userKey": 0, "name": "", "indexInLobby": 0, "ready": false}
 		]
 	},
 	"seq": [0]
