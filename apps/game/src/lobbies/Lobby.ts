@@ -1,5 +1,4 @@
-import '@babylonjs/loaders/glTF';
-import * as BABYLON from 'babylonjs';
+import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -46,9 +45,9 @@ export class Lobby {
   public state: LobbyStateEnum;
   public id: number;
   public lobbyId: number;
-  private engine: BABYLON.NullEngine;
-  private scene: BABYLON.Scene;
-  private camera: BABYLON.ArcRotateCamera;
+  private engine: NullEngine;
+  private scene: Scene;
+  private camera: ArcRotateCamera;
   private lastTimestamp: number;
   private msgToClient: (msg: string) => void;
 
@@ -62,14 +61,14 @@ export class Lobby {
     this.state = LobbyStateEnum.OpenLobby;
     this.msgToClient = emitData;
     this.lobbyId = id;
-    this.engine = new BABYLON.NullEngine();
-    this.scene = new BABYLON.Scene(this.engine);
-    this.camera = new BABYLON.ArcRotateCamera(
+    this.engine = new NullEngine();
+    this.scene = new Scene(this.engine);
+    this.camera = new ArcRotateCamera(
       'Camera',
       0,
       0.8,
       100,
-      BABYLON.Vector3.Zero(),
+      Vector3.Zero(),
       this.scene,
     );
     this.lastTimestamp = 0;
