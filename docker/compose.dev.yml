@@ -117,17 +117,22 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-dev-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-dev-google-client-secret}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
       SERVICE_NAME: ${SERVICE_NAME}
       SERVICE_VERSION: ${SERVICE_VERSION}
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
+      PRISMA_GENERATE_ON_START: "true"
+      PRISMA_RUN_MIGRATIONS: "true"
     volumes:
       - ../apps/auth-user:/app
       - auth_node_modules:/app/node_modules
     ports:
       - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
       - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_auth:
         condition: service_healthy
