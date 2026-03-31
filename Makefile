@@ -45,13 +45,13 @@ check-env:
 up: dev
 
 dev: check-env
-	$(DC_DEV) up -d
+	$(DC_DEV) up -d --build
 
 prod: check-env
 	$(DC_PROD) up --build
 
 debug: check-env
-	$(DC_DEV) up -d
+	$(DC_DEV) up -d --build
 
 obs: check-env
 	$(DC_OBS) up -d
