@@ -39,6 +39,13 @@ type AuthConfigShape = {
     refreshSecret: string;
     accessTtl: string;
     refreshTtl: string;
+    issuer: string;
+    audience: string;
+  };
+  refreshToken: {
+    bytes: number;
+    ttl: string;
+    hashPepper: string;
   };
   google: {
     clientId: string;
@@ -81,6 +88,13 @@ export const authConfig = registerAs<AuthConfigShape>(
         refreshSecret: env.JWT_REFRESH_SECRET,
         accessTtl: env.JWT_ACCESS_TTL,
         refreshTtl: env.JWT_REFRESH_TTL,
+        issuer: env.JWT_ISSUER,
+        audience: env.JWT_AUDIENCE,
+      },
+      refreshToken: {
+        bytes: env.REFRESH_TOKEN_BYTES,
+        ttl: env.REFRESH_TOKEN_TTL,
+        hashPepper: env.REFRESH_TOKEN_HASH_PEPPER,
       },
       google: {
         clientId: env.GOOGLE_CLIENT_ID,

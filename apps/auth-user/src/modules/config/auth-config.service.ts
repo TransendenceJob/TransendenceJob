@@ -27,6 +27,10 @@ export class AuthConfigService {
     return this.config.jwt;
   }
 
+  get refreshToken(): AuthConfig['refreshToken'] {
+    return this.config.refreshToken;
+  }
+
   get google(): AuthConfig['google'] {
     return this.config.google;
   }

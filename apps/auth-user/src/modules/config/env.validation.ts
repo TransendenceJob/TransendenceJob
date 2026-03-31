@@ -26,10 +26,19 @@ const baseSchema = z.object({
   JWT_REFRESH_TTL: z
     .string()
     .regex(ttlRegex, 'JWT_REFRESH_TTL must look like 15m, 1h, 7d'),
+  JWT_ISSUER: z.string().min(1).default('auth-service'),
+  JWT_AUDIENCE: z.string().min(1).default('transcendence-internal'),
 
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
   GOOGLE_REDIRECT_URI: z.string().url(),
+
+  REFRESH_TOKEN_BYTES: z.coerce.number().int().min(32).max(128).default(48),
+  REFRESH_TOKEN_TTL: z
+    .string()
+    .regex(ttlRegex, 'REFRESH_TOKEN_TTL must look like 15m, 1h, 7d')
+    .default('7d'),
+  REFRESH_TOKEN_HASH_PEPPER: z.string().default(''),
 
   BCRYPT_ROUNDS: z.coerce.number().int().min(8).max(15).optional(),
 
