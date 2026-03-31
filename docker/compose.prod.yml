@@ -56,7 +56,7 @@ services:
       REDIS_HOST : redis
       REDIS_PORT : 6379
       RABBITMQ_HOST : rabbitmq
-      RABIITMQ_PORT :  5672
+      RABBITMQ_PORT :  5672
     expose:
       - "3000"
     command: [ "sh" , "-c" , "node dist/main.js"]
@@ -86,18 +86,35 @@ services:
     container_name: auth_service
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: ${AUTH_INTERNAL_PORT:-3000}
+
       DB_HOST: postgres_auth
       DB_PORT: 5432
       DB_USER: ${AUTH_DB_USER}
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       DB_NAME: ${AUTH_DB_NAME}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
+
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+
+      # GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      # GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      # GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
+
+      SERVICE_NAME: ${SERVICE_NAME:-auth-service}
+      SERVICE_VERSION: ${SERVICE_VERSION:-1.0.0}
     expose:
-      - "3000"
-    command: ["sh", "-c", "node dist/src/main.js"]
+      - "${AUTH_INTERNAL_PORT:-3000}"
+    command: ["sh", "-c", "node dist/main.js"]
     depends_on:
       postgres_auth:
         condition: service_healthy
@@ -110,40 +127,40 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  social_service:
-    profiles: ["prod"]
-    build:
-      context: ../apps/social
-      dockerfile: Dockerfile
-    container_name: social_service
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      DB_HOST: postgres_social
-      DB_PORT: 5432
-      DB_USER: ${SOCIAL_DB_USER}
-      DB_PASSWORD: ${SOCIAL_DB_PASSWORD}
-      DB_NAME: ${SOCIAL_DB_NAME}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-    expose:
-      - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
-    depends_on:
-      postgres_social:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    networks: [backend]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    social_service:
+      profiles: ["prod"]
+      build:
+        context: ../apps/social
+        dockerfile: Dockerfile
+      container_name: social_service
+      environment:
+        NODE_ENV: production
+        PORT: 3000
+        DB_HOST: postgres_social
+        DB_PORT: 5432
+        DB_USER: ${SOCIAL_DB_USER}
+        DB_PASSWORD: ${SOCIAL_DB_PASSWORD}
+        DB_NAME: ${SOCIAL_DB_NAME}
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_PORT: 5672
+      expose:
+        - "3000"
+      command: ["sh", "-c", "node dist/main.js"]
+      depends_on:
+        postgres_social:
+          condition: service_healthy
+        redis:
+          condition: service_healthy
+        rabbitmq:
+          condition: service_healthy
+      networks: [backend]
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
 
   stats_service:
     profiles: ["prod"]

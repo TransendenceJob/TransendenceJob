@@ -113,6 +113,13 @@ services:
       DB_NAME: ${AUTH_DB_NAME}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
+      SERVICE_NAME: ${SERVICE_NAME}
+      SERVICE_VERSION: ${SERVICE_VERSION}
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
     volumes:
       - ../apps/auth-user:/app
