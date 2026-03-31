@@ -39,13 +39,9 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: ${AUTH_URL}
       AUTH_TRUST_HOST: "true"
-    volumes:
-      - ../apps/frontend:/app
-      - frontend_node_modules:/app/node_modules
-    
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
-    command: ["sh", "-c", "npm ci && npm run dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
+    command: ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
     networks: [backend]
     logging:
       driver: "json-file"
@@ -71,10 +67,7 @@ services:
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
-    volumes:
-      - ../apps/BFF:/app
-      - bff_node_modules:/app/node_modules
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     ports:
       - "${BFF_HOST_PORT:-3000}:${BFF_INTERNAL_PORT:-3000}"
       - "${BFF_DEBUG_HOST_PORT:-9229}:9229"
@@ -113,14 +106,24 @@ services:
       DB_NAME: ${AUTH_DB_NAME}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-dev-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-dev-google-client-secret}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
+      SERVICE_NAME: ${SERVICE_NAME}
+      SERVICE_VERSION: ${SERVICE_VERSION}
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
-    volumes:
-      - ../apps/auth-user:/app
-      - auth_node_modules:/app/node_modules
+      PRISMA_GENERATE_ON_START: "true"
+      PRISMA_RUN_MIGRATIONS: "true"
+
     ports:
       - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
       - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_auth:
         condition: service_healthy
@@ -152,13 +155,10 @@ services:
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
-    volumes:
-      - ../apps/social:/app
-      - social_node_modules:/app/node_modules
     ports:
       - "${SOCIAL_HOST_PORT:-3002}:${SOCIAL_INTERNAL_PORT:-3000}"
       - "${SOCIAL_DEBUG_HOST_PORT:-9232}:9229"
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_social:
         condition: service_healthy
@@ -190,13 +190,10 @@ services:
       DB_NAME: ${STATS_DB_NAME}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
-    volumes:
-      - ../apps/stats:/app
-      - stats_node_modules:/app/node_modules
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
       - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_stats:
         condition: service_healthy
@@ -230,13 +227,10 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
       MAP_EXPORT_DIR: /app/generated/maps
-    volumes:
-      - ../apps/game:/app
-      - game_node_modules:/app/node_modules
     ports:
       - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
       - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
-    command: ["sh", "-c", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_game:
         condition: service_healthy
@@ -253,9 +247,3 @@ services:
 
 volumes:
   nginx_maps:
-  frontend_node_modules:
-  bff_node_modules:
-  auth_node_modules:
-  social_node_modules:
-  stats_node_modules:
-  game_node_modules:

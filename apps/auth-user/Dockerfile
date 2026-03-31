@@ -48,11 +48,9 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package*.json ./
 
 EXPOSE 3000
 
 RUN chmod +x /app/scripts/prismarun.sh
 ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
