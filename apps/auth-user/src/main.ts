@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from './modules/common/filters/global-exception.filter';
 import { PrismaService } from './modules/prisma/prisma.service';
+import { AuthConfigService } from './modules/config/auth-config.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,8 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
   const prismaService = app.get(PrismaService);
+  const authConfigService = app.get(AuthConfigService);
   prismaService.enableShutdownHooks(app);
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(authConfigService.appPort);
 }
-bootstrap();
+void bootstrap();
