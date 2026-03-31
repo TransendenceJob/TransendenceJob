@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { registerAs, type ConfigType } from '@nestjs/config';
 import { validateEnv } from './env.validation';
 
@@ -49,7 +51,7 @@ type AuthConfigShape = {
 export const authConfig = registerAs<AuthConfigShape>(
   'auth',
   (): AuthConfigShape => {
-    const env = validateEnv(process.env) as Record<string, string | number>;
+    const env = validateEnv(process.env);
 
     const databaseUrl = `postgresql://${encodeURIComponent(env.DB_USER)}:${encodeURIComponent(
       env.DB_PASSWORD,
@@ -92,9 +94,9 @@ export const authConfig = registerAs<AuthConfigShape>(
           }
         : {
             algorithm: 'argon2',
-            memoryCost: env.ARGON2_MEMORY_COST,
-            timeCost: env.ARGON2_TIME_COST,
-            parallelism: env.ARGON2_PARALLELISM,
+            memoryCost: env.ARGON2_MEMORY_COST!,
+            timeCost: env.ARGON2_TIME_COST!,
+            parallelism: env.ARGON2_PARALLELISM!,
           },
     };
   },
