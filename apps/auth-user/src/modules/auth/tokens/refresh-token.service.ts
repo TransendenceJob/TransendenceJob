@@ -5,14 +5,14 @@ import {
 } from '@nestjs/common';
 import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 import { AuthConfigService } from '../../config/auth-config.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { type RefreshTokenPair } from './token-contracts';
 
 @Injectable()
 export class RefreshTokenService {
   constructor(
     private readonly config: AuthConfigService,
-    private readonly prisma: PrismaService,
+    private readonly sessions: SessionRepository,
   ) {}
 
   /**
@@ -105,14 +105,12 @@ export class RefreshTokenService {
   }): Promise<{ sessionId: string; refreshToken: string; expiresAt: Date }> {
     const pair = this.createRefreshTokenPair();
 
-    const session = await this.prisma.session.create({
-      data: {
-        userId: input.userId,
-        refreshTokenHash: pair.refreshTokenHash,
-        userAgent: input.userAgent,
-        ipAddress: input.ipAddress,
-        expiresAt: pair.expiresAt,
-      },
+    const session = await this.sessions.createSession({
+      userId: input.userId,
+      refreshTokenHash: pair.refreshTokenHash,
+      userAgent: input.userAgent,
+      ipAddress: input.ipAddress,
+      expiresAt: pair.expiresAt,
     });
 
     return {
@@ -141,9 +139,7 @@ export class RefreshTokenService {
     sessionId: string,
     currentRefreshToken: string,
   ): Promise<{ refreshToken: string; expiresAt: Date }> {
-    const session = await this.prisma.session.findUnique({
-      where: { id: sessionId },
-    });
+    const session = await this.sessions.findById(sessionId);
 
     if (!session) {
       throw new NotFoundException('Session not found');
@@ -165,13 +161,11 @@ export class RefreshTokenService {
 
     const pair = this.createRefreshTokenPair();
 
-    await this.prisma.session.update({
-      where: { id: sessionId },
-      data: {
-        refreshTokenHash: pair.refreshTokenHash,
-        expiresAt: pair.expiresAt,
-      },
-    });
+    await this.sessions.updateRefreshTokenHash(
+      sessionId,
+      pair.refreshTokenHash,
+      pair.expiresAt,
+    );
 
     return {
       refreshToken: pair.refreshToken,
@@ -191,12 +185,7 @@ export class RefreshTokenService {
    * // Now refresh token from this session is invalid
    */
   async revokeSession(sessionId: string): Promise<void> {
-    await this.prisma.session.update({
-      where: { id: sessionId },
-      data: {
-        revokedAt: new Date(),
-      },
-    });
+    await this.sessions.revokeSession(sessionId);
   }
 
   /**

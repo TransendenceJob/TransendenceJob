@@ -5,12 +5,18 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { AppConfigModule } from './modules/config/config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { AuthPersistenceModule } from './modules/persistence/auth-persistence.module';
 
 @Module({
   imports: [
+    
     HealthModule,
+   
     PrismaModule,
+   
     AppConfigModule,
+   
+    AuthPersistenceModule,
     AuthModule,
     RedisModule,
   ],
