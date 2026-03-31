@@ -1,3 +1,9 @@
+import {
+  AdvancedDynamicTexture,
+  TextBlock,
+  Button,
+} from "@babylonjs/gui";
+
 function setButtonSize(button, canvas, size_x, size_y)
 {
 	button.widthInPixels = canvas.width * size_x;
@@ -10,43 +16,58 @@ function setButtonPos(button, canvas, pos_x, pos_y)
 	button.top =  pos_y * ((canvas.height - button.heightInPixels) / 2);
 }
 
-export function createGui(scene, canvas, socket)
+export default function createGui(scene, canvas, socket)
 {
 	let count = 0;
-	const gui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI(
+	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
 		"GUI",
 		true,
 		scene,
 	);
 
-	const socket_status = new BABYLON.GUI.TextBlock("socket_status", "Connection Status: Disconnected");
+	const socket_status = new TextBlock("socket_status", "Connection Status: Disconnected");
 	socket_status.fontSize = 24;
 	socket_status.color = "red";
 	const size = socket_status.fontSize.replace('px', '');
 	socket_status.top =  -1 * ((canvas.height - size) / 2);
 	gui.addControl(socket_status);
 
-	const receiveButton = BABYLON.GUI.Button.CreateSimpleButton("receive", "No Messages received");
+	const receiveButton = Button.CreateSimpleButton("receive", "No Messages received");
 	setButtonSize(receiveButton, canvas, 0.8, 0.2);
 	setButtonPos(receiveButton, canvas, 1, 1);
 	receiveButton.color = "#FFF";
 	gui.addControl(receiveButton);
 
-	const button = BABYLON.GUI.Button.CreateSimpleButton("send", "SEND");
+	// only exists for development, and moving through states by force
+	const endGameButton = Button.CreateSimpleButton("endGame", "End Game");
+	setButtonSize(endGameButton, canvas, 0.2, 0.2);
+	setButtonPos(endGameButton, canvas, -1, 0.5);
+	endGameButton.color = "#FFF";
+	endGameButton.onPointerUpObservable.add(() => {
+		const data = {
+			// will need lobbyId field
+			type: "cs.DEV.start.endscreen",
+			};
+			if (socket && socket.connected) {
+				socket.emit('msgToServer', JSON.stringify(data));
+			}
+		});
+	gui.addControl(endGameButton);
+
+
+	const button = Button.CreateSimpleButton("send", "SEND");
 	setButtonSize(button, canvas, 0.2, 0.2);
 	setButtonPos(button, canvas, -1, 1);
 	button.color = "#FFF";
 	button.onPointerUpObservable.add(() => {
 		count++;
 		const data = {
-			type: "User clicked",
+			type: "cs.DEV.buttonPress",
 			timestamp: Date.now(),
 			message: `User pressed button for the ${count} time`,
 			};
 			if (socket && socket.connected) {
 				socket.emit('msgToServer', JSON.stringify(data));
-			} else {
-				console.warn("No Websocket Connection established");
 			}
 		})
 	gui.addControl(button);
