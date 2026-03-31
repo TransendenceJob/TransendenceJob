@@ -31,7 +31,7 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
-# ---------- production ----------
+# ---------- production ---------
 FROM node:20-alpine AS production
 WORKDIR /app
 
