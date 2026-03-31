@@ -104,9 +104,9 @@ services:
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
 
-      # GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      # GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      # GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-prod-google-client-secret}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
 
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
 
@@ -114,7 +114,7 @@ services:
       SERVICE_VERSION: ${SERVICE_VERSION:-1.0.0}
     expose:
       - "${AUTH_INTERNAL_PORT:-3000}"
-    command: ["sh", "-c", "node dist/main.js"]
+    command: ["sh", "-c", "node dist/src/main.js"]
     depends_on:
       postgres_auth:
         condition: service_healthy
