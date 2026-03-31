@@ -11,24 +11,145 @@ datasource db {
   provider = "postgresql"
 }
 
-model UserCredential {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  PENDING_VERIFICATION
+}
 
-  sessions     Session[]
+enum AuthProviderType {
+  LOCAL
+  GOOGLE
+  GITHUB
+  FORTY_TWO
+}
+
+enum AuditAction {
+  USER_REGISTERED
+  USER_VERIFIED
+  LOGIN_SUCCEEDED
+  LOGIN_FAILED
+  REFRESH_SUCCEEDED
+  REFRESH_FAILED
+  LOGOUT
+  SESSION_REVOKED
+  USER_DISABLED
+  USER_ENABLED
+  ROLE_ASSIGNED
+  ROLE_REMOVED
+  ROLE_CHANGED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+}
+
+model User {
+  id                 String               @id @default(uuid()) @db.Uuid
+  email              String               @unique @db.VarChar(255)
+  passwordHash       String?              @db.Text
+  status             UserStatus           @default(PENDING_VERIFICATION)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  disabledAt         DateTime?
+
+  roles              UserRole[]
+  sessions           Session[]
+  authProviders      AuthProvider[]
+  passwordResetTokens PasswordResetToken[]
+
+  auditLogsAsTarget  AuditLog[]           @relation("AuditTargetUser")
+  auditLogsAsActor   AuditLog[]           @relation("AuditActorUser")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Role {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @unique @db.VarChar(50)
+  createdAt   DateTime   @default(now())
+
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId      String     @db.Uuid
+  roleId      String     @db.Uuid
+  assignedAt  DateTime   @default(now())
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
 }
 
 model Session {
-  id               String   @id @default(cuid())
-  userCredentialId String
-  refreshTokenHash String?
-  expiresAt        DateTime
-  createdAt        DateTime @default(now())
+  id                String     @id @default(uuid()) @db.Uuid
+  userId            String     @db.Uuid
+  refreshTokenHash  String     @db.Text
+  userAgent         String?    @db.Text
+  ipAddress         String?    @db.VarChar(64)
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime   @default(now())
 
-  userCredential   UserCredential @relation(fields: [userCredentialId], references: [id], onDelete: Cascade)
+  user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userCredentialId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("sessions")
+}
+
+model AuthProvider {
+  id               String            @id @default(uuid()) @db.Uuid
+  userId           String            @db.Uuid
+  provider         AuthProviderType
+  providerUserId   String            @db.VarChar(255)
+  createdAt        DateTime          @default(now())
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@index([provider, providerUserId])
+  @@map("auth_providers")
+}
+
+model PasswordResetToken {
+  id          String     @id @default(uuid()) @db.Uuid
+  userId      String     @db.Uuid
+  tokenHash   String     @unique @db.Text
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime   @default(now())
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model AuditLog {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String?      @db.Uuid
+  actorUserId String?      @db.Uuid
+  action      AuditAction
+  ip          String?      @db.VarChar(64)
+  userAgent   String?      @db.Text
+  metadataJson Json?
+  createdAt   DateTime     @default(now())
+
+  user        User?        @relation("AuditTargetUser", fields: [userId], references: [id], onDelete: SetNull)
+  actorUser   User?        @relation("AuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("audit_logs")
 }
