@@ -1,4 +1,5 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
+import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -114,7 +115,7 @@ export class Lobby {
     // only exists to move through game and lobby states as developer
 
     // Client wants to connect, so send them the current state to display
-    if (data.type == "cs.connection.attempt") {
+    if (data.type == CS_Type.CS_ConnectAttempt ) {
       response.type = translateLobbyState(this.state);
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
