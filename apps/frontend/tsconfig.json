@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@shared/game/packets/*": [
+        "./shared/game/packets/*"
       ]
     }
   },

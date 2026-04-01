@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 interface Params {
   msgToServer: (data: string) => void;
@@ -18,7 +19,10 @@ export default function ConnectingPage({ msgToServer, isConnected }: Params) {
   useEffect(() => {
     if (isConnected)
     {
-      const connectionPacket = {type: "cs.connection.attempt"}
+      const connectionPacket: CS_ConnectAttempt = {
+                                                    type: CS_Type.CS_ConnectAttempt, 
+                                                    lobbyId: 0};
+
       msgToServer(JSON.stringify(connectionPacket));
     }
   }, [isConnected, msgToServer]);
