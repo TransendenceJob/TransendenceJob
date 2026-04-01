@@ -4,11 +4,13 @@ import { AuthConfigService } from '../../config/auth-config.service';
 import { AppConfigModule } from '../../config/config.module';
 import { AccessTokenService } from './access-token.service';
 import { RefreshTokenService } from './refresh-token.service';
+import { AuthPersistenceModule } from '../../persistence/auth-persistence.module';
 import type { StringValue } from 'ms';
 
 @Module({
   imports: [
     AppConfigModule,
+    AuthPersistenceModule,
     JwtModule.registerAsync({
       imports: [AppConfigModule],
       inject: [AuthConfigService],

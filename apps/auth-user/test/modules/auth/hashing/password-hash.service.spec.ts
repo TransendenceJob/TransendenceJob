@@ -1,5 +1,5 @@
-import { PasswordHashService } from './password-hash.service';
-import { type AuthConfigService } from '../../config/auth-config.service';
+import { PasswordHashService } from '../../../../src/modules/auth/hashing/password-hash.service';
+import { type AuthConfigService } from '../../../../src/modules/config/auth-config.service';
 
 describe('PasswordHashService', () => {
   it('hashes and verifies with bcrypt', async () => {

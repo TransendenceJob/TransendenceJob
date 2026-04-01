@@ -23,14 +23,33 @@ export class PrismaService
     super({ adapter });
   }
 
+  /**
+   * Connects to the database on module initialization.
+   * Framework lifecycle hook; called automatically by NestJS.
+   * @returns Promise that resolves when connection is established
+   */
   async onModuleInit(): Promise<void> {
     await this.$connect();
   }
 
+  /**
+   * Disconnects from the database on module destruction.
+   * Framework lifecycle hook; called automatically by NestJS on shutdown.
+   * @returns Promise that resolves when connection is closed
+   */
   async onModuleDestroy(): Promise<void> {
     await this.$disconnect();
   }
 
+  /**
+   * Enables graceful shutdown hooks.
+   * Ensures database connection is properly closed before process exits.
+   * Call this from app bootstrap or main.ts.
+   * @param app - The NestJS application instance
+   * @example
+   * const app = await NestFactory.create(AppModule);
+   * prismaService.enableShutdownHooks(app);
+   */
   enableShutdownHooks(app: INestApplication): void {
     process.on('beforeExit', async () => {
       await app.close();
