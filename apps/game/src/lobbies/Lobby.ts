@@ -1,5 +1,5 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
-import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { CS_Type } from 'shared/packets/ClientServerPackets';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -9,9 +9,9 @@ enum LobbyStateEnum {
 }
 
 interface JsonPacket {
-  type: string,
-  timestamp: number,
-  message: string,
+  type: string;
+  timestamp: number;
+  message: string;
 }
 
 /**
@@ -20,17 +20,16 @@ interface JsonPacket {
  * @param state Lobbys State
  * @returns string for Json packet type
  */
-function translateLobbyState(state: LobbyStateEnum): string
-{
+function translateLobbyState(state: LobbyStateEnum): string {
   switch (state) {
     case LobbyStateEnum.OpenLobby:
-      return ("sc.DEV.start.lobby");
+      return 'sc.DEV.start.lobby';
     case LobbyStateEnum.Loading:
-      return ("sc.start.loading");
+      return 'sc.start.loading';
     case LobbyStateEnum.Game:
-      return ("sc.start.game");
+      return 'sc.start.game';
   }
-  return ("sc.invalid.state");
+  return 'sc.invalid.state';
 }
 
 /**
@@ -94,11 +93,10 @@ export class Lobby {
    * Currently has periodic output every 5 seconds
    */
   gameServerLoop() {
-    if (
-      this.state == LobbyStateEnum.Game &&
-      Date.now() > this.lastTimestamp
-    ) {
-      this.msgToClient('{"type": "sc.DEV.repeat", "msg": "5 Seconds have passed"}');
+    if (this.state == LobbyStateEnum.Game && Date.now() > this.lastTimestamp) {
+      this.msgToClient(
+        '{"type": "sc.DEV.repeat", "msg": "5 Seconds have passed"}',
+      );
       this.lastTimestamp = Date.now() + 5000;
     }
   }
@@ -109,44 +107,44 @@ export class Lobby {
    */
   msgToServer(raw_data: string) {
     const data: JsonPacket = JSON.parse(raw_data);
-    let response: JsonPacket = {type: "", timestamp: 0, message: ""};
+    const response: JsonPacket = { type: '', timestamp: 0, message: '' };
 
-    // Most of theese should be removed later, 
+    // Most of theese should be removed later,
     // only exists to move through game and lobby states as developer
 
     // Client wants to connect, so send them the current state to display
-    if (data.type == CS_Type.CS_ConnectAttempt ) {
+    if (data.type == CS_Type.CS_ConnectAttempt) {
       response.type = translateLobbyState(this.state);
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
-    else if (data.type == "cs.DEV.start.lobby") {
-      response.type = "sc.DEV.start.lobby"
+    else if (data.type == 'cs.DEV.start.lobby') {
+      response.type = 'sc.DEV.start.lobby';
       this.state = LobbyStateEnum.OpenLobby;
     }
     // DEV mode, should be removed late, Client commands state to be set to Loading
-    else if (data.type == "cs.DEV.start.loading") {
-      response.type = "sc.start.loading";
+    else if (data.type == 'cs.DEV.start.loading') {
+      response.type = 'sc.start.loading';
       this.state = LobbyStateEnum.Loading;
     }
     // DEV mode, should be removed late, Client commands state to be set to Game
-    else if (data.type == "cs.DEV.start.game") {
-      response.type = "sc.start.game";
+    else if (data.type == 'cs.DEV.start.game') {
+      response.type = 'sc.start.game';
       this.state = LobbyStateEnum.Game;
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
-    else if (data.type == "cs.DEV.start.endscreen") {
-      response.type = "sc.game.finished";
+    else if (data.type == 'cs.DEV.start.endscreen') {
+      response.type = 'sc.game.finished';
       this.state = LobbyStateEnum.OpenLobby;
     }
     // For the button to send to Server, just send back a copy
     else if (data.type == 'cs.DEV.buttonPress') {
-      response.type = "sc.DEV.buttonPress";
+      response.type = 'sc.DEV.buttonPress';
       response.timestamp = data.timestamp;
       response.message = data.message;
     }
 
     // If Response set, send it out
-    if (response.type != "") {
+    if (response.type != '') {
       this.msgToClient(JSON.stringify(response));
     }
   }
