@@ -1,5 +1,5 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
-import { CS_Type } from 'shared/packets/ClientServerPackets';
+import { CS_Type, CS_GenericPacket } from 'shared/packets/ClientServerPackets';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -106,45 +106,47 @@ export class Lobby {
    * @param raw_data string in json format sent on the socket
    */
   msgToServer(raw_data: string) {
-    const data: JsonPacket = JSON.parse(raw_data);
-    const response: JsonPacket = { type: '', timestamp: 0, message: '' };
+    const data: CS_GenericPacket = JSON.parse(raw_data) as CS_GenericPacket;
 
     // Most of theese should be removed later,
     // only exists to move through game and lobby states as developer
 
     // Client wants to connect, so send them the current state to display
     if (data.type == CS_Type.CS_ConnectAttempt) {
-      response.type = translateLobbyState(this.state);
+      const response = { type: translateLobbyState(this.state), lobbyId: 0 };
+      this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
     else if (data.type == 'cs.DEV.start.lobby') {
-      response.type = 'sc.DEV.start.lobby';
+      const response = { type: 'sc.DEV.start.lobby' };
       this.state = LobbyStateEnum.OpenLobby;
+      this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Loading
     else if (data.type == 'cs.DEV.start.loading') {
-      response.type = 'sc.start.loading';
+      const response = { type: 'sc.start.loading' };
       this.state = LobbyStateEnum.Loading;
+      this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Game
     else if (data.type == 'cs.DEV.start.game') {
-      response.type = 'sc.start.game';
+      const response = { type: 'sc.start.game' };
       this.state = LobbyStateEnum.Game;
+      this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
     else if (data.type == 'cs.DEV.start.endscreen') {
-      response.type = 'sc.game.finished';
+      const response = { type: 'sc.game.finished' };
       this.state = LobbyStateEnum.OpenLobby;
+      this.msgToClient(JSON.stringify(response));
     }
     // For the button to send to Server, just send back a copy
     else if (data.type == 'cs.DEV.buttonPress') {
-      response.type = 'sc.DEV.buttonPress';
-      response.timestamp = data.timestamp;
-      response.message = data.message;
-    }
-
-    // If Response set, send it out
-    if (response.type != '') {
+      const response: JsonPacket = {
+        type: 'sc.DEV.buttonPress',
+        timestamp: data.timestamp as number,
+        message: data.message as string,
+      };
       this.msgToClient(JSON.stringify(response));
     }
   }
