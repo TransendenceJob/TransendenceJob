@@ -20,8 +20,9 @@ export default function ConnectingPage({ msgToServer, isConnected }: Params) {
     if (isConnected)
     {
       const connectionPacket: CS_ConnectAttempt = {
-                                                    type: CS_Type.CS_ConnectAttempt, 
-                                                    lobbyId: 0};
+        type: CS_Type.CS_ConnectAttempt, 
+        lobbyId: 0
+      };
 
       msgToServer(JSON.stringify(connectionPacket));
     }
