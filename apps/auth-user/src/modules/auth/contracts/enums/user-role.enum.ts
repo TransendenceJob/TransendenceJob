@@ -1,5 +1,5 @@
 export enum UserRoleDto {
-  USER = 'USER',
-  MODERATOR = 'MODERATOR',
-  ADMIN = 'ADMIN',
+  USER = 'user',
+  MODERATOR = 'moderator',
+  ADMIN = 'admin',
 }

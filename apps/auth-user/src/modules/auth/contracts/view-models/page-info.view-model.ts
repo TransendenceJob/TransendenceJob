@@ -1,4 +1,4 @@
-export class PageInfoView {
+export class PageInfoViewModel {
   nextCursor?: string | null;
-  hasNextPage?: boolean;
+  hasNextPage!: boolean;
 }

@@ -1,3 +1,3 @@
 export enum AuthProviderNameDto {
-  GOOGLE = 'goole',
+  GOOGLE = 'google',
 }

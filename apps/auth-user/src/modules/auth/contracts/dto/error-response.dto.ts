@@ -1,5 +1,5 @@
 export class ErrorResponseDto {
   code!: string;
   message!: string;
-  details: Record<string, unknown> | null;
+  details?: Record<string, unknown> | null;
 }

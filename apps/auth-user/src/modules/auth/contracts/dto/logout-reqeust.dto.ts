@@ -1,9 +1,10 @@
-import { IsBoolean, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class LogoutRequestDto {
   @IsString()
   refreshToken!: string;
 
+  @IsOptional()
   @IsBoolean()
   logoutAll: boolean = false;
 }

@@ -3,7 +3,7 @@ import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 export class TraceHeadersDto {
   @IsOptional()
   @IsUUID()
-  xRequestid?: string;
+  xRequestId?: string;
 
   @IsOptional()
   @IsString()

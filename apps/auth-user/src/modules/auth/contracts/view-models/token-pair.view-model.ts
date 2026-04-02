@@ -1,6 +1,6 @@
 export class TokenPairViewModel {
   accessToken!: string;
   refreshToken!: string;
-  expiresIn!: string;
+  expiresIn!: number;
   tokenType!: string;
 }

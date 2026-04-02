@@ -1,4 +1,4 @@
 export class RevokeSessionsResponseDto {
-  userdId!: string;
+  userId!: string;
   revokedSessions!: number;
 }

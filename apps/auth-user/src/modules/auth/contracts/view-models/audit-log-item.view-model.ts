@@ -8,5 +8,5 @@ export class AuditLogItemViewModel {
   ip?: string | null;
   userAgent?: string | null;
   metadata?: Record<string, unknown>;
-  createdAt?: string;
+  createdAt!: string;
 }
