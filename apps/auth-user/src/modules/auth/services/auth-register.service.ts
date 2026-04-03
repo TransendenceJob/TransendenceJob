@@ -1,26 +1,18 @@
-import {
-  ConflictException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
-import { UserRepository } from '../persistence/repositories/user.repository';
-import { RoleRepository } from '../persistence/repositories/role.repository';
-import { SessionRepository } from '../persistence/repositories/session.repository';
-import { AuditLogRepository } from '../persistence/repositories/audit-log.repository';
-import { PasswordHashService } from './hashing/password-hash.service';
-import { AccessTokenService } from './tokens/access-token.service';
-import { RefreshTokenService } from './tokens/refresh-token.service';
-import { RegisterRequestDto } from './contracts/dto/register-request.dto';
-import { AuthSuccessResponseDto } from './contracts/dto/auth-success-response.dto';
-import { AuthContractMapper } from './contracts/mappers/auth-contract.mapper';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuthConfigService } from '../config/auth-config.service';
-import { AuthRedisService } from '../redis/auth-redis.service';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { UserRepository } from '../../persistence/repositories/user.repository';
+import { RoleRepository } from '../../persistence/repositories/role.repository';
+import { SessionRepository } from '../../persistence/repositories/session.repository';
+import { AuditLogRepository } from '../../persistence/repositories/audit-log.repository';
+import { PasswordHashService } from '../hashing/password-hash.service';
+import { RegisterRequestDto } from '../contracts/dto/register-request.dto';
+import { AuthSuccessResponseDto } from '../contracts/dto/auth-success-response.dto';
+import { AuthContractMapper } from '../contracts/mappers/auth-contract.mapper';
+import { PrismaService } from '../../prisma/prisma.service';
+import { AuthRateLimitService } from '../shared/auth-rate-limit.service';
+import { AuthTokenIssueService } from '../shared/auth-token-issue.service';
+import { AuthSessionCacheService } from '../shared/auth-session-cache.service';
 
 const DEFAULT_USER_ROLE = 'USER';
-const REGISTER_ATTEMPT_LIMIT = 5;
-const REGISTER_ATTEMPT_WINDOW_SECONDS = 60;
 
 export type RegisterContext = {
   ip?: string | null;
@@ -52,22 +44,24 @@ export class AuthRegisterService {
     private readonly sessions: SessionRepository,
     private readonly auditLogs: AuditLogRepository,
     private readonly passwordHashService: PasswordHashService,
-    private readonly accessTokens: AccessTokenService,
-    private readonly refreshTokens: RefreshTokenService,
-    private readonly authConfig: AuthConfigService,
-    private readonly redis: AuthRedisService,
+    private readonly rateLimit: AuthRateLimitService,
+    private readonly tokenIssue: AuthTokenIssueService,
+    private readonly sessionCache: AuthSessionCacheService,
   ) {}
 
   async register(
     input: RegisterRequestDto,
     context: RegisterContext,
   ): Promise<AuthSuccessResponseDto> {
-    await this.ensureRegisterRateLimit(input.email, context);
+    await this.rateLimit.ensureRegisterAllowed({
+      email: input.email,
+      ip: context.ip,
+    });
     await this.ensureEmailAvailable(input.email);
     const passwordHash = await this.passwordHashService.hashPassword(
       input.password,
     );
-    const refreshPair = this.refreshTokens.createRefreshTokenPair();
+    const refreshPair = this.tokenIssue.createRefreshTokenPair();
 
     try {
       const created = await this.createRegisteredUser(
@@ -79,8 +73,8 @@ export class AuthRegisterService {
 
       await this.cacheRegisteredSession(created, context);
 
-      const accessToken = await this.accessTokens.generateAccessToken({
-        sub: created.user.id,
+      const accessToken = await this.tokenIssue.issueAccessToken({
+        userId: created.user.id,
         email: created.user.email,
         roles: [DEFAULT_USER_ROLE],
         sessionId: created.session.id,
@@ -104,37 +98,6 @@ export class AuthRegisterService {
     const existingUser = await this.users.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('Email already exists');
-    }
-  }
-
-  private async ensureRegisterRateLimit(
-    email: string,
-    context: RegisterContext,
-  ): Promise<void> {
-    const ipBucket = context.ip
-      ? `register:ip:${context.ip}`
-      : 'register:ip:unknown';
-    const emailBucket = `register:email:${email.toLowerCase()}`;
-
-    const [ipAttempts, emailAttempts] = await Promise.all([
-      this.redis.incrementRateLimitCounter(
-        ipBucket,
-        REGISTER_ATTEMPT_WINDOW_SECONDS,
-      ),
-      this.redis.incrementRateLimitCounter(
-        emailBucket,
-        REGISTER_ATTEMPT_WINDOW_SECONDS,
-      ),
-    ]);
-
-    if (
-      ipAttempts > REGISTER_ATTEMPT_LIMIT ||
-      emailAttempts > REGISTER_ATTEMPT_LIMIT
-    ) {
-      throw new HttpException(
-        'Too many register attempts',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
     }
   }
 
@@ -202,22 +165,19 @@ export class AuthRegisterService {
     created: CreatedRegisterData,
     context: RegisterContext,
   ): Promise<void> {
-    const sessionCacheTtl = Math.max(
-      1,
-      Math.floor((created.session.expiresAt.getTime() - Date.now()) / 1000),
-    );
-
-    await this.redis.cacheSessionById(
-      created.session.id,
-      JSON.stringify({
-        userId: created.user.id,
+    await this.sessionCache.cacheSession({
+      session: {
+        id: created.session.id,
+        expiresAt: created.session.expiresAt,
+      },
+      user: {
+        id: created.user.id,
         status: created.user.status,
-        roles: [DEFAULT_USER_ROLE],
-        requestId: context.requestId ?? null,
-        serviceName: context.serviceName ?? null,
-      }),
-      sessionCacheTtl,
-    );
+      },
+      roles: [DEFAULT_USER_ROLE],
+      requestId: context.requestId,
+      serviceName: context.serviceName,
+    });
   }
 
   private buildRegisterResponse(
@@ -238,7 +198,7 @@ export class AuthRegisterService {
       tokens: {
         accessToken,
         refreshToken,
-        expiresIn: this.toSeconds(this.authConfig.jwt.accessTtl),
+        expiresIn: this.tokenIssue.accessTokenExpiresInSeconds(),
         tokenType: 'Bearer',
       },
     });
@@ -260,28 +220,5 @@ export class AuthRegisterService {
     }
 
     return false;
-  }
-
-  private toSeconds(ttl: string): number {
-    const match = ttl.match(/^(\d+)([smhd])$/);
-    if (!match) {
-      return 0;
-    }
-
-    const amount = Number(match[1]);
-    const unit = match[2];
-
-    switch (unit) {
-      case 's':
-        return amount;
-      case 'm':
-        return amount * 60;
-      case 'h':
-        return amount * 60 * 60;
-      case 'd':
-        return amount * 24 * 60 * 60;
-      default:
-        return 0;
-    }
   }
 }
