@@ -68,6 +68,8 @@ export class AuthContractMapper {
         return AuditActionDto.LOGOUT;
       case 'SESSION_REVOKED':
         return AuditActionDto.SESSIONS_REVOKED;
+      case 'GOOGLE_EXCHANGE':
+        return AuditActionDto.GOOGLE_EXCHANGE;
       case 'USER_ENABLED':
       case 'USER_DISABLED':
         return AuditActionDto.USER_DISABLED;
@@ -155,7 +157,9 @@ export class AuthContractMapper {
       ip: log.ip,
       userAgent: log.userAgent,
       metadata:
-        log.metadataJson && typeof log.metadataJson === 'object'
+        log.metadataJson &&
+        typeof log.metadataJson === 'object' &&
+        !Array.isArray(log.metadataJson)
           ? (log.metadataJson as Record<string, unknown>)
           : {},
       createdAt: log.createdAt.toISOString(),

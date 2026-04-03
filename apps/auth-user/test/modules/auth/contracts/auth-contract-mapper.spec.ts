@@ -1,7 +1,7 @@
 import { AuditActionDto } from '../../../../src/modules/auth/contracts/enums/audit-action.enum';
 import { UserRoleDto } from '../../../../src/modules/auth/contracts/enums/user-role.enum';
 import { UserStatusDto } from '../../../../src/modules/auth/contracts/enums/user-status.enum';
-import { AuthContractMapper } from '../../../../src/modules/auth/contracts/mappers/auth-contrat.mapper';
+import { AuthContractMapper } from '../../../../src/modules/auth/contracts/mappers/auth-contract.mapper';
 
 describe('AuthContractMapper', () => {
   const userEntity = {
@@ -68,5 +68,26 @@ describe('AuthContractMapper', () => {
     expect(response.items[0].action).toBe(AuditActionDto.LOGIN_SUCCESS);
     expect(response.pageInfo.hasNextPage).toBe(true);
     expect(response.pageInfo.nextCursor).toBe('audit_02');
+  });
+
+  it('maps google exchange audit actions', () => {
+    const response = AuthContractMapper.toAuditListResponse({
+      logs: [
+        {
+          id: 'audit_02',
+          userId: 'usr_123',
+          actorUserId: 'usr_123',
+          action: 'GOOGLE_EXCHANGE',
+          ip: '10.0.0.20',
+          userAgent: 'Mozilla/5.0',
+          metadataJson: { provider: 'google' },
+          createdAt: new Date('2026-03-10T13:00:00.000Z'),
+        },
+      ],
+      nextCursor: null,
+    });
+
+    expect(response.items[0].action).toBe(AuditActionDto.GOOGLE_EXCHANGE);
+    expect(response.items[0].metadata).toEqual({ provider: 'google' });
   });
 });
