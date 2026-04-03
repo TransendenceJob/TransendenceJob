@@ -7,6 +7,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { AuditActionDto } from '../enums/audit-action.enum';
 
 export class AuditQueryDto {
@@ -25,6 +26,7 @@ export class AuditQueryDto {
   cursor?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)

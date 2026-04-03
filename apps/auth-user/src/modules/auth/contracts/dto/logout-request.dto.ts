@@ -1,11 +1,11 @@
-import { IsBoolean, IsString, Length } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class DisableUserRequestDto {
+export class LogoutRequestDto {
   @IsString()
-  @Length(3, 255)
-  reason!: string;
+  refreshToken!: string;
 
+  @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
@@ -17,8 +17,8 @@ export class DisableUserRequestDto {
       if (value === 1) return true;
       if (value === 0) return false;
     }
-    return value;
+    return false;
   })
   @IsBoolean()
-  revokeSessions: boolean = true;
+  logoutAll: boolean = false;
 }
