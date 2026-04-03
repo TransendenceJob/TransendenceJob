@@ -1,7 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { GoogleExchangeRequestDto } from '../../../../src/modules/auth/contracts/dto/google-exchange-request.dto';
-import { LogoutRequestDto } from '../../../../src/modules/auth/contracts/dto/logout-reqeust.dto';
+import { LogoutRequestDto } from '../../../../src/modules/auth/contracts/dto/logout-request.dto';
 import { RegisterRequestDto } from '../../../../src/modules/auth/contracts/dto/register-request.dto';
 import { SetUserRolesRequestDto } from '../../../../src/modules/auth/contracts/dto/set-user-roles-request.dto';
 
