@@ -24,14 +24,14 @@ paths:
       operationId: registerInternalAuthUser
       security: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: "#/components/schemas/RegisterRequest"
             examples:
               default:
                 value:
@@ -40,21 +40,21 @@ paths:
                   displayName: Stefan
                   username: theochiper
       responses:
-        '201':
+        "201":
           description: User registered and session created
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSuccessResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /internal/auth/login:
     post:
@@ -64,35 +64,35 @@ paths:
       operationId: loginInternalAuthUser
       security: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: "#/components/schemas/LoginRequest"
             examples:
               default:
                 value:
                   email: stefan@example.com
                   password: StrongPassword123!
       responses:
-        '200':
+        "200":
           description: Login successful
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSuccessResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /internal/auth/logout:
     post:
@@ -103,33 +103,33 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LogoutRequest'
+              $ref: "#/components/schemas/LogoutRequest"
             examples:
               singleSession:
                 value:
                   refreshToken: rt_opaque_token_value
                   logoutAll: false
       responses:
-        '200':
+        "200":
           description: Logout successful
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LogoutResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/LogoutResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
   /internal/auth/refresh:
     post:
@@ -139,30 +139,30 @@ paths:
       operationId: refreshInternalAuthSession
       security: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RefreshRequest'
+              $ref: "#/components/schemas/RefreshRequest"
       responses:
-        '200':
+        "200":
           description: Token pair refreshed
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefreshResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/RefreshResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /internal/auth/verify:
     get:
@@ -173,8 +173,8 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
         - name: audience
           in: query
           required: false
@@ -183,19 +183,19 @@ paths:
             type: string
             example: bff
       responses:
-        '200':
+        "200":
           description: Token is valid
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VerifyResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/VerifyResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /internal/auth/google/exchange:
     post:
@@ -205,14 +205,14 @@ paths:
       operationId: exchangeGoogleAuthInternal
       security: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GoogleExchangeRequest'
+              $ref: "#/components/schemas/GoogleExchangeRequest"
             examples:
               authorizationCode:
                 value:
@@ -220,21 +220,21 @@ paths:
                   authorizationCode: 4/0AQSTgQ...
                   redirectUri: https://example.com/auth/google/callback
       responses:
-        '200':
+        "200":
           description: OAuth exchange succeeded
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthSuccessResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/Conflict'
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   /internal/auth/users/{userId}/disable:
     post:
@@ -245,33 +245,33 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - $ref: "#/components/parameters/UserId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DisableUserRequest'
+              $ref: "#/components/schemas/DisableUserRequest"
       responses:
-        '200':
+        "200":
           description: User disabled
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDisabledResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/UserDisabledResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /internal/auth/users/{userId}/role:
     post:
@@ -282,15 +282,15 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - $ref: "#/components/parameters/UserId"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SetUserRolesRequest'
+              $ref: "#/components/schemas/SetUserRolesRequest"
             examples:
               default:
                 value:
@@ -298,23 +298,23 @@ paths:
                     - user
                     - moderator
       responses:
-        '200':
+        "200":
           description: Roles updated
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserRolesResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/UserRolesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /internal/auth/users/{userId}/sessions/revoke:
     post:
@@ -325,31 +325,31 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - $ref: "#/components/parameters/UserId"
       requestBody:
         required: false
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RevokeSessionsRequest'
+              $ref: "#/components/schemas/RevokeSessionsRequest"
       responses:
-        '200':
+        "200":
           description: Sessions revoked
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RevokeSessionsResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/RevokeSessionsResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /internal/auth/audit:
     get:
@@ -360,8 +360,8 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/XRequestId'
-        - $ref: '#/components/parameters/XServiceName'
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
         - name: userId
           in: query
           required: false
@@ -372,7 +372,7 @@ paths:
           in: query
           required: false
           schema:
-            $ref: '#/components/schemas/AuditAction'
+            $ref: "#/components/schemas/AuditAction"
         - name: cursor
           in: query
           required: false
@@ -388,19 +388,19 @@ paths:
             maximum: 100
             default: 20
       responses:
-        '200':
+        "200":
           description: Audit page returned
           headers:
             X-Request-Id:
-              $ref: '#/components/headers/XRequestId'
+              $ref: "#/components/headers/XRequestId"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuditListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/AuditListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
 components:
   securitySchemes:
@@ -447,13 +447,13 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
     Unauthorized:
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           examples:
             unauthorized:
               value:
@@ -464,25 +464,25 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
     NotFound:
       description: Resource not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
     Conflict:
       description: Conflict
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
     TooManyRequests:
       description: Too many requests
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
 
   schemas:
     Error:
@@ -541,11 +541,11 @@ components:
           nullable: true
           example: theochiper
         status:
-          $ref: '#/components/schemas/UserStatus'
+          $ref: "#/components/schemas/UserStatus"
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/UserRole'
+            $ref: "#/components/schemas/UserRole"
         createdAt:
           type: string
           format: date-time
@@ -600,17 +600,17 @@ components:
       properties:
         user:
           allOf:
-            - $ref: '#/components/schemas/UserAuthView'
+            - $ref: "#/components/schemas/UserAuthView"
             - type: object
               properties:
                 providers:
                   type: array
                   items:
-                    $ref: '#/components/schemas/ProviderLink'
+                    $ref: "#/components/schemas/ProviderLink"
         tokens:
-          $ref: '#/components/schemas/TokenPair'
+          $ref: "#/components/schemas/TokenPair"
         session:
-          $ref: '#/components/schemas/SessionInfo'
+          $ref: "#/components/schemas/SessionInfo"
 
     RegisterRequest:
       type: object
@@ -633,7 +633,7 @@ components:
           type: string
           minLength: 3
           maxLength: 24
-          pattern: '^[a-zA-Z0-9_]+$'
+          pattern: "^[a-zA-Z0-9_]+$"
 
     LoginRequest:
       type: object
@@ -684,9 +684,9 @@ components:
       required: [tokens, session]
       properties:
         tokens:
-          $ref: '#/components/schemas/TokenPair'
+          $ref: "#/components/schemas/TokenPair"
         session:
-          $ref: '#/components/schemas/SessionInfo'
+          $ref: "#/components/schemas/SessionInfo"
 
     VerifyClaims:
       type: object
@@ -717,11 +717,11 @@ components:
           type: boolean
           example: true
         user:
-          $ref: '#/components/schemas/UserAuthView'
+          $ref: "#/components/schemas/UserAuthView"
         session:
-          $ref: '#/components/schemas/SessionInfo'
+          $ref: "#/components/schemas/SessionInfo"
         claims:
-          $ref: '#/components/schemas/VerifyClaims'
+          $ref: "#/components/schemas/VerifyClaims"
 
     GoogleExchangeRequest:
       type: object
@@ -763,7 +763,7 @@ components:
           type: string
           example: usr_123
         status:
-          $ref: '#/components/schemas/UserStatus'
+          $ref: "#/components/schemas/UserStatus"
         revokedSessions:
           type: integer
           example: 4
@@ -777,7 +777,7 @@ components:
           minItems: 1
           uniqueItems: true
           items:
-            $ref: '#/components/schemas/UserRole'
+            $ref: "#/components/schemas/UserRole"
 
     UserRolesResponse:
       type: object
@@ -789,7 +789,7 @@ components:
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/UserRole'
+            $ref: "#/components/schemas/UserRole"
         updatedAt:
           type: string
           format: date-time
@@ -829,7 +829,7 @@ components:
           nullable: true
           example: usr_admin_1
         action:
-          $ref: '#/components/schemas/AuditAction'
+          $ref: "#/components/schemas/AuditAction"
         ip:
           type: string
           nullable: true
@@ -863,6 +863,6 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/AuditLogItem'
+            $ref: "#/components/schemas/AuditLogItem"
         pageInfo:
-          $ref: '#/components/schemas/PageInfo'
+          $ref: "#/components/schemas/PageInfo"
