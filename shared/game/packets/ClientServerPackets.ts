@@ -3,6 +3,11 @@
 const prefix = "CS_";
 
 export enum CS_Type {
+	CS_DEV_StartLobby =			"CS_DEV_StartLobby",
+	CS_DEV_StartLoading =		"CS_DEV_StartLoading",
+	CS_DEV_StartGame =			"CS_DEV_StartGame",
+	CS_DEV_StartEndscreen =		"CS_DEV_StartEndscreen",
+	CS_DEV_ButtonPress =		"CS_DEV_ButtonPress",
 	CS_ConnectAttempt =			prefix + "ConnectionAttempt",
 	CS_ReadyChange =			prefix + "ReadyChange",
 	CS_FinishedLoading =		prefix + "FinishedLoading",
@@ -35,6 +40,15 @@ export interface CS_ReadyChange {
 	ready: boolean,
 }
 
+/**
+ * DEV MODE, delete later
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface CS_DEV_StartLobby {
+	type: CS_Type.CS_DEV_StartLobby,
+	lobbyId: number,
+}
+
 // LOADING ====================================================================
 
 /**
@@ -61,9 +75,51 @@ export interface CS_FailedLoading {
 	msg: string,
 }
 
+/**
+ * DEV MODE, delete later
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface CS_DEV_StartLoading {
+	type: CS_Type.CS_DEV_StartLoading,
+	lobbyId: number,
+}
 
+// GAME =======================================================================
+
+/**
+ * DEV MODE, delete later
+ * For pressing the example button in the scene
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface CS_DEV_ButtonPress {
+	type: CS_Type.CS_DEV_ButtonPress,
+	timestamp: number,
+	message: string,
+	lobbyId: number,
+}
+
+/**
+ * DEV MODE, delete later
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface CS_DEV_StartGame {
+	type: CS_Type.CS_DEV_StartGame,
+	lobbyId: number,
+}
+
+// ENDSCREEN ==================================================================
+
+/**
+ * DEV MODE, delete later
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface CS_DEV_StartEndscreen {
+	type: CS_Type.CS_DEV_StartEndscreen,
+	lobbyId: number,
+}
 
 export type CS_GenericPacket = 
-			CS_ConnectAttempt | CS_ReadyChange | CS_FinishedLoading |
-			CS_FailedLoading 
+			CS_ConnectAttempt | CS_ReadyChange | CS_DEV_StartLobby |
+			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
+			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen 
 			;

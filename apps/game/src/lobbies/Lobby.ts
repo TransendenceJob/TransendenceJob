@@ -1,5 +1,6 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 import { CS_Type, CS_GenericPacket } from 'shared/packets/ClientServerPackets';
+import { SC_Type, SC_GenericStatePacket, SC_StartLobby, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_ButtonPress, SC_DEV_Periodic } from 'shared/packets/ServerClientPackets';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -8,28 +9,22 @@ enum LobbyStateEnum {
   Game = 3,
 }
 
-interface JsonPacket {
-  type: string;
-  timestamp: number;
-  message: string;
-}
-
 /**
  * Translates Lobby State Enum to corresponding packet type,
  * to put Client into the corresponding state
  * @param state Lobbys State
- * @returns string for Json packet type
+ * @returns enum/string for Json packet type
  */
-function translateLobbyState(state: LobbyStateEnum): string {
+function translateLobbyState(state: LobbyStateEnum): SC_GenericStatePacket['type'] {
   switch (state) {
     case LobbyStateEnum.OpenLobby:
-      return 'sc.DEV.start.lobby';
+      return SC_Type.SC_StartLobby;
     case LobbyStateEnum.Loading:
-      return 'sc.start.loading';
+      return SC_Type.SC_StartLoading;
     case LobbyStateEnum.Game:
-      return 'sc.start.game';
+      return SC_Type.SC_StartGame;
   }
-  return 'sc.invalid.state';
+  return SC_Type.SC_InvalidState;
 }
 
 /**
@@ -44,7 +39,6 @@ function translateLobbyState(state: LobbyStateEnum): string {
 export class Lobby {
   public state: LobbyStateEnum;
   public id: number;
-  public lobbyId: number;
   private engine: NullEngine;
   private scene: Scene;
   private camera: ArcRotateCamera;
@@ -60,7 +54,7 @@ export class Lobby {
   constructor(id: number, emitData: (msg: string) => void) {
     this.state = LobbyStateEnum.OpenLobby;
     this.msgToClient = emitData;
-    this.lobbyId = id;
+    this.id = id;
     this.engine = new NullEngine();
     this.scene = new Scene(this.engine);
     this.camera = new ArcRotateCamera(
@@ -94,9 +88,13 @@ export class Lobby {
    */
   gameServerLoop() {
     if (this.state == LobbyStateEnum.Game && Date.now() > this.lastTimestamp) {
-      this.msgToClient(
-        '{"type": "sc.DEV.repeat", "msg": "5 Seconds have passed"}',
-      );
+      const response: SC_DEV_Periodic = {
+        type: SC_Type.SC_DEV_Periodic,
+        lobbyId: this.id,
+        msg: "5 Seconds have passed",
+        seq: [0],
+      }
+      this.msgToClient(JSON.stringify(response));
       this.lastTimestamp = Date.now() + 5000;
     }
   }
@@ -113,41 +111,46 @@ export class Lobby {
 
     // Client wants to connect, so send them the current state to display
     if (data.type == CS_Type.CS_ConnectAttempt) {
-      const response = { type: translateLobbyState(this.state), lobbyId: 0 };
+      const response: SC_GenericStatePacket = { type: translateLobbyState(this.state), lobbyId: this.id, seq: [0] };
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
-    else if (data.type == 'cs.DEV.start.lobby') {
-      const response = { type: 'sc.DEV.start.lobby' };
+    else if (data.type == CS_Type.CS_DEV_StartLobby) {
+      const response: SC_StartLobby = { type: SC_Type.SC_StartLobby, lobbyId: this.id, seq: [0] };
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Loading
-    else if (data.type == 'cs.DEV.start.loading') {
-      const response = { type: 'sc.start.loading' };
+    else if (data.type == CS_Type.CS_DEV_StartLoading) {
+      const response: SC_StartLoading = { type: SC_Type.SC_StartLoading, lobbyId: this.id, seq: [0]  };
       this.state = LobbyStateEnum.Loading;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Game
-    else if (data.type == 'cs.DEV.start.game') {
-      const response = { type: 'sc.start.game' };
+    else if (data.type == CS_Type.CS_DEV_StartGame) {
+      const response: SC_StartGame = { type: SC_Type.SC_StartGame, lobbyId: this.id, seq: [0]  };
       this.state = LobbyStateEnum.Game;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
-    else if (data.type == 'cs.DEV.start.endscreen') {
-      const response = { type: 'sc.game.finished' };
+    else if (data.type == CS_Type.CS_DEV_StartEndscreen) {
+      const response: SC_GameFinished = { type: SC_Type.SC_GameFinished, lobbyId: this.id, seq: [0]  };
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // For the button to send to Server, just send back a copy
-    else if (data.type == 'cs.DEV.buttonPress') {
-      const response: JsonPacket = {
-        type: 'sc.DEV.buttonPress',
-        timestamp: data.timestamp as number,
-        message: data.message as string,
+    else if (data.type == CS_Type.CS_DEV_ButtonPress) {
+      const response: SC_DEV_ButtonPress = {
+        type: SC_Type.SC_DEV_ButtonPress,
+        lobbyId: this.id,
+        timestamp: data.timestamp,
+        msg: data.message,
+        seq: [0],
       };
       this.msgToClient(JSON.stringify(response));
+    }
+    else {
+      console.log(`Error: Server received packet with unhandled type: ${data}`);
     }
   }
 }
