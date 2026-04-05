@@ -4,12 +4,13 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersAuthService {
     // Debug Mock users.
+
     private mockUsers = [
         {
             id: 'usr_123',
             email: 'stefan@example.com',
             // bcrypt.hash("StrongPassword123!", 10) creates the following hash
-            passwordHash: '$2b$10$X7lR.fP5E1B.9vG7zYtOue5uK2V7S6W3lB6D.y/5G5Z1e5f8f8f8f',
+            passwordHash: '$2b$10$CJsf2eBb41Ih5AGEX5iY6uW6H7pp5oQx2Ap8SBS0NvYZ8YqeIVZfe',
             status: 'active',
             roles: ['user'],
             displayName: 'Stefan',
