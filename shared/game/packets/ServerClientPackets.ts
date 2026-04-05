@@ -3,6 +3,9 @@
 const prefix = "SC_"
 
 export enum SC_Type {
+	SC_DEV_StartConnecting =	prefix + "DEV_StartConnecting",
+	SC_InvalidState =			prefix + "InvalidState",
+	SC_StartLobby =				prefix + "StartLobby",
 	SC_ConnectFail =			prefix + "ConnectFail",
 	SC_ConnectSuccess =			prefix + "ConnectSuccess",
 	SC_ClientDisconnect =		prefix + "ClientDisconnect",
@@ -14,7 +17,44 @@ export enum SC_Type {
 	SC_FailedLoading =			prefix + "FailedLoading",
 	SC_LoadingProgress =		prefix + "LoadingProgress",
 	SC_StartGame =				prefix + "StartGame",
+	SC_GameFinished =			prefix + "GameFinished",
+	SC_DEV_ButtonPress =		prefix + "DEV_ButtonPress",
+	SC_DEV_Periodic =			prefix + "DEV_Periodic",
 }
+
+// CONNECTION =================================================================
+
+/**
+ * Sent when clients should go back to connecting phase
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface SC_DEV_StartConnecting {
+	type: SC_Type.SC_DEV_StartConnecting,
+	lobbyId: number,
+	seq: Array<number>,
+}
+
+/**
+ * Sent when server reached invalid state
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface SC_InvalidState {
+	type: SC_Type.SC_InvalidState,
+	lobbyId: number,
+	seq: Array<number>,
+}
+
+/**
+ * Sent so Clients move to Lobby state
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface SC_StartLobby {
+	type: SC_Type.SC_StartLobby,
+	lobbyId: number,
+	seq: Array<number>,
+}
+
+// LOBBY ======================================================================
 
 /**
  * Response from a Server, when a ConnectAttempt is sent,
@@ -172,11 +212,56 @@ export interface SC_StartGame {
 	seq: Array<number>,
 }
 
+// GAME =======================================================================
+
+/**
+ * Sent when game has finished so clients move to Endscreen
+ * @param lobbyId Id of the relevant lobby
+ */
+export interface SC_GameFinished {
+	type: SC_Type.SC_GameFinished,
+	lobbyId: number,
+	seq: Array<number>,
+}
+
+/**
+ * DEV packet, should be removed later, only exists for the button proxy example
+ * Sent when server proxies back the clients button press
+ * @param lobbyId Id of the relevant lobby
+ * @param timestamp Timestamp when press occured
+ * @param msg string that specifies how many times button pressed
+ */
+export interface SC_DEV_ButtonPress {
+	type: SC_Type.SC_DEV_ButtonPress,
+	lobbyId: number,
+	timestamp: number,
+	msg: string,
+	seq: Array<number>,
+}
+
+/**
+ * DEV packet, should be removed later, only exists for the button proxy example
+ * Sent every few seconds periodically
+ * @param lobbyId Id of the relevant lobby
+ * @param msg string that specifies time passed
+ */
+export interface SC_DEV_Periodic {
+	type: SC_Type.SC_DEV_Periodic,
+	lobbyId: number,
+	msg: string,
+	seq: Array<number>,
+}
+
+// ENDSCREEN ==================================================================
 
 
 export type SC_GenericPacket = 
+			SC_DEV_StartConnecting | SC_InvalidState | SC_StartLobby |
 			SC_ConnectFail | SC_ConnectSuccess | SC_ClientDisconnect | 
 			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 
 			SC_StartLoading | SC_FinishedLoading | SC_FailedLoading | 
-			SC_LoadingProgress | SC_StartGame 
+			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
+			SC_DEV_ButtonPress | SC_DEV_Periodic
 			;
+
+export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading | SC_StartGame | SC_InvalidState;

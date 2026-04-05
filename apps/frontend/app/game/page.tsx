@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
+import { SC_Type, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_DEV_StartLobby } from '@/shared/packets/ServerClientPackets'
 
 interface JsonPacket {
   type: string;
@@ -27,15 +28,15 @@ export default function LobbyPage() {
     const msgToClient = (data: string) => {
       if (DEBUG) console.log("NEXT: Client received packet: ", data);
       const dataObj: JsonPacket = JSON.parse(data);
-      if (dataObj.type == "sc.DEV.start.lobby")
+      if (dataObj.type == SC_Type.SC_StartLobby)
         setState("LOBBY");
-      else if (dataObj.type == "sc.start.loading")
+      else if (dataObj.type == SC_Type.SC_StartLoading)
         setState("LOADING");
-      else if (dataObj.type == "sc.start.game")
+      else if (dataObj.type == SC_Type.SC_StartGame)
         setState("GAME");
-      else if (dataObj.type == "sc.game.finished")
+      else if (dataObj.type == SC_Type.SC_GameFinished)
         setState("ENDSCREEN");
-      else if (dataObj.type == "sc.DEV.start.connecting")
+      else if (dataObj.type == SC_Type.SC_DEV_StartConnecting)
         setState("CONNECTING");
       else {
         if (DEBUG) console.log("NEXT: Received unhandled package type: ");
@@ -45,6 +46,11 @@ export default function LobbyPage() {
     // Create fixed setter functions for binding to evens
     const onConnect = () => {setIsConnected(true)};
     const onDisconnect = () => {setIsConnected(false)};
+
+    // Check for socket already being connected
+    if (socket.connected) {
+      onConnect();
+    }
 
     // Bind functions to events
     socket.on('msgToClient', msgToClient);

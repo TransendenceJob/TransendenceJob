@@ -3,6 +3,11 @@ import {
   TextBlock,
   Button,
 } from "@babylonjs/gui";
+import {
+	CS_Type,
+	CS_DEV_StartEndscreen,
+	CS_DEV_ButtonPress
+} from "../../shared/packets/ClientServerPackets"
 
 function setButtonSize(button, canvas, size_x, size_y)
 {
@@ -45,13 +50,14 @@ export default function createGui(scene, canvas, socket)
 	endGameButton.color = "#FFF";
 	endGameButton.onPointerUpObservable.add(() => {
 		const data = {
-			// will need lobbyId field
-			type: "cs.DEV.start.endscreen",
-			};
-			if (socket && socket.connected) {
-				socket.emit('msgToServer', JSON.stringify(data));
-			}
-		});
+			type: CS_Type.CS_DEV_StartEndscreen,
+			// will need to be handled correctly
+			lobbyId: 0,
+		};
+		if (socket && socket.connected) {
+			socket.emit('msgToServer', JSON.stringify(data));
+		}
+	});
 	gui.addControl(endGameButton);
 
 
@@ -62,14 +68,16 @@ export default function createGui(scene, canvas, socket)
 	button.onPointerUpObservable.add(() => {
 		count++;
 		const data = {
-			type: "cs.DEV.buttonPress",
+			type: CS_Type.CS_DEV_ButtonPress,
 			timestamp: Date.now(),
 			message: `User pressed button for the ${count} time`,
-			};
-			if (socket && socket.connected) {
-				socket.emit('msgToServer', JSON.stringify(data));
-			}
-		})
+			// will need to be handled correctly
+			lobbyId: 0,
+		};
+		if (socket && socket.connected) {
+			socket.emit('msgToServer', JSON.stringify(data));
+		}
+	})
 	gui.addControl(button);
 
 	return (gui)
