@@ -1,30 +1,41 @@
-import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import {Injectable} from '@nestjs/common';
+import {PrismaService} from "../prisma/prisma.service";
 
 @Injectable()
+
 export class UsersAuthService {
-  // Debug Mock users.
+    constructor(
+        private prisma: PrismaService,
+    ) {
+    }
 
-  private mockUsers = [
-    {
-      id: 'usr_123',
-      email: 'stefan@example.com',
-      // bcrypt.hash("StrongPassword123!", 10) creates the following hash
-      passwordHash:
-        '$2b$10$CJsf2eBb41Ih5AGEX5iY6uW6H7pp5oQx2Ap8SBS0NvYZ8YqeIVZfe',
-      status: 'active',
-      roles: ['user'],
-      displayName: 'Stefan',
-    },
-  ];
 
-  async findByEmail(email: string) {
-    const user = this.mockUsers.find((u) => u.email === email); // will be replaced
-    return Promise.resolve(user || null); // gonna be a real promise later
-  }
-
-  async hashPassword(password: string): Promise<string> {
-    const saltRounds = 10;
-    return bcrypt.hash(password, saltRounds);
-  }
+    async findByEmail(email: string) {
+      const user = await this.prisma.user.findUnique({
+            where: {email},
+          // 'include' tells Prisma to follow the relations (JOINs)
+          // We go from User -> UserRole (middle table) -> Role (actual name)
+            include: {
+                roles: {
+                    include: {
+                        role: true
+                    }
+                }
+            }
+        });
+      if (!user) return null;
+        //Prisma returns a deeply nested object (user.roles[0].role.name)
+      // map it here so the AuthService gets a clean string array like ['ADMIN', 'USER'].
+      const roleNames = user.roles.map((userRole) => userRole.role.name);
+      return {
+        id: user.id,
+        email: user.email,
+        passwordHash: user.passwordHash,
+        status: user.status,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        disabledAt: user.disabledAt,
+        roleNames,
+      };
+    }
 }
