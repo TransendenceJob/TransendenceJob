@@ -1,57 +1,69 @@
 // import * from 'ServerClientPackets.ts';
 
-const prefix = "SC_"
+
+/**
+ * ADDING A NEW PACKET
+ * 1) Create an enum in the SC_Type table
+ * 2) Create an interface based on the existing schema
+ * 	1] Name should be SC_ and then CamelCase what its for
+ * 	2] Should inherit from SC_Base
+ * 	3] It should have a type parameter, which will be the enum from 1)
+ * 3) Add the interface name into the union type at the end
+ */
+
 
 export enum SC_Type {
-	SC_DEV_StartConnecting =	prefix + "DEV_StartConnecting",
-	SC_InvalidState =			prefix + "InvalidState",
-	SC_StartLobby =				prefix + "StartLobby",
-	SC_ConnectFail =			prefix + "ConnectFail",
-	SC_ConnectSuccess =			prefix + "ConnectSuccess",
-	SC_ClientDisconnect =		prefix + "ClientDisconnect",
-	SC_ClientJoin =				prefix + "ClientJoin",
-	SC_LobbyData =				prefix + "LobbyData",
-	SC_ReadyChange =			prefix + "ReadyChange",
-	SC_StartLoading = 			prefix + "StartLoading",
-	SC_FinishedLoading =		prefix + "FinishedLoading",
-	SC_FailedLoading =			prefix + "FailedLoading",
-	SC_LoadingProgress =		prefix + "LoadingProgress",
-	SC_StartGame =				prefix + "StartGame",
-	SC_GameFinished =			prefix + "GameFinished",
-	SC_DEV_ButtonPress =		prefix + "DEV_ButtonPress",
-	SC_DEV_Periodic =			prefix + "DEV_Periodic",
+	SC_DEV_StartConnecting =	"SC_DEV_StartConnecting",
+	SC_InvalidState =			"SC_InvalidState",
+	SC_StartLobby =				"SC_StartLobby",
+	SC_ConnectFail =			"SC_ConnectFail",
+	SC_ConnectSuccess =			"SC_ConnectSuccess",
+	SC_ClientDisconnect =		"SC_ClientDisconnect",
+	SC_ClientJoin =				"SC_ClientJoin",
+	SC_LobbyData =				"SC_LobbyData",
+	SC_ReadyChange =			"SC_ReadyChange",
+	SC_StartLoading = 			"SC_StartLoading",
+	SC_FinishedLoading =		"SC_FinishedLoading",
+	SC_FailedLoading =			"SC_FailedLoading",
+	SC_LoadingProgress =		"SC_LoadingProgress",
+	SC_StartGame =				"SC_StartGame",
+	SC_GameFinished =			"SC_GameFinished",
+	SC_DEV_ButtonPress =		"SC_DEV_ButtonPress",
+	SC_DEV_Periodic =			"SC_DEV_Periodic",
+}
+
+/**
+ * Fields used in ALL packets:
+ * @param type: SC_Type enum as string to identify package
+ * @param lobbyId identifying number for which lobby this packet is meant
+ * @param seq Array that specifies the id of the packets sent out before this one
+ */
+export interface SC_Base {
+	lobbyId: number,
+	seq: Array<number>,
 }
 
 // CONNECTION =================================================================
 
 /**
  * Sent when clients should go back to connecting phase
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_DEV_StartConnecting {
+export interface SC_DEV_StartConnecting extends SC_Base {
 	type: SC_Type.SC_DEV_StartConnecting,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 /**
  * Sent when server reached invalid state
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_InvalidState {
+export interface SC_InvalidState extends SC_Base {
 	type: SC_Type.SC_InvalidState,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 /**
  * Sent so Clients move to Lobby state
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_StartLobby {
+export interface SC_StartLobby extends SC_Base {
 	type: SC_Type.SC_StartLobby,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 // LOBBY ======================================================================
@@ -61,10 +73,9 @@ export interface SC_StartLobby {
  * and the Server refuses access to the lobby
  * @param msg specifies Reason why Client was rejeced
  */
-export interface SC_ConnectFail {
+export interface SC_ConnectFail extends SC_Base {
 	type: SC_Type.SC_ConnectFail,
 	msg: string,
-	seq: Array<number>,
 }
 
 /**
@@ -72,23 +83,19 @@ export interface SC_ConnectFail {
  * and the Server accepts the connection to the lobby
  * @param userId Id to identify this player
  */
-export interface SC_ConnectSuccess {
+export interface SC_ConnectSuccess extends SC_Base {
 	type: SC_Type.SC_ConnectSuccess,
 	userId: number,
-	seq: Array<number>,
 }
 
 /**
  * Sent to all clients when a new player disconnects the lobby,
  * to inform Client to un-render player
  * @param userId Id to identify the disconnecting player
- * @param lobbyId Id of lobby this interaction is for
  */
-export interface SC_ClientDisconnect {
+export interface SC_ClientDisconnect extends SC_Base {
 	type: SC_Type.SC_ClientDisconnect,
 	userId: number,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 // TODO: Link a player who joins to an existing account from our database,
@@ -98,16 +105,14 @@ export interface SC_ClientDisconnect {
  * Sent to all clients when a new player joins the lobby,
  * to inform Client to render new player
  * @param userId Id to identify the joining player
- * @param lobbyId Id of lobby this interaction is for
  */
-export interface SC_ClientJoin {
+export interface SC_ClientJoin extends SC_Base {
 	type: SC_Type.SC_ClientJoin,
 	userId: number,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 /**
+ * NOT A PACKET, just utility
  * Represents 1 filled player slot in the lobby
  * @param userId unique number to identify the user with
  * @param name Name for that player UNUSED
@@ -128,134 +133,107 @@ export interface PlayerInLobby {
  * @param userId Id to identify the joining player
  * @param lobbyData Array of information about all the players in a lobby
  */
-export interface SC_LobbyData {
+export interface SC_LobbyData extends SC_Base {
 	type: SC_Type.SC_LobbyData,
-	lobbyId: number,
+	userId: number,
 	lobbyData: Array<PlayerInLobby>,
-	seq: Array<number>,
 }
 
 /**
  * Sent to inform other users of client changing readiness state
- * @param lobbyId Id of the relevant lobby
  * @param userId Id of the relevant user
  * @param ready New state the user arrived at
  */
-export interface SC_ReadyChange {
+export interface SC_ReadyChange extends SC_Base {
 	type: SC_Type.SC_ReadyChange,
-	lobbyId: number,
 	userId: number,
 	ready: boolean,
-	seq: Array<number>,
 }
 
 /**
  * Sent so Clients move to Loading state
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_StartLoading {
+export interface SC_StartLoading extends SC_Base {
 	type: SC_Type.SC_StartLoading,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 // LOADING ====================================================================
 
 /**
  * Sent when a user or the server finished loading
- * @param lobbyId Id of the relevant lobby, 0 = server
  * @param userId Id of the relevant user
  */
-export interface SC_FinishedLoading {
+export interface SC_FinishedLoading extends SC_Base {
 	type: SC_Type.SC_FinishedLoading,
-	lobbyId: number,
 	userId: number,
-	seq: Array<number>,
 }
 
 /**
  * Sent when a user or the server failed loading
- * @param lobbyId Id of the relevant lobby
  * @param userId Id of the relevant user, 0 = server
  * @param msg Reason why loading failed
  */
-export interface SC_FailedLoading {
+export interface SC_FailedLoading extends SC_Base {
 	type: SC_Type.SC_FailedLoading,
-	lobbyId: number,
 	userId: number,
 	msg: string,
-	seq: Array<number>,
 }
 
 /**
  * Sent when a user or the server failed loading
- * @param lobbyId Id of the relevant lobby
  * @param progress Number from 0 to 100 about how finished the loading is
  * @param msg Optional text about the loading step that was last acomplished
  */
-export interface SC_LoadingProgress {
+export interface SC_LoadingProgress extends SC_Base {
 	type: SC_Type.SC_LoadingProgress,
-	lobbyId: number,
 	progress: number,
 	msg: string,
-	seq: Array<number>,
 }
 
 /**
  * Sent when loading has finished for all parties, 
  * so clients move to Game state
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_StartGame {
+export interface SC_StartGame extends SC_Base {
 	type: SC_Type.SC_StartGame,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 // GAME =======================================================================
 
 /**
  * Sent when game has finished so clients move to Endscreen
- * @param lobbyId Id of the relevant lobby
  */
-export interface SC_GameFinished {
+export interface SC_GameFinished extends SC_Base {
 	type: SC_Type.SC_GameFinished,
-	lobbyId: number,
-	seq: Array<number>,
 }
 
 /**
  * DEV packet, should be removed later, only exists for the button proxy example
  * Sent when server proxies back the clients button press
- * @param lobbyId Id of the relevant lobby
  * @param timestamp Timestamp when press occured
  * @param msg string that specifies how many times button pressed
  */
-export interface SC_DEV_ButtonPress {
+export interface SC_DEV_ButtonPress extends SC_Base {
 	type: SC_Type.SC_DEV_ButtonPress,
-	lobbyId: number,
 	timestamp: number,
 	msg: string,
-	seq: Array<number>,
 }
 
 /**
  * DEV packet, should be removed later, only exists for the button proxy example
  * Sent every few seconds periodically
- * @param lobbyId Id of the relevant lobby
  * @param msg string that specifies time passed
  */
-export interface SC_DEV_Periodic {
+export interface SC_DEV_Periodic extends SC_Base {
 	type: SC_Type.SC_DEV_Periodic,
-	lobbyId: number,
 	msg: string,
-	seq: Array<number>,
 }
 
 // ENDSCREEN ==================================================================
 
 
 export type SC_GenericPacket = 
+			SC_Base |
 			SC_DEV_StartConnecting | SC_InvalidState | SC_StartLobby |
 			SC_ConnectFail | SC_ConnectSuccess | SC_ClientDisconnect | 
 			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 
