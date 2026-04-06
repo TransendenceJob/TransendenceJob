@@ -1,61 +1,75 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersAuthService} from "../users-auth/users-auth.service";
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
+import { UsersAuthService } from '../users-auth/users-auth.service';
+import { PasswordHashService } from './hashing/password-hash.service';
+import { AccessTokenService } from './tokens/access-token.service';
+import { RefreshTokenService } from './tokens/refresh-token.service';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    private readonly usersService: UsersAuthService,
+    private readonly passwordHashService: PasswordHashService,
+    private readonly accessTokenService: AccessTokenService,
+    private readonly refreshTokenService: RefreshTokenService,
+  ) {}
 
-    private readonly usersService: UsersAuthService;
-    private readonly jwtService: JwtService
-    constructor(
-        usersService: UsersAuthService,
-        jwtService: JwtService
-    ) {
-        this.usersService = usersService;
-        this.jwtService = jwtService;
-    }
+  async login(email: string, pass: string, userAgent: string, ip: string) {
+    const user = await this.usersService.findByEmail(email);
 
-    async login(email: string, pass: string) {
-        const user = await this.usersService.findByEmail(email);
-
-        if (user) {
-            const isMatch = await bcrypt.compare(pass, user.passwordHash);
-            if (isMatch) {
-                if (user.status === 'disabled') {
-                    throw new UnauthorizedException('Account is disabled');
-                }
-
-                return this.generateSuccessResponse(user);
-            }
+    if (user) {
+      const isMatch = await this.passwordHashService.compare(
+        pass,
+        user.passwordHash,
+      );
+      if (isMatch) {
+        if (user.status === 'disabled') {
+          throw new UnauthorizedException('Account is disabled');
         }
 
-        // Generic error for both "User not found" and "Wrong password"
-        throw new UnauthorizedException('Invalid email or password');
+        return this.generateSuccessResponse(user, userAgent, ip);
+      }
     }
 
-    private async generateSuccessResponse(user: any) {
-        const payload = { sub: user.id, email: user.email, roles: user.roles };
+    // Generic error for both "User not found" and "Wrong password"
+    throw new UnauthorizedException('Invalid email or password');
+  }
 
-        return {
-            user: {
-                id: user.id,
-                email: user.email,
-                status: user.status,
-                roles: user.roles,
-                displayName: user.displayName,
-            },
-            tokens: {
-                accessToken: await this.jwtService.signAsync(payload),
-                refreshToken: 'rt_' + Math.random().toString(36).substring(7),
-                expiresIn: 900,
-                tokenType: 'Bearer',
-            },
-            session: {
-                id: 'sess_' + Math.random().toString(36).substring(7),
-                expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-            },
-        };
-    }
+  private async generateSuccessResponse(
+    user: any,
+    userAgent: string,
+    ip: string,
+  ) {
+    const { sessionId, refreshToken } =
+      await this.refreshTokenService.createSessionWithRefreshToken({
+        userId: user.id,
+        userAgent: userAgent,
+        ipAddress: ip,
+      });
 
+    const accessToken = await this.accessTokenService.generateAccessToken({
+      sub: user.id,
+      email: user.email,
+      roles: user.roles as string[],
+      sessionId: sessionId,
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        status: user.status,
+        roles: user.roles,
+        displayName: user.displayName,
+      },
+      tokens: {
+        accessToken,
+        refreshToken,
+        expiresIn: 900,
+        tokenType: 'Bearer',
+      },
+      session: {
+        id: sessionId,
+      },
+    };
+  }
 }
