@@ -1,6 +1,7 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 import { CS_Type, CS_GenericPacket } from 'shared/packets/ClientServerPackets';
-import { SC_Type, SC_GenericStatePacket, SC_StartLobby, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_ButtonPress, SC_DEV_Periodic } from 'shared/packets/ServerClientPackets';
+import { SC_Type, SC_Base, SC_GenericStatePacket, SC_StartLobby, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_ButtonPress, SC_DEV_Periodic } from 'shared/packets/ServerClientPackets';
+import { SeqHandler } from './SeqHandler';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -44,6 +45,7 @@ export class Lobby {
   private camera: ArcRotateCamera;
   private lastTimestamp: number;
   private msgToClient: (msg: string) => void;
+  private seqHandler: SeqHandler;
 
   /**
    * On Lobby Creation, call the constructor,
@@ -66,7 +68,11 @@ export class Lobby {
       this.scene,
     );
     this.lastTimestamp = 0;
+    // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
+    this.seqHandler = new SeqHandler(1);
+    this.seqHandler.registerPlayer(0, 0);
     this.registerLoop();
+    
   }
 
   /**
@@ -100,12 +106,31 @@ export class Lobby {
   }
 
   /**
-   * @brief Called whenever clients send to websocket with "msgToServer"
-   * @param raw_data string in json format sent on the socket
+   * @note Explanation of this Syntax:
+   * The function has to be called with a data type T that has the fields from SC_Base 
+   * AND a type parameter with an enum value for type,
+   * or it will throw a compile time error
+   * We have 1 parameter, called type, whoose data type is the enum from the type field of the interface given to the template
+   * Then we take the rest of the fields of the given interface, except for type, 
+   * and insert them into the created packet using the spread operator
+   * We specify the function returns the specified interface type and return such an object 
    */
-  msgToServer(raw_data: string) {
-    const data: CS_GenericPacket = JSON.parse(raw_data) as CS_GenericPacket;
+  private createBasePacket<T extends SC_Base & { type: SC_Type }>(type: T['type'], data: Omit<T, keyof SC_Base | 'type'>): T {
+    this.seqHandler.increase();
+    console.log(this.seqHandler.toString());
+    return {
+      type: type,
+      lobbyId: this.id,
+      seq: this.seqHandler.getSeq(0),
+      ...data,
+    } as T;
+  }
 
+  /**
+   * @brief Called whenever clients send to websocket with "msgToServer"
+   * @param data any Client->Server packet, holds the payload as object
+   */
+  msgToServer(data: CS_GenericPacket) {
     // Most of theese should be removed later,
     // only exists to move through game and lobby states as developer
 
@@ -116,37 +141,34 @@ export class Lobby {
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
     else if (data.type == CS_Type.CS_DEV_StartLobby) {
-      const response: SC_StartLobby = { type: SC_Type.SC_StartLobby, lobbyId: this.id, seq: [0] };
+      const response = this.createBasePacket<SC_StartLobby>(SC_Type.SC_StartLobby, {});
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Loading
     else if (data.type == CS_Type.CS_DEV_StartLoading) {
-      const response: SC_StartLoading = { type: SC_Type.SC_StartLoading, lobbyId: this.id, seq: [0]  };
+      const response = this.createBasePacket<SC_StartLoading>(SC_Type.SC_StartLoading, {});
       this.state = LobbyStateEnum.Loading;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Game
     else if (data.type == CS_Type.CS_DEV_StartGame) {
-      const response: SC_StartGame = { type: SC_Type.SC_StartGame, lobbyId: this.id, seq: [0]  };
+      const response = this.createBasePacket<SC_StartGame>(SC_Type.SC_StartGame, {});
       this.state = LobbyStateEnum.Game;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
     else if (data.type == CS_Type.CS_DEV_StartEndscreen) {
-      const response: SC_GameFinished = { type: SC_Type.SC_GameFinished, lobbyId: this.id, seq: [0]  };
+      const response = this.createBasePacket<SC_GameFinished>(SC_Type.SC_GameFinished, {});
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // For the button to send to Server, just send back a copy
     else if (data.type == CS_Type.CS_DEV_ButtonPress) {
-      const response: SC_DEV_ButtonPress = {
-        type: SC_Type.SC_DEV_ButtonPress,
-        lobbyId: this.id,
+      const response = this.createBasePacket<SC_DEV_ButtonPress>(SC_Type.SC_DEV_ButtonPress, {
         timestamp: data.timestamp,
         msg: data.message,
-        seq: [0],
-      };
+      });
       this.msgToClient(JSON.stringify(response));
     }
     else {

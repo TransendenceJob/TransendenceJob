@@ -1,6 +1,16 @@
 // import * from 'ClientServerPackets.ts';
 
-const prefix = "CS_";
+
+/**
+ * ADDING A NEW PACKET
+ * 1) Create an enum in the CS_Type table
+ * 2) Create an interface based on the existing schema
+ * 	1] Name should be CS_ and then CamelCase what its for
+ * 	2] It should have a type parameter, which will be the enum from 1)
+ * 	3] It should inherit from CS_Base
+ * 3) Add the interface name into the union type at the end
+ */
+
 
 export enum CS_Type {
 	CS_DEV_StartLobby =			"CS_DEV_StartLobby",
@@ -8,80 +18,75 @@ export enum CS_Type {
 	CS_DEV_StartGame =			"CS_DEV_StartGame",
 	CS_DEV_StartEndscreen =		"CS_DEV_StartEndscreen",
 	CS_DEV_ButtonPress =		"CS_DEV_ButtonPress",
-	CS_ConnectAttempt =			prefix + "ConnectionAttempt",
-	CS_ReadyChange =			prefix + "ReadyChange",
-	CS_FinishedLoading =		prefix + "FinishedLoading",
-	CS_FailedLoading =			prefix + "FailedLoading",
+	CS_ConnectAttempt =			"CS_ConnectionAttempt",
+	CS_ReadyChange =			"CS_ReadyChange",
+	CS_FinishedLoading =		"CS_FinishedLoading",
+	CS_FailedLoading =			"CS_FailedLoading",
 }
 
+/**
+ * Fields used in ALL packets:
+ * @param lobbyId identifying number for which lobby this packet is meant
+ */
+export interface CS_Base {
+	lobbyId: number,
+}
 // CONNECTING =================================================================
 
 /**
  * Sent when a user wants to connect to a lobby
- * @param lobbyId Id of the lobby they wish to connect to
  */
-export interface CS_ConnectAttempt {
+export interface CS_ConnectAttempt extends CS_Base {
 	type: CS_Type.CS_ConnectAttempt,
-	lobbyId: number,
 }
 
 // LOBBY ======================================================================
 
 /**
  * Sent when a user changes their readiness state
- * @param lobbyId Id of the relevant lobby
  * @param userId Id of the relevant user
  * @param ready New state the user arrived at
  */
-export interface CS_ReadyChange {
+export interface CS_ReadyChange extends CS_Base {
 	type: CS_Type.CS_ReadyChange,
-	lobbyId: number,
 	userId: number,
 	ready: boolean,
 }
 
 /**
  * DEV MODE, delete later
- * @param lobbyId Id of the relevant lobby
  */
-export interface CS_DEV_StartLobby {
+export interface CS_DEV_StartLobby extends CS_Base {
 	type: CS_Type.CS_DEV_StartLobby,
-	lobbyId: number,
 }
 
 // LOADING ====================================================================
 
 /**
  * Sent when a user finished loading
- * @param lobbyId Id of the relevant lobby
  * @param userId Id of the relevant user
  */
-export interface CS_FinishedLoading {
+export interface CS_FinishedLoading extends CS_Base {
 	type: CS_Type.CS_FinishedLoading,
-	lobbyId: number,
 	userId: number,
 }
 
 /**
  * Sent when a user failed loading
- * @param lobbyId Id of the relevant lobby
  * @param userId Id of the relevant user
  * @param msg Reason why loading failed
  */
-export interface CS_FailedLoading {
+export interface CS_FailedLoading extends CS_Base {
 	type: CS_Type.CS_FailedLoading,
-	lobbyId: number,
 	userId: number,
 	msg: string,
 }
 
 /**
  * DEV MODE, delete later
- * @param lobbyId Id of the relevant lobby
  */
-export interface CS_DEV_StartLoading {
+export interface CS_DEV_StartLoading extends CS_Base {
 	type: CS_Type.CS_DEV_StartLoading,
-	lobbyId: number,
 }
 
 // GAME =======================================================================
@@ -89,33 +94,29 @@ export interface CS_DEV_StartLoading {
 /**
  * DEV MODE, delete later
  * For pressing the example button in the scene
- * @param lobbyId Id of the relevant lobby
+ * @param timestamp Timestamp of when press occured
+ * @param message Message about button pressing
  */
-export interface CS_DEV_ButtonPress {
+export interface CS_DEV_ButtonPress extends CS_Base {
 	type: CS_Type.CS_DEV_ButtonPress,
 	timestamp: number,
 	message: string,
-	lobbyId: number,
 }
 
 /**
  * DEV MODE, delete later
- * @param lobbyId Id of the relevant lobby
  */
-export interface CS_DEV_StartGame {
+export interface CS_DEV_StartGame extends CS_Base {
 	type: CS_Type.CS_DEV_StartGame,
-	lobbyId: number,
 }
 
 // ENDSCREEN ==================================================================
 
 /**
  * DEV MODE, delete later
- * @param lobbyId Id of the relevant lobby
  */
-export interface CS_DEV_StartEndscreen {
+export interface CS_DEV_StartEndscreen extends CS_Base {
 	type: CS_Type.CS_DEV_StartEndscreen,
-	lobbyId: number,
 }
 
 export type CS_GenericPacket = 
