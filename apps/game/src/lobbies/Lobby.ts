@@ -135,7 +135,6 @@ export class Lobby {
     data: Omit<T, keyof SC_Base | 'type'>,
   ): T {
     this.seqHandler.increase();
-    console.log(this.seqHandler.toString());
     return {
       type: type,
       lobbyId: this.id,

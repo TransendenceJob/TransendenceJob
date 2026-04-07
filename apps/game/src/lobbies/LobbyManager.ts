@@ -40,6 +40,7 @@ export class LobbyManager extends EventEmitter {
       this.logger.log(
         `Error: Received packet without type parameter ${data_raw}`,
       );
+      return;
     }
 
     // Check lobbyId
@@ -51,6 +52,7 @@ export class LobbyManager extends EventEmitter {
       this.logger.log(
         `Error: Received packet with invalid lobbyId parameter ${data_raw}`,
       );
+      return;
     }
 
     // Log
