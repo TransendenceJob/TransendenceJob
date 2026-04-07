@@ -6,7 +6,7 @@ import { RefreshTokenService } from './tokens/refresh-token.service';
 import { AuditLogRepository } from '../persistence/repositories';
 import { AuditAction } from '@prisma/client';
 import { UserStatus } from '@prisma/client';
-import { AuthSuccessResponseDto} from "./contracts/dto/auth-success-response.dto";
+import { AuthSuccessResponseDto } from './contracts/dto/auth-success-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +18,12 @@ export class AuthService {
     private readonly auditLogRepository: AuditLogRepository,
   ) {}
 
-  async login(email: string, pass: string, userAgent: string, ip: string): Promise<AuthSuccessResponseDto> {
+  async login(
+    email: string,
+    pass: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<AuthSuccessResponseDto> {
     const user = await this.usersService.findByEmail(email);
 
     const targetUserId = user?.id ?? null; // if user doesn't exist, targetUserId becomes null instead of crashing
