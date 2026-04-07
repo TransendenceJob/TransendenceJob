@@ -5,9 +5,11 @@ import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
 import { SC_Type, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_DEV_StartLobby } from '@/shared/packets/ServerClientPackets'
+import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets'
 
 interface JsonPacket {
   type: string;
+  lobbyId: number;
 }
 
 const socket: Socket = io("ws://localhost:8080", {transports: ['websocket']});
@@ -20,14 +22,24 @@ export default function LobbyPage() {
   /** bool wether websocket is connected */
   const [isConnected, setIsConnected] = useState(false);
 
+  /** number representing to which lobby we are connected */
+  /** Since we only have 1 lobby so far, and no way to specify, which to join, this is useless so far */
+  const [lobbyId, setLobbyId] = useState(0);
+
   /**
    * This will only be executed once on startup, regardless of re-rendering
    * This is important, because otherwise we keep adding new listeners
   */
   useEffect(() => {
+
     const msgToClient = (data: string) => {
       if (DEBUG) console.log("NEXT: Client received packet: ", data);
       const dataObj: JsonPacket = JSON.parse(data);
+
+      // If trying to connect with an invalid ID, dont handle packet
+      if (lobbyId != dataObj.lobbyId)
+        return ;
+
       if (dataObj.type == SC_Type.SC_StartLobby)
         setState("LOBBY");
       else if (dataObj.type == SC_Type.SC_StartLoading)
@@ -40,7 +52,9 @@ export default function LobbyPage() {
         setState("CONNECTING");
       else {
         if (DEBUG) console.log("NEXT: Received unhandled package type: ");
+        return ;
       }
+
     }
 
     // Create fixed setter functions for binding to evens
@@ -73,12 +87,24 @@ export default function LobbyPage() {
     }
   }, []);
 
+  const packetToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
+    type: T['type'],
+    data: Omit<T, keyof CS_Base | 'type'>,
+  ) => {
+    const packet: T = {
+      type: type,
+      lobbyId: lobbyId,
+      ...data,
+    } as T;
+    msgToServer(JSON.stringify(packet));
+  }, [socket, msgToServer]);
+
   // JSX element for displaying page
   return (
     <main className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
-                msgToServer={msgToServer} 
+                msgToServer={packetToServer} 
                 socket={socket}
                 isConnected={isConnected}
                 DEBUG={DEBUG}

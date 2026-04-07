@@ -1,10 +1,9 @@
+// @ts-ignore
 import { useEffect } from 'react';
+// @ts-ignore
 import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets';
 
-interface Params {
-  msgToServer: (data: string) => void;
-  isConnected: boolean
-}
+import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
 /**
  * Component for page, that the user gets served in the beginning
@@ -15,16 +14,13 @@ interface Params {
  * @note Putting the Code for sending in a useEffect with our params as arguments,
  * makes it so the function is only called initially and whenever one of the params changes
  */
-export default function ConnectingPage({ msgToServer, isConnected }: Params) {
+export default function ConnectingPage(
+  msgToServer:msgToServerType,
+  isConnected: boolean,
+) {
   useEffect(() => {
-    if (isConnected)
-    {
-      const connectionPacket: CS_ConnectAttempt = {
-        type: CS_Type.CS_ConnectAttempt, 
-        lobbyId: 0
-      };
-
-      msgToServer(JSON.stringify(connectionPacket));
+    if (isConnected) {
+      msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {});
     }
   }, [isConnected, msgToServer]);
   return (

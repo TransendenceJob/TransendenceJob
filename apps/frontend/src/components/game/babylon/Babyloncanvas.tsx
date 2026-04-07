@@ -1,22 +1,25 @@
 "use client";
-
+// @ts-ignore
 import { useEffect, useRef } from "react";
+// @ts-ignore
 import { Engine, Scene } from "@babylonjs/core" ;
-import { createScene } from "@/lib/babylon/createScene";
+// @ts-ignore
 import { Socket } from 'socket.io-client';
 
-interface Params {
-  msgToServer: (data: string) => void;
-  socket: Socket;
-  DEBUG: boolean;
-}
+import { createScene } from "@/lib/babylon/createScene";
+import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
-export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
+export default function BabylonCanvas(
+  msgToServer: msgToServerType, 
+  socket: Socket, 
+  DEBUG: boolean,
+) {
 
   // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<Engine | null>(null);
   const isInitRef = useRef<boolean>(false);
+  const socketCleanupRef = useRef<() => void | null>(null)
 
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
@@ -42,13 +45,16 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
 
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
+    
 
-    createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene) => {
+    createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene, cleanupSocket) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
+        cleanupSocket();
         scene.dispose();
         return;
       }
+      socketCleanupRef.current = cleanupSocket;
 
       engine.runRenderLoop(() => {
         scene.render();
@@ -58,6 +64,8 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
     // React uses this on termination of element for memory cleanup
     return () => {
       window.removeEventListener("resize", resize);
+      if (socketCleanupRef.current)
+        socketCleanupRef.current;
       if (engineRef.current) {
         engineRef.current.dispose();
         engineRef.current = null;

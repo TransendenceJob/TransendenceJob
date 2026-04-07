@@ -1,12 +1,10 @@
-interface Params {
-  isConnected: boolean;
-}
-
 /**
  * Element that displays if websocket connection exists
  * @param isConnected bool wether connection is established
  */
-export default function SocketStatus({ isConnected }: Params) {
+export default function SocketStatus(
+  isConnected : boolean
+) {
   let status: string = 'Disonnected';
   const generalFormat: string = "fixed top-5 right-5 "
   let statusFormat: string = "text-red-500"
