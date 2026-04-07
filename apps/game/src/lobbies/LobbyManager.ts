@@ -2,13 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Lobby } from './Lobby';
 import { EventEmitter } from 'stream';
 import { Logger } from '@nestjs/common';
-import { CS_GenericPacket } from 'shared/packets/ClientServerPackets'
+import { CS_GenericPacket } from 'shared/packets/ClientServerPackets';
 
-const DEBUG: boolean = (process.env.NODE_ENV == "development");
-
-function log(logger: any, data: string, serToCli: boolean) {
-  logger.log(`${serToCli ? "Server->Client" : "Client->Server"}: ${data}`);
-}
+const DEBUG: boolean = process.env.NODE_ENV == 'development';
 
 /**
  * Service that administrates multiple lobbies at the same time
@@ -26,7 +22,7 @@ export class LobbyManager extends EventEmitter {
     for (let i = 0; i < amount; i++) {
       this.lobbies[i] = new Lobby(i, (payload: string) => {
         this.emit('dataToEmit', payload);
-        
+
         if (DEBUG) this.logger.log(`Server->Client: ${payload}`);
       });
     }
@@ -41,17 +37,25 @@ export class LobbyManager extends EventEmitter {
 
     // Check data.type
     if (data.type == undefined) {
-      this.logger.log(`Error: Received packet without type parameter ${data_raw}`);
+      this.logger.log(
+        `Error: Received packet without type parameter ${data_raw}`,
+      );
     }
 
     // Check lobbyId
-    if (data.lobbyId == undefined || data.lobbyId > this.lobbies.length - 1 || data.lobbyId < 0) {
-      this.logger.log(`Error: Received packet with invalid lobbyId parameter ${data_raw}`);
+    if (
+      data.lobbyId == undefined ||
+      data.lobbyId > this.lobbies.length - 1 ||
+      data.lobbyId < 0
+    ) {
+      this.logger.log(
+        `Error: Received packet with invalid lobbyId parameter ${data_raw}`,
+      );
     }
 
     // Log
     if (DEBUG) this.logger.log(`Client->Server: ${data_raw}`);
-    
+
     // Let appropriate lobby handle package
     this.lobbies[data.lobbyId].msgToServer(data);
   }

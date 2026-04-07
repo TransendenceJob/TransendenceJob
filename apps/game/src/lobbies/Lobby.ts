@@ -1,6 +1,16 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 import { CS_Type, CS_GenericPacket } from 'shared/packets/ClientServerPackets';
-import { SC_Type, SC_Base, SC_GenericStatePacket, SC_StartLobby, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_ButtonPress, SC_DEV_Periodic } from 'shared/packets/ServerClientPackets';
+import {
+  SC_Type,
+  SC_Base,
+  SC_GenericStatePacket,
+  SC_StartLobby,
+  SC_StartLoading,
+  SC_StartGame,
+  SC_GameFinished,
+  SC_DEV_ButtonPress,
+  SC_DEV_Periodic,
+} from 'shared/packets/ServerClientPackets';
 import { SeqHandler } from './SeqHandler';
 
 enum LobbyStateEnum {
@@ -16,7 +26,9 @@ enum LobbyStateEnum {
  * @param state Lobbys State
  * @returns enum/string for Json packet type
  */
-function translateLobbyState(state: LobbyStateEnum): SC_GenericStatePacket['type'] {
+function translateLobbyState(
+  state: LobbyStateEnum,
+): SC_GenericStatePacket['type'] {
   switch (state) {
     case LobbyStateEnum.OpenLobby:
       return SC_Type.SC_StartLobby;
@@ -72,7 +84,6 @@ export class Lobby {
     this.seqHandler = new SeqHandler(1);
     this.seqHandler.registerPlayer(0, 0);
     this.registerLoop();
-    
   }
 
   /**
@@ -92,14 +103,18 @@ export class Lobby {
    * This is where we would put our code that should be run each frame (Interactions, Inputs, Timers etc.)
    * Currently has periodic output every 5 seconds
    */
-  gameServerLoop() {
+  private gameServerLoop() {
+    this.sendPeridoicPacket();
+  }
+
+  private sendPeridoicPacket() {
     if (this.state == LobbyStateEnum.Game && Date.now() > this.lastTimestamp) {
-      const response: SC_DEV_Periodic = {
-        type: SC_Type.SC_DEV_Periodic,
-        lobbyId: this.id,
-        msg: "5 Seconds have passed",
-        seq: [0],
-      }
+      const response = this.createBasePacket<SC_DEV_Periodic>(
+        SC_Type.SC_DEV_Periodic,
+        {
+          msg: '5 Seconds have passed',
+        },
+      );
       this.msgToClient(JSON.stringify(response));
       this.lastTimestamp = Date.now() + 5000;
     }
@@ -107,15 +122,18 @@ export class Lobby {
 
   /**
    * @note Explanation of this Syntax:
-   * The function has to be called with a data type T that has the fields from SC_Base 
+   * The function has to be called with a data type T that has the fields from SC_Base
    * AND a type parameter with an enum value for type,
    * or it will throw a compile time error
    * We have 1 parameter, called type, whoose data type is the enum from the type field of the interface given to the template
-   * Then we take the rest of the fields of the given interface, except for type, 
+   * Then we take the rest of the fields of the given interface, except for type,
    * and insert them into the created packet using the spread operator
-   * We specify the function returns the specified interface type and return such an object 
+   * We specify the function returns the specified interface type and return such an object
    */
-  private createBasePacket<T extends SC_Base & { type: SC_Type }>(type: T['type'], data: Omit<T, keyof SC_Base | 'type'>): T {
+  private createBasePacket<T extends SC_Base & { type: SC_Type }>(
+    type: T['type'],
+    data: Omit<T, keyof SC_Base | 'type'>,
+  ): T {
     this.seqHandler.increase();
     console.log(this.seqHandler.toString());
     return {
@@ -136,42 +154,60 @@ export class Lobby {
 
     // Client wants to connect, so send them the current state to display
     if (data.type == CS_Type.CS_ConnectAttempt) {
-      const response: SC_GenericStatePacket = { type: translateLobbyState(this.state), lobbyId: this.id, seq: [0] };
+      const response: SC_GenericStatePacket = {
+        type: translateLobbyState(this.state),
+        lobbyId: this.id,
+        seq: [0],
+      };
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby
     else if (data.type == CS_Type.CS_DEV_StartLobby) {
-      const response = this.createBasePacket<SC_StartLobby>(SC_Type.SC_StartLobby, {});
+      const response = this.createBasePacket<SC_StartLobby>(
+        SC_Type.SC_StartLobby,
+        {},
+      );
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Loading
     else if (data.type == CS_Type.CS_DEV_StartLoading) {
-      const response = this.createBasePacket<SC_StartLoading>(SC_Type.SC_StartLoading, {});
+      const response = this.createBasePacket<SC_StartLoading>(
+        SC_Type.SC_StartLoading,
+        {},
+      );
       this.state = LobbyStateEnum.Loading;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Game
     else if (data.type == CS_Type.CS_DEV_StartGame) {
-      const response = this.createBasePacket<SC_StartGame>(SC_Type.SC_StartGame, {});
+      const response = this.createBasePacket<SC_StartGame>(
+        SC_Type.SC_StartGame,
+        {},
+      );
       this.state = LobbyStateEnum.Game;
       this.msgToClient(JSON.stringify(response));
     }
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
     else if (data.type == CS_Type.CS_DEV_StartEndscreen) {
-      const response = this.createBasePacket<SC_GameFinished>(SC_Type.SC_GameFinished, {});
+      const response = this.createBasePacket<SC_GameFinished>(
+        SC_Type.SC_GameFinished,
+        {},
+      );
       this.state = LobbyStateEnum.OpenLobby;
       this.msgToClient(JSON.stringify(response));
     }
     // For the button to send to Server, just send back a copy
     else if (data.type == CS_Type.CS_DEV_ButtonPress) {
-      const response = this.createBasePacket<SC_DEV_ButtonPress>(SC_Type.SC_DEV_ButtonPress, {
-        timestamp: data.timestamp,
-        msg: data.message,
-      });
+      const response = this.createBasePacket<SC_DEV_ButtonPress>(
+        SC_Type.SC_DEV_ButtonPress,
+        {
+          timestamp: data.timestamp,
+          msg: data.message,
+        },
+      );
       this.msgToClient(JSON.stringify(response));
-    }
-    else {
+    } else {
       console.log(`Error: Server received packet with unhandled type: ${data}`);
     }
   }
