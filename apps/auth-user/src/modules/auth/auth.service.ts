@@ -6,6 +6,7 @@ import { RefreshTokenService } from './tokens/refresh-token.service';
 import { AuditLogRepository } from '../persistence/repositories';
 import { AuditAction } from '@prisma/client';
 import { UserStatus } from '@prisma/client';
+import { AuthSuccessResponseDto} from "./contracts/dto/auth-success-response.dto";
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,7 @@ export class AuthService {
     private readonly auditLogRepository: AuditLogRepository,
   ) {}
 
-  async login(email: string, pass: string, userAgent: string, ip: string) {
+  async login(email: string, pass: string, userAgent: string, ip: string): Promise<AuthSuccessResponseDto> {
     const user = await this.usersService.findByEmail(email);
 
     const targetUserId = user?.id ?? null; // if user doesn't exist, targetUserId becomes null instead of crashing
@@ -59,8 +60,8 @@ export class AuthService {
     user: any,
     userAgent: string,
     ip: string,
-  ) {
-    const { sessionId, refreshToken } =
+  ): Promise<AuthSuccessResponseDto> {
+    const { sessionId, refreshToken, expiresAt } =
       await this.refreshTokenService.createSessionWithRefreshToken({
         userId: user.id,
         userAgent: userAgent,
@@ -87,17 +88,18 @@ export class AuthService {
         id: user.id,
         email: user.email,
         status: user.status,
-        roles: user.roles,
+        roles: user.roleNames,
         displayName: user.email.split('@')[0],
       },
       tokens: {
         accessToken,
         refreshToken,
-        expiresIn: 900,
+        expiresIn: 900, //15min not sure if that is good number
         tokenType: 'Bearer',
       },
       session: {
         id: sessionId,
+        expiresAt: expiresAt.toISOString(),
       },
     };
   }
