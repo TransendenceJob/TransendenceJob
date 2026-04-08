@@ -7,12 +7,45 @@ import {
   type AccessTokenPayloadInput,
 } from './token-contracts';
 
+type JwtRuntimeConfig = {
+  accessSecret: string;
+  accessTtl: StringValue;
+  issuer: string;
+  audience: string;
+};
+
+type JwtServiceRuntime = {
+  signAsync(
+    payload: AccessTokenPayloadInput,
+    options: {
+      secret: string;
+      issuer: string;
+      audience: string;
+      expiresIn: StringValue;
+    },
+  ): Promise<string>;
+  verifyAsync<T>(
+    token: string,
+    options: {
+      secret: string;
+      issuer: string;
+      audience: string;
+    },
+  ): Promise<T>;
+};
+
 @Injectable()
 export class AccessTokenService {
+  private readonly jwtConfig: JwtRuntimeConfig;
+  private readonly jwtRuntime: JwtServiceRuntime;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: AuthConfigService,
-  ) {}
+  ) {
+    this.jwtConfig = this.config.jwt as JwtRuntimeConfig;
+    this.jwtRuntime = this.jwtService as JwtServiceRuntime;
+  }
 
   /**
    * Generates a signed access token (short-lived JWT).
@@ -29,7 +62,7 @@ export class AccessTokenService {
    * });
    */
   async generateAccessToken(payload: AccessTokenPayloadInput): Promise<string> {
-    return await this.jwtService.signAsync(
+    return await this.jwtRuntime.signAsync(
       {
         sub: payload.sub,
         email: payload.email,
@@ -37,10 +70,10 @@ export class AccessTokenService {
         sessionId: payload.sessionId,
       },
       {
-        secret: this.config.jwt.accessSecret,
-        issuer: this.config.jwt.issuer,
-        audience: this.config.jwt.audience,
-        expiresIn: this.config.jwt.accessTtl as StringValue,
+        secret: this.jwtConfig.accessSecret,
+        issuer: this.jwtConfig.issuer,
+        audience: this.jwtConfig.audience,
+        expiresIn: this.jwtConfig.accessTtl,
       },
     );
   }
@@ -63,10 +96,10 @@ export class AccessTokenService {
     let payload: AccessTokenClaims;
 
     try {
-      payload = await this.jwtService.verifyAsync<AccessTokenClaims>(token, {
-        secret: this.config.jwt.accessSecret,
-        issuer: this.config.jwt.issuer,
-        audience: this.config.jwt.audience,
+      payload = await this.jwtRuntime.verifyAsync<AccessTokenClaims>(token, {
+        secret: this.jwtConfig.accessSecret,
+        issuer: this.jwtConfig.issuer,
+        audience: this.jwtConfig.audience,
       });
     } catch {
       throw new UnauthorizedException('Invalid access token');

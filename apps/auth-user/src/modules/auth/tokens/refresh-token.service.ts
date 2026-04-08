@@ -8,12 +8,23 @@ import { AuthConfigService } from '../../config/auth-config.service';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { type RefreshTokenPair } from './token-contracts';
 
+type RefreshTokenRuntimeConfig = {
+  bytes: number;
+  ttl: string;
+  hashPepper: string;
+};
+
 @Injectable()
 export class RefreshTokenService {
+  private readonly refreshTokenConfig: RefreshTokenRuntimeConfig;
+
   constructor(
     private readonly config: AuthConfigService,
     private readonly sessions: SessionRepository,
-  ) {}
+  ) {
+    this.refreshTokenConfig = this.config
+      .refreshToken as RefreshTokenRuntimeConfig;
+  }
 
   /**
    * Generates a cryptographically random opaque refresh token.
@@ -24,7 +35,7 @@ export class RefreshTokenService {
    * // Example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
    */
   generateOpaqueRefreshToken(): string {
-    return randomBytes(this.config.refreshToken.bytes).toString('base64url');
+    return randomBytes(this.refreshTokenConfig.bytes).toString('base64url');
   }
 
   /**
@@ -38,7 +49,7 @@ export class RefreshTokenService {
    */
   hashRefreshToken(token: string): string {
     return createHash('sha256')
-      .update(`${token}:${this.config.refreshToken.hashPepper}`)
+      .update(`${token}:${this.refreshTokenConfig.hashPepper}`)
       .digest('hex');
   }
 
@@ -145,16 +156,26 @@ export class RefreshTokenService {
       throw new NotFoundException('Session not found');
     }
 
-    if (session.revokedAt) {
+    const normalizedSession = session as {
+      revokedAt?: Date | null;
+      refreshTokenHash: string | null;
+      expiresAt: Date;
+    };
+
+    if (normalizedSession.revokedAt) {
       throw new UnauthorizedException('Session has been revoked');
     }
 
-    if (session.expiresAt.getTime() <= Date.now()) {
+    if (normalizedSession.expiresAt.getTime() <= Date.now()) {
       throw new UnauthorizedException('Session has expired');
     }
 
     if (
-      !this.verifyRefreshToken(currentRefreshToken, session.refreshTokenHash)
+      !normalizedSession.refreshTokenHash ||
+      !this.verifyRefreshToken(
+        currentRefreshToken,
+        normalizedSession.refreshTokenHash,
+      )
     ) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -195,7 +216,7 @@ export class RefreshTokenService {
    * @returns Date representing when the token will expire
    */
   private computeRefreshExpiresAt(): Date {
-    const ttl = this.config.refreshToken.ttl;
+    const ttl = this.refreshTokenConfig.ttl;
     const amount = Number(ttl.slice(0, -1));
     const unit = ttl.at(-1);
 
