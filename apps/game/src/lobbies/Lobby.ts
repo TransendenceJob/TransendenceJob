@@ -152,62 +152,79 @@ export class Lobby {
     // only exists to move through game and lobby states as developer
 
     // Client wants to connect, so send them the current state to display
-    if (data.type == CS_Type.CS_ConnectAttempt) {
-      const response: SC_GenericStatePacket = {
-        type: translateLobbyState(this.state),
-        lobbyId: this.id,
-        seq: [0],
-      };
-      this.msgToClient(JSON.stringify(response));
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Lobby
-    else if (data.type == CS_Type.CS_DEV_StartLobby) {
-      const response = this.createBasePacket<SC_StartLobby>(
-        SC_Type.SC_StartLobby,
-        {},
-      );
-      this.state = LobbyStateEnum.OpenLobby;
-      this.msgToClient(JSON.stringify(response));
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Loading
-    else if (data.type == CS_Type.CS_DEV_StartLoading) {
-      const response = this.createBasePacket<SC_StartLoading>(
-        SC_Type.SC_StartLoading,
-        {},
-      );
-      this.state = LobbyStateEnum.Loading;
-      this.msgToClient(JSON.stringify(response));
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Game
-    else if (data.type == CS_Type.CS_DEV_StartGame) {
-      const response = this.createBasePacket<SC_StartGame>(
-        SC_Type.SC_StartGame,
-        {},
-      );
-      this.state = LobbyStateEnum.Game;
-      this.msgToClient(JSON.stringify(response));
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
-    else if (data.type == CS_Type.CS_DEV_StartEndscreen) {
-      const response = this.createBasePacket<SC_GameFinished>(
-        SC_Type.SC_GameFinished,
-        {},
-      );
-      this.state = LobbyStateEnum.OpenLobby;
-      this.msgToClient(JSON.stringify(response));
-    }
-    // For the button to send to Server, just send back a copy
-    else if (data.type == CS_Type.CS_DEV_ButtonPress) {
-      const response = this.createBasePacket<SC_DEV_ButtonPress>(
-        SC_Type.SC_DEV_ButtonPress,
-        {
-          timestamp: data.timestamp,
-          msg: data.message,
-        },
-      );
-      this.msgToClient(JSON.stringify(response));
-    } else {
-      console.log(`Error: Server received packet with unhandled type: ${data}`);
+    switch (data.type) {
+      case CS_Type.CS_ConnectAttempt: {
+        const response: SC_GenericStatePacket = {
+          type: translateLobbyState(this.state),
+          lobbyId: this.id,
+          seq: [0],
+        };
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      // DEV mode, should be removed late, Client commands state to be set to Lobby
+      case CS_Type.CS_DEV_StartLobby: {
+        const response = this.createBasePacket<SC_StartLobby>(
+          SC_Type.SC_StartLobby,
+          {},
+        );
+        this.state = LobbyStateEnum.OpenLobby;
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      // DEV mode, should be removed late, Client commands state to be set to Loading
+      case CS_Type.CS_DEV_StartLoading: {
+        const response = this.createBasePacket<SC_StartLoading>(
+          SC_Type.SC_StartLoading,
+          {},
+        );
+        this.state = LobbyStateEnum.Loading;
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      // DEV mode, should be removed late, Client commands state to be set to Game
+      case CS_Type.CS_DEV_StartGame: {
+        const response = this.createBasePacket<SC_StartGame>(
+          SC_Type.SC_StartGame,
+          {},
+        );
+        this.state = LobbyStateEnum.Game;
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
+      case CS_Type.CS_DEV_StartEndscreen: {
+        const response = this.createBasePacket<SC_GameFinished>(
+          SC_Type.SC_GameFinished,
+          {},
+        );
+        this.state = LobbyStateEnum.OpenLobby;
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      // For the button to send to Server, just send back a copy
+      case CS_Type.CS_DEV_ButtonPress: {
+        const response = this.createBasePacket<SC_DEV_ButtonPress>(
+          SC_Type.SC_DEV_ButtonPress,
+          {
+            timestamp: data.timestamp,
+            msg: data.message,
+          },
+        );
+        this.msgToClient(JSON.stringify(response));
+        break;
+      }
+
+      default: {
+        console.log(
+          `Error: Server received packet with unhandled type: ${JSON.stringify(data)}`,
+        );
+      }
     }
   }
 }
