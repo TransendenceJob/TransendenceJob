@@ -4,6 +4,7 @@ import { GoogleExchangeRequestDto } from '../../../../src/modules/auth/contracts
 import { LogoutRequestDto } from '../../../../src/modules/auth/contracts/dto/logout-request.dto';
 import { RegisterRequestDto } from '../../../../src/modules/auth/contracts/dto/register-request.dto';
 import { SetUserRolesRequestDto } from '../../../../src/modules/auth/contracts/dto/set-user-roles-request.dto';
+import { VerifyQueryDto } from '../../../../src/modules/auth/contracts/dto/verify-query.dto';
 
 describe('Auth Contract DTOs', () => {
   it('accepts a valid register request', () => {
@@ -71,5 +72,15 @@ describe('Auth Contract DTOs', () => {
     const errors = validateSync(dto);
 
     expect(errors.length).toBeGreaterThan(0);
+  });
+
+  it('accepts verify query with audience', () => {
+    const dto = plainToInstance(VerifyQueryDto, {
+      audience: 'transcendence-internal',
+    });
+
+    const errors = validateSync(dto);
+
+    expect(errors).toHaveLength(0);
   });
 });

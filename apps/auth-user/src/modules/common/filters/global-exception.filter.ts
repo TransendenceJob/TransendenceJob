@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -16,23 +17,24 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    * @param host - The execution context containing request/response objects
    * @returns JSON-formatted error response sent to client
    */
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const res = ctx.getResponse();
-    const req = ctx.getRequest();
+    const res = ctx.getResponse<Response>();
+    const req = ctx.getRequest<Request>();
 
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const response = exception.getResponse();
-      return res.status(status).json({
+      res.status(status).json({
         statusCode: status,
         path: req?.url,
         error: response,
       });
+      return;
     }
 
     // Fallback for unexpected errors
-    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       path: req?.url,
       error: { message: 'Internal error' },

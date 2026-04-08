@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { AuthRegisterService } from '../../../src/modules/auth/services/auth-register.service';
 import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refresh.service';
 import { AuthLogoutService } from '../../../src/modules/auth/services/auth-logout.service';
+import { AuthVerifyService } from '../../../src/modules/auth/services/auth-verify.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
 
 describe('AuthService', () => {
@@ -27,6 +28,12 @@ describe('AuthService', () => {
           provide: AuthLogoutService,
           useValue: {
             logout: jest.fn(),
+          },
+        },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify: jest.fn(),
           },
         },
       ],
@@ -70,6 +77,12 @@ describe('AuthService', () => {
             logout,
           },
         },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -91,5 +104,50 @@ describe('AuthService', () => {
         requestId: 'req-1',
       },
     );
+  });
+
+  it('delegates verify to AuthVerifyService', async () => {
+    const verify = jest.fn().mockResolvedValue({ valid: true });
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: AuthRegisterService,
+          useValue: {
+            register: jest.fn(),
+          },
+        },
+        {
+          provide: AuthRefreshService,
+          useValue: {
+            refresh: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLogoutService,
+          useValue: {
+            logout: jest.fn(),
+          },
+        },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify,
+          },
+        },
+      ],
+    }).compile();
+
+    const authService = moduleRef.get(AuthService);
+
+    await expect(
+      authService.verify({ token: 'token', audience: 'audience' }),
+    ).resolves.toEqual({ valid: true });
+
+    expect(verify).toHaveBeenCalledWith({
+      token: 'token',
+      audience: 'audience',
+    });
   });
 });

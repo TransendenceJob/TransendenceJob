@@ -6,9 +6,10 @@ describe('AuthController.register', () => {
     register: jest.fn(),
     refresh: jest.fn(),
     logout: jest.fn(),
-  } satisfies Pick<AuthService, 'register' | 'refresh' | 'logout'>;
+    verify: jest.fn(),
+  } as unknown as AuthService;
 
-  const controller = new AuthController(authService as unknown as AuthService);
+  const controller = new AuthController(authService);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,6 +40,7 @@ describe('AuthController.register', () => {
       headers: {
         'user-agent': 'Mozilla/5.0',
       },
+      userAgent: 'Mozilla/5.0',
       requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
       serviceName: 'bff',
     } as any;
@@ -71,9 +73,10 @@ describe('AuthController.logout', () => {
     register: jest.fn(),
     refresh: jest.fn(),
     logout: jest.fn(),
-  } satisfies Pick<AuthService, 'register' | 'refresh' | 'logout'>;
+    verify: jest.fn(),
+  } as unknown as AuthService;
 
-  const controller = new AuthController(authService as unknown as AuthService);
+  const controller = new AuthController(authService);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -89,6 +92,7 @@ describe('AuthController.logout', () => {
       headers: {
         'user-agent': 'Mozilla/5.0',
       },
+      userAgent: 'Mozilla/5.0',
       requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
       serviceName: 'bff',
     } as any;
@@ -126,6 +130,7 @@ describe('AuthController.logout', () => {
       headers: {
         'user-agent': 'Mozilla/5.0',
       },
+      userAgent: 'Mozilla/5.0',
       requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
       serviceName: 'bff',
     } as any;
@@ -175,5 +180,79 @@ describe('AuthController.logout', () => {
         userAgent: null,
       }),
     );
+  });
+});
+
+describe('AuthController.verify', () => {
+  const authService = {
+    register: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+    verify: jest.fn(),
+  } as unknown as AuthService;
+
+  const controller = new AuthController(authService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authService.verify = jest.fn().mockResolvedValue({
+      valid: true,
+      user: {
+        id: 'usr_1',
+        email: 'john@example.com',
+        displayName: null,
+        username: null,
+        status: 'active',
+        roles: ['user'],
+        createdAt: '2026-04-03T13:00:00.000Z',
+        providers: [],
+      },
+      session: {
+        id: 'sess_1',
+        expiresAt: '2026-04-03T13:00:00.000Z',
+        revoked: false,
+      },
+      claims: {
+        sub: 'usr_1',
+        iat: 1,
+        exp: 2,
+        iss: 'auth-service',
+        aud: 'transcendence-internal',
+      },
+    });
+  });
+
+  it('extracts bearer token and delegates verify request', async () => {
+    const req = {
+      headers: {},
+      bearerToken: 'access-token-value',
+    } as any;
+
+    await controller.verify(
+      {
+        audience: 'transcendence-internal',
+      },
+      req,
+    );
+
+    expect(authService.verify).toHaveBeenCalledWith({
+      token: 'access-token-value',
+      audience: 'transcendence-internal',
+    });
+  });
+
+  it('rejects missing authorization header', async () => {
+    const req = {
+      headers: {},
+    } as any;
+
+    await expect(
+      controller.verify(
+        {
+          audience: 'transcendence-internal',
+        },
+        req,
+      ),
+    ).rejects.toThrow('Missing authorization header');
   });
 });
