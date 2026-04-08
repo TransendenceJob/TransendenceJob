@@ -20,11 +20,6 @@ import { VerifyQueryDto } from './contracts/dto/verify-query.dto';
 import { VerifyResponseDto } from './contracts/dto/verify-response.dto';
 import { AuthService } from './services/auth.service';
 
-type IncomingHeaders = Request['headers'] & {
-  'user-agent'?: string | string[] | undefined;
-  authorization?: string | string[] | undefined;
-};
-
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -34,11 +29,9 @@ export class AuthController {
     @Body() body: RegisterRequestDto,
     @Req() req: Request,
   ): Promise<AuthSuccessResponseDto> {
-    const requestHeaders = req.headers as IncomingHeaders;
-
     return this.authService.register(body, {
       ip: req.ip ?? null,
-      userAgent: this.readUserAgent(requestHeaders),
+      userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
     });
@@ -50,11 +43,9 @@ export class AuthController {
     @Body() body: RefreshRequestDto,
     @Req() req: Request,
   ): Promise<RefreshResponseDto> {
-    const requestHeaders = req.headers as IncomingHeaders;
-
     return this.authService.refresh(body, {
       ip: req.ip ?? null,
-      userAgent: this.readUserAgent(requestHeaders),
+      userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
     });
@@ -66,53 +57,26 @@ export class AuthController {
     @Body() body: LogoutRequestDto,
     @Req() req: Request,
   ): Promise<LogoutResponseDto> {
-    const requestHeaders = req.headers as IncomingHeaders;
-
     return this.authService.logout(body, {
       ip: req.ip ?? null,
-      userAgent: this.readUserAgent(requestHeaders),
+      userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
     });
   }
 
   @Get('verify')
-  verify(
+  async verify(
     @Query() query: VerifyQueryDto,
     @Req() req: Request,
   ): Promise<VerifyResponseDto> {
-    const requestHeaders = req.headers as IncomingHeaders;
-
-    return this.authService.verify({
-      token: this.readBearerToken(requestHeaders),
-      audience: query.audience,
-    });
-  }
-
-  private readUserAgent(headers: IncomingHeaders): string | null {
-    const userAgentHeader = headers['user-agent'];
-    if (Array.isArray(userAgentHeader)) {
-      return userAgentHeader[0] ?? null;
-    }
-
-    return typeof userAgentHeader === 'string' ? userAgentHeader : null;
-  }
-
-  private readBearerToken(headers: IncomingHeaders): string {
-    const authorizationHeader = headers.authorization;
-    const rawAuthorization = Array.isArray(authorizationHeader)
-      ? authorizationHeader[0]
-      : authorizationHeader;
-
-    if (!rawAuthorization) {
+    if (!req.bearerToken) {
       throw new UnauthorizedException('Missing authorization header');
     }
 
-    const [scheme, token, ...rest] = rawAuthorization.trim().split(/\s+/);
-    if (rest.length > 0 || scheme?.toLowerCase() !== 'bearer' || !token) {
-      throw new UnauthorizedException('Invalid authorization header');
-    }
-
-    return token;
+    return await this.authService.verify({
+      token: req.bearerToken,
+      audience: query.audience,
+    });
   }
 }
