@@ -2444,6 +2444,39 @@ components:
         - refreshToken
         - expiresIn
         - tokenType
+    SessionInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        revoked:
+          type: boolean
+          nullable: true
+      required:
+        - id
+        - expiresAt
+    VerifyClaims:
+      type: object
+      properties:
+        sub:
+          type: string
+        iat:
+          type: integer
+        exp:
+          type: integer
+        iss:
+          type: string
+        aud:
+          type: string
+          nullable: true
+      required:
+        - sub
+        - iat
+        - exp
+        - iss
     AuthSuccessResponse:
       type: object
       properties:
@@ -2454,24 +2487,27 @@ components:
           $ref: "#/components/schemas/AuthUser"
         tokens:
           $ref: "#/components/schemas/AuthTokens"
+        session:
+          $ref: "#/components/schemas/SessionInfo"
       required:
         - success
         - user
         - tokens
+        - session
     RefreshResponse:
       type: object
       properties:
         success:
           type: boolean
           example: true
-        user:
-          $ref: "#/components/schemas/AuthUser"
         tokens:
           $ref: "#/components/schemas/AuthTokens"
+        session:
+          $ref: "#/components/schemas/SessionInfo"
       required:
         - success
-        - user
         - tokens
+        - session
     LogoutResponse:
       type: object
       properties:
@@ -2485,49 +2521,26 @@ components:
       required:
         - success
         - revokedSessionIds
-    VerifyContext:
-      type: object
-      properties:
-        userId:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        roles:
-          type: array
-          items:
-            type: string
-        sessionId:
-          type: string
-        issuer:
-          type: string
-        audience:
-          type: string
-          nullable: true
-        issuedAt:
-          type: integer
-        expiresAt:
-          type: integer
-      required:
-        - userId
-        - email
-        - roles
-        - sessionId
-        - issuer
-        - issuedAt
-        - expiresAt
     VerifyResponse:
       type: object
       properties:
         success:
           type: boolean
           example: true
-        context:
-          $ref: "#/components/schemas/VerifyContext"
+        valid:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/AuthUser"
+        session:
+          $ref: "#/components/schemas/SessionInfo"
+        claims:
+          $ref: "#/components/schemas/VerifyClaims"
       required:
         - success
-        - context
+        - valid
+        - user
+        - session
+        - claims
     AuthMeResponse:
       type: object
       properties:
@@ -2537,22 +2550,14 @@ components:
         user:
           $ref: "#/components/schemas/AuthUser"
         session:
-          type: object
-          properties:
-            sessionId:
-              type: string
-            issuedAt:
-              type: integer
-            expiresAt:
-              type: integer
-          required:
-            - sessionId
-            - issuedAt
-            - expiresAt
+          $ref: "#/components/schemas/SessionInfo"
+        claims:
+          $ref: "#/components/schemas/VerifyClaims"
       required:
         - success
         - user
         - session
+        - claims
     OAuthStartResponse:
       type: object
       properties:
