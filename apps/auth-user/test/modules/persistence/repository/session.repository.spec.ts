@@ -84,7 +84,7 @@ describe('SessionRepository', () => {
     });
   });
 
-  it('revokeAllSessionsForUser only revokes non-revoked sessions', async () => {
+  it('revokeAllSessionsForUser only revokes active non-revoked sessions', async () => {
     await repository.revokeAllSessionsForUser('u1');
 
     expect(prisma.session.updateMany).toHaveBeenCalledWith(
@@ -92,6 +92,7 @@ describe('SessionRepository', () => {
         where: {
           userId: 'u1',
           revokedAt: null,
+          expiresAt: { gt: expect.any(Date) },
         },
       }),
     );
