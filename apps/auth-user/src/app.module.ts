@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { RequestIdMiddleware } from './modules/common/middleware/request-id.middleware';
+import { TracingHeaderMiddleware } from './modules/common/middleware/tracing-header.middleware';
 import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { AppConfigModule } from './modules/config/config.module';
@@ -25,6 +25,6 @@ import { AuthPersistenceModule } from './modules/persistence/auth-persistence.mo
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware).forRoutes('*');
+    consumer.apply(TracingHeaderMiddleware).forRoutes('*');
   }
 }
