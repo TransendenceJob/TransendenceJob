@@ -47,6 +47,29 @@ describe('AuthContractMapper', () => {
     expect(response.tokens.tokenType).toBe('Bearer');
   });
 
+  it('builds verify response from user, session, and claims', () => {
+    const response = AuthContractMapper.toVerifyResponse({
+      user: userEntity,
+      session: {
+        id: 'sess_456',
+        expiresAt: new Date('2026-03-02T10:00:00.000Z'),
+        revokedAt: null,
+      },
+      claims: {
+        sub: 'usr_123',
+        iat: 1710000000,
+        exp: 1710000900,
+        iss: 'auth-service',
+        aud: 'transcendence-internal',
+      },
+    });
+
+    expect(response.valid).toBe(true);
+    expect(response.user.id).toBe('usr_123');
+    expect(response.session.id).toBe('sess_456');
+    expect(response.claims.aud).toBe('transcendence-internal');
+  });
+
   it('maps audit logs and pagination to AuditListResponse', () => {
     const response = AuthContractMapper.toAuditListResponse({
       logs: [
