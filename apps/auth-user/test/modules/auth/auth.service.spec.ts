@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { AuthRegisterService } from '../../../src/modules/auth/services/auth-register.service';
+import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refresh.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
 
 describe('AuthService', () => {
@@ -13,6 +14,12 @@ describe('AuthService', () => {
           provide: AuthRegisterService,
           useValue: {
             register,
+          },
+        },
+        {
+          provide: AuthRefreshService,
+          useValue: {
+            refresh: jest.fn(),
           },
         },
       ],

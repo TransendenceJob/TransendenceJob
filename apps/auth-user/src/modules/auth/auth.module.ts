@@ -5,6 +5,7 @@ import { AppConfigModule } from '../config/config.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { AuthRegisterService } from './services/auth-register.service';
+import { AuthRefreshService } from './services/auth-refresh.service';
 import { AuthRateLimitService } from './shared/auth-rate-limit.service';
 import { AuthTokenIssueService } from './shared/auth-token-issue.service';
 import { AuthSessionCacheService } from './shared/auth-session-cache.service';
@@ -18,6 +19,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthTokenIssueService,
     AuthSessionCacheService,
     AuthRegisterService,
+    AuthRefreshService,
     AuthService,
   ],
   exports: [
@@ -28,6 +30,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthSessionCacheService,
     AuthService,
     AuthRegisterService,
+    AuthRefreshService,
   ],
 })
 export class AuthModule {}

@@ -3,8 +3,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogRepository } from '../../persistence/repositories/audit-log.repository';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { UserRepository } from '../../persistence/repositories/user.repository';
-import { type RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
-import { type RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
+import { RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
+import { RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
 import { AuthContractMapper } from '../contracts/mappers/auth-contract.mapper';
 import { AuthSessionCacheService } from '../shared/auth-session-cache.service';
 import { AuthTokenIssueService } from '../shared/auth-token-issue.service';
@@ -43,24 +43,6 @@ export class AuthRefreshService {
     private readonly refreshTokens: RefreshTokenService,
     private readonly sessionCache: AuthSessionCacheService,
   ) {}
-
-  findActiveByRefreshTokenHashWithUser(
-    refreshTokenHash: string,
-    db?: DbClient,
-  ): Promise<SessionWithUser | null> {
-    return this.db(db).session.findFirst({
-      where: {
-        refreshTokenHash,
-        revokedAt: null,
-        expiresAt: {
-          gt: new Date(),
-        },
-      },
-      include: {
-        user: true,
-      },
-    });
-  }
 
   async refresh(
     input: RefreshRequestDto,
