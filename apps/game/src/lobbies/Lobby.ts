@@ -1,5 +1,5 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
-import { CS_Type, CS_GenericPacket } from 'shared/packets/ClientServerPackets';
+import { CS_Type, CS_GenericPacket } from '@/packets/ClientServerPackets';
 import {
   SC_Type,
   SC_Base,
@@ -10,7 +10,7 @@ import {
   SC_GameFinished,
   SC_DEV_ButtonPress,
   SC_DEV_Periodic,
-} from 'shared/packets/ServerClientPackets';
+} from '@/packets/ServerClientPackets';
 import { SeqHandler } from './SeqHandler';
 
 enum LobbyStateEnum {

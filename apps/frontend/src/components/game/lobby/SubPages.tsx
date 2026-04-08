@@ -24,13 +24,13 @@ interface Params {
  * @param isConnected boolean, wether socket connection is established
  * @param DEBUG boolean wether Debug messages should be printed
  */
-export default function SubPages(
-  state: string,
-  msgToServer: msgToServerType,
-  socket: Socket,
-  isConnected: boolean,
-  DEBUG: boolean,
-) {
+export default function SubPages({
+  state,
+  msgToServer,
+  socket,
+  isConnected,
+  DEBUG,
+}: Params) {
   if (state == 'CONNECTING') {
     return <ConnectingPage  msgToServer={msgToServer}
                             isConnected={isConnected}/>

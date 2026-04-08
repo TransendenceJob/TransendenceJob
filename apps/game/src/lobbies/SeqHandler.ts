@@ -19,7 +19,9 @@ export class SeqHandler {
    * @param playerCount creates this many slots
    */
   constructor(playerCount: number) {
-    this.map = new Array(playerCount);
+    this.map = new Array<{ id: number | undefined; value: Array<number> }>(
+      playerCount,
+    );
     for (let i = 0; i < playerCount; i++)
       this.map[i] = { id: undefined, value: [] };
     this.lastSeq = 0;
@@ -82,9 +84,10 @@ export class SeqHandler {
   toString(): string {
     let msg: string = '';
     for (let i = 0; i < this.playerCount; i++) {
-      const current = this.map[i];
-      msg += `${this.map[i].id} - ${this.map[i].value}`;
-      if (i != this.playerCount - 1) msg += '\n';
+      msg += `${this.map[i].id} - ${this.map[i].value.toString()}`;
+      if (i != this.playerCount - 1) {
+        msg += '\n';
+      }
     }
     return msg;
   }
