@@ -73,6 +73,24 @@ export class SessionRepository {
     });
   }
 
+  findActiveByRefreshTokenHashWithUser(
+    refreshTokenHash: string,
+    db?: DbClient,
+  ): Promise<SessionWithUser | null> {
+    return this.db(db).session.findFirst({
+      where: {
+        refreshTokenHash,
+        revokedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      include: {
+        user: true,
+      },
+    });
+  }
+
   findActiveSessionsByUserId(
     userId: string,
     db?: DbClient,
@@ -99,6 +117,29 @@ export class SessionRepository {
   ): Promise<Session> {
     return this.db(db).session.update({
       where: { id: sessionId },
+      data: {
+        refreshTokenHash,
+        expiresAt,
+      },
+    });
+  }
+
+  updateRefreshTokenHashIfCurrent(
+    sessionId: string,
+    expectedRefreshTokenHash: string,
+    refreshTokenHash: string,
+    expiresAt: Date,
+    db?: DbClient,
+  ): Promise<{ count: number }> {
+    return this.db(db).session.updateMany({
+      where: {
+        id: sessionId,
+        refreshTokenHash: expectedRefreshTokenHash,
+        revokedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
       data: {
         refreshTokenHash,
         expiresAt,
