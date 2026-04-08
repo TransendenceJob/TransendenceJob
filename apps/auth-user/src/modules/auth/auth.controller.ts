@@ -11,6 +11,8 @@ import { RegisterRequestDto } from './contracts/dto/register-request.dto';
 import { AuthSuccessResponseDto } from './contracts/dto/auth-success-response.dto';
 import { RefreshRequestDto } from './contracts/dto/refresh-request.dto';
 import { RefreshResponseDto } from './contracts/dto/refresh-response.dto';
+import { LogoutRequestDto } from './contracts/dto/logout-request.dto';
+import { LogoutResponseDto } from './contracts/dto/logout-response.dto';
 import { AuthService } from './services/auth.service';
 
 type IncomingHeaders = Request['headers'] & {
@@ -45,6 +47,22 @@ export class AuthController {
     const requestHeaders = req.headers as IncomingHeaders;
 
     return this.authService.refresh(body, {
+      ip: req.ip ?? null,
+      userAgent: this.readUserAgent(requestHeaders),
+      requestId: req.requestId,
+      serviceName: req.serviceName,
+    });
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  logout(
+    @Body() body: LogoutRequestDto,
+    @Req() req: Request,
+  ): Promise<LogoutResponseDto> {
+    const requestHeaders = req.headers as IncomingHeaders;
+
+    return this.authService.logout(body, {
       ip: req.ip ?? null,
       userAgent: this.readUserAgent(requestHeaders),
       requestId: req.requestId,
