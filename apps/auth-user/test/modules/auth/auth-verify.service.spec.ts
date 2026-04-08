@@ -79,9 +79,9 @@ describe('AuthVerifyService', () => {
       new UnauthorizedException('Invalid access token'),
     );
 
-    await expect(
-      service.verify({ token: 'bad-token' }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    await expect(service.verify({ token: 'bad-token' })).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
   });
 
   it('rejects disabled users', async () => {

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { registerAs, type ConfigType } from '@nestjs/config';
 import { validateEnv } from './env.validation';
 

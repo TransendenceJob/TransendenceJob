@@ -6,7 +6,7 @@ export class DisableUserRequestDto {
   @Length(3, 255)
   reason!: string;
 
-  @Transform(({ value }) => {
+  @Transform(({ value }: { value: unknown }) => {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase();
