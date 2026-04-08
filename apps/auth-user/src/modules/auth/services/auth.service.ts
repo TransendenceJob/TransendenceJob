@@ -3,6 +3,8 @@ import { RegisterRequestDto } from '../contracts/dto/register-request.dto';
 import { AuthSuccessResponseDto } from '../contracts/dto/auth-success-response.dto';
 import { RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
 import { RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
+import { LogoutRequestDto } from '../contracts/dto/logout-request.dto';
+import { LogoutResponseDto } from '../contracts/dto/logout-response.dto';
 import {
   AuthRegisterService,
   type RegisterContext,
@@ -11,12 +13,14 @@ import {
   AuthRefreshService,
   type RefreshContext,
 } from './auth-refresh.service';
+import { AuthLogoutService, type LogoutContext } from './auth-logout.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly authRegisterService: AuthRegisterService,
     private readonly authRefreshService: AuthRefreshService,
+    private readonly authLogoutService: AuthLogoutService,
   ) {}
 
   register(
@@ -31,5 +35,12 @@ export class AuthService {
     context: RefreshContext,
   ): Promise<RefreshResponseDto> {
     return this.authRefreshService.refresh(input, context);
+  }
+
+  logout(
+    input: LogoutRequestDto,
+    context: LogoutContext,
+  ): Promise<LogoutResponseDto> {
+    return this.authLogoutService.logout(input, context);
   }
 }
