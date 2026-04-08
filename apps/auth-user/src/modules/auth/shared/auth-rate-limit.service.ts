@@ -5,6 +5,8 @@ const REGISTER_ATTEMPT_LIMIT = 5;
 const REGISTER_ATTEMPT_WINDOW_SECONDS = 60;
 const REFRESH_ATTEMPT_LIMIT = 5;
 const REFRESH_ATTEMPT_WINDOW_SECONDS = 60;
+const LOGOUT_ATTEMPT_LIMIT = 10;
+const LOGOUT_ATTEMPT_WINDOW_SECONDS = 60;
 
 @Injectable()
 export class AuthRateLimitService {
@@ -52,6 +54,22 @@ export class AuthRateLimitService {
     if (ipAttempts > REFRESH_ATTEMPT_LIMIT) {
       throw new HttpException(
         'Too many refresh attempts',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  async ensureLogoutAllowed(input: { ip?: string | null }): Promise<void> {
+    const ipBucket = input.ip ? `logout:ip:${input.ip}` : 'logout:ip:unknown';
+
+    const ipAttempts = await this.redis.incrementRateLimitCounter(
+      ipBucket,
+      LOGOUT_ATTEMPT_WINDOW_SECONDS,
+    );
+
+    if (ipAttempts > LOGOUT_ATTEMPT_LIMIT) {
+      throw new HttpException(
+        'Too many logout attempts',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
