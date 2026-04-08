@@ -3,14 +3,18 @@ import { CS_DEV_StartGame, CS_Type } from '@/shared/packets/ClientServerPackets'
 
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
+interface Params {
+  msgToServer: msgToServerType,
+}
+
 /**
  * Component for page, where the Clients and Server load the game logic,
  * while the Client page shows a progress bar to notify the client about progress
  * @param msgToServer function for sending packet to server
  */
-export default function LoadingPage(
-  msgToServer : msgToServerType
-) {
+export default function LoadingPage({
+  msgToServer
+}: Params) {
   return (
     <div>
       <h1 className="text-blue-500">Loading...</h1>

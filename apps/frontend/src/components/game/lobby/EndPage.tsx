@@ -3,14 +3,18 @@ import { CS_DEV_StartLobby, CS_Type } from '@/shared/packets/ClientServerPackets
 
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
+interface Params {
+  msgToServer: msgToServerType,
+}
+
 /**
  * Component for page, where the Clients may connect to a Lobby,
  * switch their readines and potentiallyh alter some settings
  * @param msgToServer function for sending packet to server
  */
-export default function EndPage(
-  msgToServer : msgToServerType
-) {
+export default function EndPage({
+  msgToServer
+}: Params) {
   return (
     <div>
       <h1 className="text-red-500">End Screen</h1>

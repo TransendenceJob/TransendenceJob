@@ -9,11 +9,17 @@ import { Socket } from 'socket.io-client';
 import { createScene } from "@/lib/babylon/createScene";
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
-export default function BabylonCanvas(
-  msgToServer: msgToServerType, 
-  socket: Socket, 
+interface Params {
+  msgToServer: msgToServerType,
+  socket: Socket,
   DEBUG: boolean,
-) {
+}
+
+export default function BabylonCanvas({
+  msgToServer, 
+  socket, 
+  DEBUG,
+}: Params) {
 
   // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -35,6 +41,7 @@ export default function BabylonCanvas(
   useEffect(() => {
 
     const canvas = canvasRef.current;
+    console.log(`Is the scene initiated? ${isInitRef.current}`);
     if (!canvas || isInitRef.current ) return;
 
     isInitRef.current = true;
@@ -47,7 +54,7 @@ export default function BabylonCanvas(
     window.addEventListener("resize", resize);
     
 
-    createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene, cleanupSocket) => {
+    createScene(canvas, engine, socket, msgRef.current, DEBUG).then(({scene, cleanupSocket}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanupSocket();
@@ -65,7 +72,7 @@ export default function BabylonCanvas(
     return () => {
       window.removeEventListener("resize", resize);
       if (socketCleanupRef.current)
-        socketCleanupRef.current;
+        socketCleanupRef.current();
       if (engineRef.current) {
         engineRef.current.dispose();
         engineRef.current = null;

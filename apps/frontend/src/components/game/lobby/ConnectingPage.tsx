@@ -5,6 +5,11 @@ import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets
 
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
+interface Params {
+  msgToServer: msgToServerType,
+  isConnected: boolean,
+}
+
 /**
  * Component for page, that the user gets served in the beginning
  * Sends a packet to the Server, notifying it in which state it is,
@@ -14,10 +19,10 @@ import type { msgToServerType } from '@/lib/packets/msgToServerType';
  * @note Putting the Code for sending in a useEffect with our params as arguments,
  * makes it so the function is only called initially and whenever one of the params changes
  */
-export default function ConnectingPage(
-  msgToServer:msgToServerType,
-  isConnected: boolean,
-) {
+export default function ConnectingPage({
+  msgToServer,
+  isConnected,
+}: Params) {
   useEffect(() => {
     if (isConnected) {
       msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {});

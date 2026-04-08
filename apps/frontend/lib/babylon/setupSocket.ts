@@ -55,6 +55,7 @@ export default function setupSocket(
 	socket.on("disconnect", onDisconnect);
 
 	return () => {
+		console.log("Sockets have been cleaned up!");
 		socket.off("connect", onConnect);
 		socket.off("msgToClient", msgToClient);
 		socket.off("connect_error", onError);
