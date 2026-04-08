@@ -5,7 +5,8 @@ describe('AuthController.register', () => {
   const authService = {
     register: jest.fn(),
     refresh: jest.fn(),
-  } satisfies Pick<AuthService, 'register' | 'refresh'>;
+    logout: jest.fn(),
+  } satisfies Pick<AuthService, 'register' | 'refresh' | 'logout'>;
 
   const controller = new AuthController(authService as unknown as AuthService);
 
@@ -61,6 +62,118 @@ describe('AuthController.register', () => {
         requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
         serviceName: 'bff',
       },
+    );
+  });
+});
+
+describe('AuthController.logout', () => {
+  const authService = {
+    register: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+  } satisfies Pick<AuthService, 'register' | 'refresh' | 'logout'>;
+
+  const controller = new AuthController(authService as unknown as AuthService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authService.logout = jest.fn().mockResolvedValue({
+      success: true,
+      revokedSessionIds: ['sess_1'],
+    });
+  });
+
+  it('delegates logout request with normalized request context', async () => {
+    const req = {
+      ip: '10.0.0.5',
+      headers: {
+        'user-agent': 'Mozilla/5.0',
+      },
+      requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+      serviceName: 'bff',
+    } as any;
+
+    await controller.logout(
+      {
+        refreshToken: 'refresh-token-value',
+        logoutAll: false,
+      },
+      req,
+    );
+
+    expect(authService.logout).toHaveBeenCalledWith(
+      {
+        refreshToken: 'refresh-token-value',
+        logoutAll: false,
+      },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+        serviceName: 'bff',
+      },
+    );
+  });
+
+  it('delegates logout all request with normalized request context', async () => {
+    authService.logout.mockResolvedValueOnce({
+      success: true,
+      revokedSessionIds: ['sess_1', 'sess_2', 'sess_3'],
+    });
+
+    const req = {
+      ip: '10.0.0.5',
+      headers: {
+        'user-agent': 'Mozilla/5.0',
+      },
+      requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+      serviceName: 'bff',
+    } as any;
+
+    const response = await controller.logout(
+      {
+        refreshToken: 'refresh-token-value',
+        logoutAll: true,
+      },
+      req,
+    );
+
+    expect(authService.logout).toHaveBeenCalledWith(
+      {
+        refreshToken: 'refresh-token-value',
+        logoutAll: true,
+      },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+        serviceName: 'bff',
+      },
+    );
+    expect(response.revokedSessionIds).toHaveLength(3);
+  });
+
+  it('handles missing user-agent header', async () => {
+    const req = {
+      ip: '10.0.0.5',
+      headers: {},
+      requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+      serviceName: 'bff',
+    } as any;
+
+    await controller.logout(
+      {
+        refreshToken: 'refresh-token-value',
+        logoutAll: false,
+      },
+      req,
+    );
+
+    expect(authService.logout).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        userAgent: null,
+      }),
     );
   });
 });
