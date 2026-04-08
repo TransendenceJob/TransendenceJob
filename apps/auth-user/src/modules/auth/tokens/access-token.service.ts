@@ -78,7 +78,9 @@ export class AccessTokenService {
       !Array.isArray(payload?.roles) ||
       !payload?.sessionId ||
       !payload?.iss ||
-      !payload?.aud
+      !payload?.aud ||
+      typeof payload?.iat !== 'number' ||
+      typeof payload?.exp !== 'number'
     ) {
       throw new UnauthorizedException('Invalid access token payload');
     }
