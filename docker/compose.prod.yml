@@ -48,6 +48,7 @@ services:
     container_name: bff
     environment:
       NODE_ENV : production
+      SERVICE_NAME: bff
       PORT : 3000
       AUTH_SERVICE_URL: http://auth_service:3000
       SOCIAL_SERVICE_URL: http://social_service:3000

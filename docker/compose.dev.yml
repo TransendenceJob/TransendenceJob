@@ -58,6 +58,7 @@ services:
     working_dir: /app
     environment:
       NODE_ENV: development
+      SERVICE_NAME: bff
       PORT: ${BFF_INTERNAL_PORT:-3000}
       AUTH_SERVICE_URL: http://auth_service:${AUTH_INTERNAL_PORT:-3000}
       SOCIAL_SERVICE_URL: http://social_service:${SOCIAL_INTERNAL_PORT:-3000}
