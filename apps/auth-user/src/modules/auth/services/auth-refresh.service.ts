@@ -122,7 +122,7 @@ export class AuthRefreshService {
             db,
           );
 
-          return {
+          const refreshResult = {
             user: {
               id: session.user.id,
               email: session.user.email,
@@ -135,7 +135,9 @@ export class AuthRefreshService {
               revokedAt: null,
             },
             refreshToken: refreshTokenPair.refreshToken,
-          };
+          } satisfies RefreshTransactionResult;
+
+          return refreshResult;
         },
       );
 

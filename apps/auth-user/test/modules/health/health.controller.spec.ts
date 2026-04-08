@@ -5,9 +5,9 @@ describe('HealthController', () => {
   it('returns ok when redis is healthy', () => {
     const redis = {
       isHealthy: jest.fn().mockReturnValue(true),
-    } as unknown as AuthRedisService;
+    } satisfies Pick<AuthRedisService, 'isHealthy'>;
 
-    const controller = new HealthController(redis);
+    const controller = new HealthController(redis as AuthRedisService);
 
     expect(controller.getHealth()).toEqual({
       status: 'ok',
@@ -20,9 +20,9 @@ describe('HealthController', () => {
   it('returns degraded when redis is unhealthy', () => {
     const redis = {
       isHealthy: jest.fn().mockReturnValue(false),
-    } as unknown as AuthRedisService;
+    } satisfies Pick<AuthRedisService, 'isHealthy'>;
 
-    const controller = new HealthController(redis);
+    const controller = new HealthController(redis as AuthRedisService);
 
     expect(controller.getHealth()).toEqual({
       status: 'degraded',

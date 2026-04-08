@@ -145,7 +145,7 @@ export class AuthRegisterService {
         db,
       );
 
-      return {
+      const createdRegisterData = {
         user: {
           id: user.id,
           email: user.email,
@@ -157,7 +157,9 @@ export class AuthRegisterService {
           expiresAt: session.expiresAt,
           revokedAt: null,
         },
-      };
+      } satisfies CreatedRegisterData;
+
+      return createdRegisterData;
     });
   }
 

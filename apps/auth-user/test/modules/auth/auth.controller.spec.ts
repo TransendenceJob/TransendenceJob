@@ -4,9 +4,10 @@ import { type AuthService } from '../../../src/modules/auth/services/auth.servic
 describe('AuthController.register', () => {
   const authService = {
     register: jest.fn(),
-  } as unknown as AuthService;
+    refresh: jest.fn(),
+  } satisfies Pick<AuthService, 'register' | 'refresh'>;
 
-  const controller = new AuthController(authService);
+  const controller = new AuthController(authService as unknown as AuthService);
 
   beforeEach(() => {
     jest.clearAllMocks();
