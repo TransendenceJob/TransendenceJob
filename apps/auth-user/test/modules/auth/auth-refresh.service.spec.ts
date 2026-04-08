@@ -1,4 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refresh.service';
 
 describe('AuthRefreshService', () => {
@@ -11,6 +15,7 @@ describe('AuthRefreshService', () => {
     updateRefreshTokenHashIfCurrent: jest.Mock;
   };
   let auditLogs: { createEvent: jest.Mock };
+  let rateLimit: { ensureRefreshAllowed: jest.Mock };
   let tokenIssue: {
     createRefreshTokenPair: jest.Mock;
     issueAccessToken: jest.Mock;
@@ -33,6 +38,9 @@ describe('AuthRefreshService', () => {
     };
     auditLogs = {
       createEvent: jest.fn(),
+    };
+    rateLimit = {
+      ensureRefreshAllowed: jest.fn().mockResolvedValue(undefined),
     };
     tokenIssue = {
       createRefreshTokenPair: jest.fn(),
@@ -58,6 +66,7 @@ describe('AuthRefreshService', () => {
       users as never,
       sessions as never,
       auditLogs as never,
+      rateLimit as never,
       tokenIssue as never,
       refreshTokens as never,
       sessionCache as never,
@@ -100,6 +109,9 @@ describe('AuthRefreshService', () => {
     );
 
     expect(refreshTokens.hashRefreshToken).toHaveBeenCalledWith('old-refresh');
+    expect(rateLimit.ensureRefreshAllowed).toHaveBeenCalledWith({
+      ip: '127.0.0.1',
+    });
     expect(sessions.findActiveByRefreshTokenHashWithUser).toHaveBeenCalledWith(
       'incoming-hash',
       db,
@@ -188,6 +200,45 @@ describe('AuthRefreshService', () => {
 
     expect(auditLogs.createEvent).not.toHaveBeenCalled();
     expect(sessionCache.cacheSession).not.toHaveBeenCalled();
+    expect(tokenIssue.issueAccessToken).not.toHaveBeenCalled();
+  });
+
+  it('audits and rejects refresh requests that exceed the rate limit', async () => {
+    rateLimit.ensureRefreshAllowed.mockRejectedValueOnce(
+      new HttpException(
+        'Too many refresh attempts',
+        HttpStatus.TOO_MANY_REQUESTS,
+      ),
+    );
+
+    await expect(
+      service.refresh(
+        { refreshToken: 'old-refresh' },
+        {
+          ip: '127.0.0.1',
+          userAgent: 'jest',
+          requestId: 'req-1',
+          serviceName: 'bff',
+        },
+      ),
+    ).rejects.toMatchObject({
+      status: HttpStatus.TOO_MANY_REQUESTS,
+      message: 'Too many refresh attempts',
+    });
+
+    expect(auditLogs.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'REFRESH_FAILED',
+        ip: '127.0.0.1',
+        userAgent: 'jest',
+        metadataJson: expect.objectContaining({
+          reason: 'rate_limited',
+        }),
+      }),
+    );
+    expect(
+      sessions.findActiveByRefreshTokenHashWithUser,
+    ).not.toHaveBeenCalled();
     expect(tokenIssue.issueAccessToken).not.toHaveBeenCalled();
   });
 });
