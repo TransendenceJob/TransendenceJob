@@ -35,4 +35,8 @@ export class AuthSessionCacheService {
       sessionCacheTtl,
     );
   }
+
+  async invalidateSession(sessionId: string): Promise<void> {
+    await this.redis.deleteSessionById(sessionId);
+  }
 }
