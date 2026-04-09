@@ -27,6 +27,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY --from=deps /app/node_modules ./node_modules
+
+# COPY THE SHARED FILES HERE:
+# This pulls from the "shared_logic" name defined in your YAML
+COPY --from=shared . ./shared
+
 COPY . .
 
 RUN npm run build

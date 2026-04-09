@@ -15,7 +15,7 @@ services:
       - frontend
       - bff
       - game_service
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -23,17 +23,21 @@ services:
         max-file: "3"
 
   frontend:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/frontend
       dockerfile: Dockerfile
-    container_name:  frontend
+      additional_contexts:
+        shared: ../shared/game
+    container_name: frontend
     environment:
-      NODE_ENV : production
-      PORT : 3000
+      NODE_ENV: production
+      PORT: 3000
+    volumes:
+      - ../shared/game:/app/shared
     expose:
       - "3000"
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -41,25 +45,25 @@ services:
         max-file: "3"
 
   bff:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/BFF
       dockerfile: Dockerfile
     container_name: bff
     environment:
-      NODE_ENV : production
-      PORT : 3000
+      NODE_ENV: production
+      PORT: 3000
       AUTH_SERVICE_URL: http://auth_service:3000
       SOCIAL_SERVICE_URL: http://social_service:3000
       STATS_SERVICE_URL: http://stats_service:3000
       GAME_SERVICE_HTTP_URL: http://game_service:${GAME_INTERNAL_PORT:-3002}
-      REDIS_HOST : redis
-      REDIS_PORT : 6379
-      RABBITMQ_HOST : rabbitmq
-      RABBITMQ_PORT :  5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
     expose:
       - "3000"
-    command: [ "sh" , "-c" , "node dist/main.js"]
+    command: [ "sh", "-c", "node dist/main.js" ]
     depends_on:
       postgres_auth:
         condition: service_healthy
@@ -71,7 +75,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -79,7 +83,7 @@ services:
         max-file: "3"
 
   auth_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/auth-user
       dockerfile: Dockerfile
@@ -114,13 +118,13 @@ services:
       SERVICE_VERSION: ${SERVICE_VERSION:-1.0.0}
     expose:
       - "${AUTH_INTERNAL_PORT:-3000}"
-    command: ["sh", "-c", "node dist/src/main.js"]
+    command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
       postgres_auth:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -128,7 +132,7 @@ services:
         max-file: "3"
 
   social_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/social
       dockerfile: Dockerfile
@@ -147,7 +151,7 @@ services:
       RABBITMQ_PORT: 5672
     expose:
       - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
+    command: [ "sh", "-c", "node dist/main.js" ]
     depends_on:
       postgres_social:
         condition: service_healthy
@@ -155,7 +159,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -163,7 +167,7 @@ services:
         max-file: "3"
 
   stats_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/stats
       dockerfile: Dockerfile
@@ -180,13 +184,13 @@ services:
       RABBITMQ_PORT: 5672
     expose:
       - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
+    command: [ "sh", "-c", "node dist/main.js" ]
     depends_on:
       postgres_stats:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -194,10 +198,12 @@ services:
         max-file: "3"
 
   game_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/game
       dockerfile: Dockerfile
+      additional_contexts:
+        shared: ../shared/game
     container_name: game_service
     environment:
       NODE_ENV: production
@@ -215,8 +221,9 @@ services:
     expose:
       - "${GAME_INTERNAL_PORT:-3001}"
     volumes:
+      - ../shared/game:/app/shared
       - nginx_maps:/app/generated/maps
-    command: ["sh", "-c", "node dist/main.js"]
+    command: [ "sh", "-c", "node dist/main.js" ]
     depends_on:
       postgres_game:
         condition: service_healthy
@@ -224,13 +231,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-
 
 volumes:
   nginx_maps:

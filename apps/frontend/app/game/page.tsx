@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
-import { SC_Type, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_DEV_StartLobby } from '@/shared/packets/ServerClientPackets'
+import { SC_Type, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_StartLobby } from '@/shared/packets/ServerClientPackets'
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets'
 
 interface JsonPacket {
