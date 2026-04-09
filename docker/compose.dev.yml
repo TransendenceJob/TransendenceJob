@@ -190,6 +190,7 @@ services:
       DB_PASSWORD: ${STATS_DB_PASSWORD}
       DB_NAME: ${STATS_DB_NAME}
       RABBITMQ_HOST: rabbitmq
+      DATABASE_URL: postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?schema=public
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
