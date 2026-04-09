@@ -89,7 +89,7 @@ export default function LobbyPage() {
 
   const packetToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
     type: T['type'],
-    data: Omit<T, keyof CS_Base | 'type'>,
+    data: Omit<T, | 'type' | 'lobbyId'>,
   ) => {
     const packet: T = {
       type: type,
@@ -97,7 +97,7 @@ export default function LobbyPage() {
       ...data,
     } as T;
     msgToServer(JSON.stringify(packet));
-  }, [socket, msgToServer]);
+  }, [socket, msgToServer, lobbyId]);
 
   // JSX element for displaying page
   return (
