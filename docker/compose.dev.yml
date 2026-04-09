@@ -200,6 +200,9 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    volumes:
+      - ../apps/stats:/app
+      - /app/node_modules
     networks: [backend]
     logging:
       driver: "json-file"
