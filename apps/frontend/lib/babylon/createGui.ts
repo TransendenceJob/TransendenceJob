@@ -21,9 +21,10 @@ export default function createGui(
 	);
 
 	const socket_status = new TextBlock("socket_status", "Connection Status: Disconnected");
-	socket_status.fontSize = 24;
+	const fontSizeValue = 24;
+	socket_status.fontSize = fontSizeValue;
 	socket_status.color = "red";
-	const size = socket_status.fontSize.replace('px', '');
+	const size = fontSizeValue;
 	socket_status.top =  -1 * ((canvas.height - size) / 2);
 	gui.addControl(socket_status);
 

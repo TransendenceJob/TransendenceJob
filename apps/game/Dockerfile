@@ -35,6 +35,7 @@ COPY . .
 
 ENV NODE_ENV=production
 RUN npm run build
+RUN ls -R /app/dist
 
 # ---------- production ----------
 FROM node:20-alpine AS production
@@ -50,4 +51,4 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]

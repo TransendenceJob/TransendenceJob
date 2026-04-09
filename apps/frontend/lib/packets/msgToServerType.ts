@@ -22,5 +22,5 @@ import { CS_Base, CS_Type } from '../../shared/ClientServerPackets';
  */
 export type msgToServerType = <T extends CS_Base & { type: CS_Type }>(
 		type: T['type'],
-		data: Omit<T, keyof CS_Base | 'type'>,
-	) => {};
+   		data: Omit<T, | 'type' | 'lobbyId'>,
+	) => void;

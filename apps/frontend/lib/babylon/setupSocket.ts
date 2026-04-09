@@ -16,8 +16,13 @@ export default function setupSocket(
 	socket: Socket, 
 	gui: AdvancedDynamicTexture, 
 	DEBUG: boolean) {
-	const socket_status = gui.getControlByName("socket_status");
-	const receiveButton = gui.getControlByName("receive");
+	const socket_status = gui.getControlByName("socket_status") as any;
+	const receiveButton = gui.getControlByName("receive") as any;
+
+	if (!socket_status || !receiveButton) {
+		log(DEBUG, "GUI Controls not found");
+		return;
+	}
 
 	if (socket && socket.connected)
 	{
@@ -40,8 +45,8 @@ export default function setupSocket(
 	}
 	socket.on("msgToClient", msgToClient);
 	
-	const onError = (error: string) => {
-		log(DEBUG, `Error with websocket: ${error}`);
+	const onError = (error: Error) => {
+		log(DEBUG, `Error with websocket: ${error.message}`);
 		socket_status.text = "Connection Status: Errror";
 		socket_status.color = "red";
 	};
