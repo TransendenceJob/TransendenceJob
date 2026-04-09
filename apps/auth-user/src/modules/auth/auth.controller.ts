@@ -83,15 +83,11 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(
-    @Body() loginDto: LoginRequestDto,
-    @Req() req: Request, // to see headers/IP
-  ) {
-    // Extracting metadata for the session
+  async login(@Body() loginDto: LoginRequestDto, @Req() req: Request) {
     const userAgent = req.headers['user-agent'] || 'unknown';
     const ip = req.ip || '127.0.0.1';
 
-    return this.authService.login(
+    return await this.authService.login(
       loginDto.email,
       loginDto.password,
       userAgent,

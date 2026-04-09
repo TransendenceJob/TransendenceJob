@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TokensModule } from './tokens/tokens.module';
 import { PasswordHashService } from './hashing/password-hash.service';
 import { AppConfigModule } from '../config/config.module';
+import { UsersAuthModule } from '../users-auth/users-auth.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './services/auth.service';
 import { AuthRegisterService } from './services/auth-register.service';
@@ -13,7 +14,7 @@ import { AuthTokenIssueService } from './shared/auth-token-issue.service';
 import { AuthSessionCacheService } from './shared/auth-session-cache.service';
 
 @Module({
-  imports: [AppConfigModule, TokensModule],
+  imports: [AppConfigModule, TokensModule, UsersAuthModule],
   controllers: [AuthController],
   providers: [
     PasswordHashService,
