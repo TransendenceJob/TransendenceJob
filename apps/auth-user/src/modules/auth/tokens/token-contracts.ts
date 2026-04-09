@@ -5,6 +5,8 @@ export type AccessTokenClaims = {
   sessionId: string;
   iss: string;
   aud: string;
+  iat: number;
+  exp: number;
 };
 
 export type AccessTokenPayloadInput = {
