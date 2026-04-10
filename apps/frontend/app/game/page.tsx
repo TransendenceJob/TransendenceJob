@@ -4,13 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
-import { SC_Type, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_StartLobby } from '@/shared/packets/ServerClientPackets'
+import { SC_Type, SC_Generic, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_StartLobby } from '@/shared/packets/ServerClientPackets'
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets'
-
-interface JsonPacket {
-  type: string;
-  lobbyId: number;
-}
 
 const socket: Socket = io("ws://localhost:8080", {transports: ['websocket']});
 const DEBUG: boolean = (process.env.NODE_ENV == "development");
@@ -34,7 +29,7 @@ export default function LobbyPage() {
 
     const msgToClient = (data: string) => {
       if (DEBUG) console.log("NEXT: Client received packet: ", data);
-      const dataObj: JsonPacket = JSON.parse(data);
+      const dataObj: SC_Generic = JSON.parse(data);
 
       // If trying to connect with an invalid ID, dont handle packet
       if (lobbyId != dataObj.lobbyId)
@@ -52,7 +47,6 @@ export default function LobbyPage() {
         setState("CONNECTING");
       else {
         if (DEBUG) console.log("NEXT: Received unhandled package type: ");
-        return ;
       }
 
     }
@@ -79,15 +73,8 @@ export default function LobbyPage() {
     };
   }, [])
 
-  // Create Callback function so components can send to Server
-  const msgToServer = useCallback((data: string) => {
-    if (socket && socket.connected) {
-      socket.emit('msgToServer', data);
-      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", data);
-    }
-  }, []);
-
-  const packetToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
+  // Function for simpler packet handling
+  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
     type: T['type'],
     data: Omit<T, | 'type' | 'lobbyId'>,
   ) => {
@@ -96,15 +83,19 @@ export default function LobbyPage() {
       lobbyId: lobbyId,
       ...data,
     } as T;
-    msgToServer(JSON.stringify(packet));
-  }, [socket, msgToServer, lobbyId]);
+    const packet_string = JSON.stringify(packet);
+    if (socket && socket.connected) {
+      socket.emit('msgToServer', JSON.stringify(packet_string))
+      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
+    }
+  }, [socket, lobbyId]);
 
   // JSX element for displaying page
   return (
     <main className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
-                msgToServer={packetToServer} 
+                msgToServer={msgToServer} 
                 socket={socket}
                 isConnected={isConnected}
                 DEBUG={DEBUG}
