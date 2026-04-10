@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { PlayerStatsModule } from './modules/player-stats/player-stats.module.js';
 import { MatchesModule } from './modules/matches/matches.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './infra/prisma/prisma.module.js';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 // import { PlayerStatsModule } from './modules/player-stats/player-stats.module';
@@ -14,4 +15,11 @@ import { PrismaModule } from './infra/prisma/prisma.module.js';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+      consumer
+        .apply(RequestIdMiddleware)
+        .forRoutes('*'); // apply to ALL routes
+    }
+  
+}

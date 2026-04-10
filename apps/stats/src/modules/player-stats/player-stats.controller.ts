@@ -8,6 +8,7 @@ export class PlayerStatsController {
 
 	@Post('id')
 	createPlayerStats(@Param(':id') id: number){
+
 		return this.service.createStatsForUser(Number(id));
 	}
 }
@@ -19,6 +20,7 @@ export class MatchStatsController {
 
 	@Get('kda')
 	returnKdaStat(){
+		
 		return 1;
 	}
 }
