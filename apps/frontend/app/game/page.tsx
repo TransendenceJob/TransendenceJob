@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
-import { SC_Type, SC_Generic, SC_StartLoading, SC_StartGame, SC_GameFinished, SC_DEV_StartConnecting, SC_StartLobby } from '@/shared/packets/ServerClientPackets'
+import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets'
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets'
 
 const socket: Socket = io("ws://localhost:8080", {transports: ['websocket']});
@@ -29,11 +29,17 @@ export default function LobbyPage() {
 
     const msgToClient = (data: string) => {
       if (DEBUG) console.log("NEXT: Client received packet: ", data);
-      const dataObj: SC_Generic = JSON.parse(data);
+      const dataObj: SC_GenericPacket = JSON.parse(data);
 
       // If trying to connect with an invalid ID, dont handle packet
       if (lobbyId != dataObj.lobbyId)
         return ;
+
+      // Need this because our discriminated union may not always have type field
+      if (!(dataObj && 'type' in dataObj)) {
+        console.log("ERROR, frontend received packet with missing type")
+        return ;
+      }
 
       if (dataObj.type == SC_Type.SC_StartLobby)
         setState("LOBBY");
@@ -85,7 +91,7 @@ export default function LobbyPage() {
     } as T;
     const packet_string = JSON.stringify(packet);
     if (socket && socket.connected) {
-      socket.emit('msgToServer', JSON.stringify(packet_string))
+      socket.emit('msgToServer', packet_string);
       if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
     }
   }, [socket, lobbyId]);

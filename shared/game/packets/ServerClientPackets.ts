@@ -233,7 +233,6 @@ export interface SC_DEV_Periodic extends SC_Base {
 
 
 export type SC_GenericPacket = 
-			SC_Base |
 			SC_DEV_StartConnecting | SC_InvalidState | SC_StartLobby |
 			SC_ConnectFail | SC_ConnectSuccess | SC_ClientDisconnect | 
 			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 

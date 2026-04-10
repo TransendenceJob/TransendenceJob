@@ -224,7 +224,7 @@ services:
     volumes:
       - ../shared/game:/app/shared
       - nginx_maps:/app/generated/maps
-    command: [ "sh", "-c", "find /app/dist -name main.js" ]
+    command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
       postgres_game:
         condition: service_healthy

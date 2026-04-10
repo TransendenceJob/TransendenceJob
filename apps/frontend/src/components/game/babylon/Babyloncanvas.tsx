@@ -36,12 +36,10 @@ export default function BabylonCanvas({
     msgRef.current = msgToServer;
   }, [msgToServer]);
 
-
   // React runs this twice to check for bugs
   useEffect(() => {
 
     const canvas = canvasRef.current;
-    console.log(`Is the scene initiated? ${isInitRef.current}`);
     if (!canvas || isInitRef.current ) return;
 
     isInitRef.current = true;
