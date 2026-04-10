@@ -64,9 +64,9 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
-      GOOGLE_REDIRECT_URI: ${AUTH_PUBLIC_URL}/auth/google/callback
+      GOOGLE_REDIRECT_URI: http://localhost:${NGINX_HTTP_PORT:-8080}/api/auth/google/callback
       GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
-      GOOGLE_FRONTEND_CALLBACK_URL: ${FRONTEND_PUBLIC_URL}/auth/google/callback
+      GOOGLE_FRONTEND_CALLBACK_URL: http://localhost:${NGINX_HTTP_PORT:-8080}/auth/google/callback
     expose:
       - "3000"
     command: [ "sh", "-c", "node dist/main.js" ]
@@ -121,9 +121,9 @@ services:
 
       GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
       GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-prod-google-client-secret}
-      GOOGLE_REDIRECT_URI: ${AUTH_PUBLIC_URL}/auth/google/callback
+      GOOGLE_REDIRECT_URI: http://localhost:${NGINX_HTTP_PORT:-8080}/api/auth/google/callback
       GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
-      GOOGLE_FRONTEND_CALLBACK_URL: ${FRONTEND_PUBLIC_URL}/auth/google/callback
+      GOOGLE_FRONTEND_CALLBACK_URL: http://localhost:${NGINX_HTTP_PORT:-8080}/auth/google/callback
 
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
 

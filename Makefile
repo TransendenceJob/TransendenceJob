@@ -49,7 +49,7 @@ dev: check-env
 	$(DC_DEV) up -d --build
 
 prod: check-env
-	$(DC_PROD) up --build
+	$(DC_PROD) up -d --build
 
 debug: check-env
 	$(DC_DEV) up -d --build

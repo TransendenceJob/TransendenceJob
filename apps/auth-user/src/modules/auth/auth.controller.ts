@@ -30,6 +30,7 @@ import { type LogoutContext } from './services/auth-logout.service';
 import { type RefreshContext } from './services/auth-refresh.service';
 import { type RegisterContext } from './services/auth-register.service';
 import { type DisableUserContext } from './services/auth-admin.service';
+import { type GoogleExchangeContext } from './services/auth-google-exchange.service';
 
 @Controller()
 export class AuthController {
@@ -124,7 +125,7 @@ export class AuthController {
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-    } satisfies RegisterContext;
+    } satisfies GoogleExchangeContext;
 
     return this.authService.googleExchange(body, context);
   }
