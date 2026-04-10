@@ -7,9 +7,10 @@ import { PRISMA_DB } from '../persistence.tokens';
 export type AuditLogFilters = {
   userId?: string;
   actorUserId?: string;
-  action?: AuditAction;
+  action?: AuditAction | AuditAction[];
   createdFrom?: Date;
   createdTo?: Date;
+  cursor?: string;
   take?: number;
   skip?: number;
 };
@@ -91,21 +92,30 @@ export class AuditLogRepository {
     filters: AuditLogFilters = {},
     db?: DbClient,
   ): Promise<AuditLog[]> {
+    const actionFilter = Array.isArray(filters.action)
+      ? {
+          in: filters.action,
+        }
+      : filters.action;
+
     return this.db(db).auditLog.findMany({
       where: {
         userId: filters.userId,
         actorUserId: filters.actorUserId,
-        action: filters.action,
+        action: actionFilter,
         createdAt: {
           gte: filters.createdFrom,
           lte: filters.createdTo,
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      cursor: filters.cursor
+        ? {
+            id: filters.cursor,
+          }
+        : undefined,
       take: filters.take,
-      skip: filters.skip,
+      skip: filters.cursor ? 1 : filters.skip,
     });
   }
 }

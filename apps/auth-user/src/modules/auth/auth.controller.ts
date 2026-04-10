@@ -20,10 +20,13 @@ import { VerifyQueryDto } from './contracts/dto/verify-query.dto';
 import { VerifyResponseDto } from './contracts/dto/verify-response.dto';
 import { AuthService } from './services/auth.service';
 import { LoginRequestDto } from './contracts/dto/login-request.dto';
+import { AuditQueryDto } from './contracts/dto/audit-query.dto';
+import { AuditListResponseDto } from './contracts/dto/audit-list-response.dto';
 import { type LoginContext } from './services/auth-login.service';
 import { type LogoutContext } from './services/auth-logout.service';
 import { type RefreshContext } from './services/auth-refresh.service';
 import { type RegisterContext } from './services/auth-register.service';
+import { type DisableUserContext } from './services/auth-admin.service';
 
 @Controller()
 export class AuthController {
@@ -105,5 +108,22 @@ export class AuthController {
     } satisfies LoginContext;
 
     return this.authService.login(body, context);
+  }
+
+  @Get('audit')
+  @HttpCode(HttpStatus.OK)
+  listAuditLogs(
+    @Query() query: AuditQueryDto,
+    @Req() req: Request,
+  ): Promise<AuditListResponseDto> {
+    const context = {
+      ip: req.ip ?? null,
+      userAgent: req.userAgent ?? null,
+      requestId: req.requestId,
+      serviceName: req.serviceName,
+      bearerToken: req.bearerToken,
+    } satisfies DisableUserContext;
+
+    return this.authService.listAuditLogs(query, context);
   }
 }

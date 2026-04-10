@@ -11,6 +11,8 @@ import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
+import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
+import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import {
@@ -94,5 +96,12 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<RevokeSessionsResponseDto> {
     return this.authAdminService.revokeUserSessions(userId, input, context);
+  }
+
+  listAuditLogs(
+    input: AuditQueryDto,
+    context: DisableUserContext,
+  ): Promise<AuditListResponseDto> {
+    return this.authAdminService.listAuditLogs(input, context);
   }
 }
