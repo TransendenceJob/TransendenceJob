@@ -90,5 +90,6 @@ trap on_exit EXIT
 	-e REDIS_PORT=6379 \
 	-e GOOGLE_CLIENT_ID="e2e-google-client-id" \
 	-e GOOGLE_CLIENT_SECRET="e2e-google-client-secret" \
-	-e GOOGLE_REDIRECT_URI="http://localhost:3000/auth/google/callback" \
+	-e GOOGLE_REDIRECT_URI="http://localhost:${BFF_HOST_PORT:-3000}/auth/google/callback" \
+	-e GOOGLE_FRONTEND_CALLBACK_URL="http://localhost:${FRONTEND_HOST_PORT:-3005}/auth/google/callback" \
 	auth_service npm run test:e2e

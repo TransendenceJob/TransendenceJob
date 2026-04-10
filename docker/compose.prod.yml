@@ -33,6 +33,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL}
     volumes:
       - ../shared/game:/app/shared
     expose:
@@ -62,6 +63,10 @@ services:
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
+      GOOGLE_REDIRECT_URI: ${AUTH_PUBLIC_URL}/auth/google/callback
+      GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
+      GOOGLE_FRONTEND_CALLBACK_URL: ${FRONTEND_PUBLIC_URL}/auth/google/callback
     expose:
       - "3000"
     command: [ "sh", "-c", "node dist/main.js" ]
@@ -116,7 +121,9 @@ services:
 
       GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
       GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-prod-google-client-secret}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
+      GOOGLE_REDIRECT_URI: ${AUTH_PUBLIC_URL}/auth/google/callback
+      GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
+      GOOGLE_FRONTEND_CALLBACK_URL: ${FRONTEND_PUBLIC_URL}/auth/google/callback
 
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
 

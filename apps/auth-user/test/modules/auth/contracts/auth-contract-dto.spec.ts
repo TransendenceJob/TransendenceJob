@@ -43,6 +43,18 @@ describe('Auth Contract DTOs', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('accepts localhost callback redirect URI for google exchange', () => {
+    const dto = plainToInstance(GoogleExchangeRequestDto, {
+      provider: 'google',
+      authorizationCode: '4/0AQSTgQ...',
+      redirectUri: 'http://localhost:3000/auth/google/callback',
+    });
+
+    const errors = validateSync(dto);
+
+    expect(errors).toHaveLength(0);
+  });
+
   it('validates google exchange using id token flow', () => {
     const dto = plainToInstance(GoogleExchangeRequestDto, {
       provider: 'google',
