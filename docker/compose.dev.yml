@@ -202,8 +202,9 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ../apps/stats:/app
-      - /app/node_modules
+      - ../apps/stats/src:/app/src:ro
+      - ../apps/stats/prisma:/app/prisma:ro
+    #   - /app/node_modules
     networks: [backend]
     logging:
       driver: "json-file"

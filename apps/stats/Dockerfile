@@ -47,7 +47,7 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts
-COPY --from=build /app/scripts ./scripts
+COPY ./scripts ./scripts
 
 EXPOSE 3000
 

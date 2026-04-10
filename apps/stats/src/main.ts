@@ -14,6 +14,6 @@ async function bootstrap() : Promise<void> {
   );
   
   app.enableShutdownHooks()
-  await app.listen(process.env.PORT);
+  await app.listen(3004);
 }
 bootstrap();
