@@ -1,20 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 export default function BattleArena() {
     const router = useRouter();
-    const { status } = useSession();
 
     const handleLaunch = () => {
-
-        if (status === "loading") return;
-
-        // if (status === "unauthenticated") { // added check which is not triggered yet until db connection works but would work with login with google now
-        //     alert("Please login first!");
-        //     return;
-        // }
         router.push("/game");
     };
 

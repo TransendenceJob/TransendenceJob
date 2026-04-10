@@ -34,11 +34,6 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${FRONTEND_INTERNAL_PORT:-3000}
-      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
-      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
-      AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: ${AUTH_URL}
-      AUTH_TRUST_HOST: "true"
     volumes:
       - ../shared/game:/app/shared
     ports:
@@ -118,9 +113,9 @@ services:
       REFRESH_TOKEN_BYTES: ${REFRESH_TOKEN_BYTES}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL}
       REFRESH_TOKEN_HASH_PEPPER: ${REFRESH_TOKEN_HASH_PEPPER}
-      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-dev-google-client-id}
-      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-dev-google-client-secret}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
       SERVICE_NAME: ${SERVICE_NAME}
       SERVICE_VERSION: ${SERVICE_VERSION}

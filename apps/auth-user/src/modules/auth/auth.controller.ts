@@ -22,6 +22,7 @@ import { AuthService } from './services/auth.service';
 import { LoginRequestDto } from './contracts/dto/login-request.dto';
 import { AuditQueryDto } from './contracts/dto/audit-query.dto';
 import { AuditListResponseDto } from './contracts/dto/audit-list-response.dto';
+import { GoogleExchangeRequestDto } from './contracts/dto/google-exchange-request.dto';
 import { type LoginContext } from './services/auth-login.service';
 import { type LogoutContext } from './services/auth-logout.service';
 import { type RefreshContext } from './services/auth-refresh.service';
@@ -108,6 +109,22 @@ export class AuthController {
     } satisfies LoginContext;
 
     return this.authService.login(body, context);
+  }
+
+  @Post('google/exchange')
+  @HttpCode(HttpStatus.OK)
+  googleExchange(
+    @Body() body: GoogleExchangeRequestDto,
+    @Req() req: Request,
+  ): Promise<AuthSuccessResponseDto> {
+    const context = {
+      ip: req.ip ?? null,
+      userAgent: req.userAgent ?? null,
+      requestId: req.requestId,
+      serviceName: req.serviceName,
+    } satisfies RegisterContext;
+
+    return this.authService.googleExchange(body, context);
   }
 
   @Get('audit')

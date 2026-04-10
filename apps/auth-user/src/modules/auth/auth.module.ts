@@ -11,6 +11,7 @@ import { AuthRefreshService } from './services/auth-refresh.service';
 import { AuthLogoutService } from './services/auth-logout.service';
 import { AuthVerifyService } from './services/auth-verify.service';
 import { AuthLoginService } from './services/auth-login.service';
+import { AuthGoogleExchangeService } from './services/auth-google-exchange.service';
 import { AuthAdminService } from './services/auth-admin.service';
 import { AuthRateLimitService } from './shared/auth-rate-limit.service';
 import { AuthTokenIssueService } from './shared/auth-token-issue.service';
@@ -29,6 +30,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthLogoutService,
     AuthVerifyService,
     AuthLoginService,
+    AuthGoogleExchangeService,
     AuthAdminService,
     AuthService,
   ],
@@ -44,6 +46,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthLogoutService,
     AuthVerifyService,
     AuthLoginService,
+    AuthGoogleExchangeService,
     AuthAdminService,
   ],
 })
