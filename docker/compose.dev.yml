@@ -34,6 +34,8 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${FRONTEND_INTERNAL_PORT:-3000}
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID}
+      BFF_INTERNAL_URL: http://bff:${BFF_INTERNAL_PORT:-3000}
     volumes:
       - ../shared/game:/app/shared
     ports:
