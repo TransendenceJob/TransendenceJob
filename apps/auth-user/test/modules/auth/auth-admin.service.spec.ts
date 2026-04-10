@@ -1,9 +1,11 @@
 import {
+  BadRequestException,
   ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthAdminService } from '../../../src/modules/auth/services/auth-admin.service';
+import { UserRoleDto } from '../../../src/modules/auth/contracts/enums/user-role.enum';
 
 describe('AuthAdminService', () => {
   const db = {};
@@ -12,6 +14,9 @@ describe('AuthAdminService', () => {
   let users: {
     findById: jest.Mock;
     disableUser: jest.Mock;
+  };
+  let roles: {
+    replaceUserRoles: jest.Mock;
   };
   let sessions: {
     revokeAllSessionsForUser: jest.Mock;
@@ -33,6 +38,10 @@ describe('AuthAdminService', () => {
       disableUser: jest.fn(),
     };
 
+    roles = {
+      replaceUserRoles: jest.fn(),
+    };
+
     sessions = {
       revokeAllSessionsForUser: jest.fn(),
     };
@@ -48,6 +57,7 @@ describe('AuthAdminService', () => {
     service = new AuthAdminService(
       prisma as never,
       users as never,
+      roles as never,
       sessions as never,
       auditLogs as never,
       accessTokens as never,
@@ -106,7 +116,11 @@ describe('AuthAdminService', () => {
     });
   });
 
-  it('allows system service actor without bearer token', async () => {
+  it('allows trusted service actor with service token and allowlisted serviceName', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'svc-auth',
+      roles: ['SERVICE'],
+    });
     users.findById.mockResolvedValue({ id: 'user-1' });
     users.disableUser.mockResolvedValue({ id: 'user-1' });
 
@@ -114,16 +128,19 @@ describe('AuthAdminService', () => {
       'user-1',
       { reason: 'system action', revokeSessions: false },
       {
+        bearerToken: 'service-token',
         serviceName: 'system',
       },
     );
 
-    expect(accessTokens.verifyAccessToken).not.toHaveBeenCalled();
+    expect(accessTokens.verifyAccessToken).toHaveBeenCalledWith(
+      'service-token',
+    );
     expect(sessions.revokeAllSessionsForUser).not.toHaveBeenCalled();
     expect(auditLogs.createEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'USER_DISABLED',
-        actorUserId: null,
+        actorUserId: 'svc-auth',
         metadataJson: expect.objectContaining({
           authMode: 'service',
           revokeSessions: false,
@@ -180,5 +197,63 @@ describe('AuthAdminService', () => {
         },
       ),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('replaces user roles transactionally and records role audit', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    users.findById.mockResolvedValue({ id: 'user-1' });
+    roles.replaceUserRoles.mockResolvedValue(['USER', 'MODERATOR']);
+
+    const response = await service.setUserRoles(
+      'user-1',
+      { roles: [UserRoleDto.USER, UserRoleDto.MODERATOR] },
+      {
+        bearerToken: 'token',
+        requestId: 'req-role',
+        serviceName: 'bff',
+      },
+    );
+
+    expect(roles.replaceUserRoles).toHaveBeenCalledWith(
+      'user-1',
+      ['USER', 'MODERATOR'],
+      db,
+    );
+    expect(auditLogs.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'ROLE_CHANGED',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        metadataJson: expect.objectContaining({
+          source: 'internal/auth/users/role',
+          roles: ['USER', 'MODERATOR'],
+          authMode: 'admin',
+        }),
+      }),
+      db,
+    );
+    expect(response.userId).toBe('user-1');
+    expect(response.roles).toEqual(['user', 'moderator']);
+    expect(typeof response.updatedAt).toBe('string');
+  });
+
+  it('rejects unsupported roles', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+
+    await expect(
+      service.setUserRoles(
+        'user-1',
+        { roles: ['superadmin'] as never },
+        {
+          bearerToken: 'token',
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

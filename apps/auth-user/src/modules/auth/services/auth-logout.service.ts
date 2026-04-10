@@ -131,16 +131,9 @@ export class AuthLogoutService {
     return AuthContractMapper.toLogoutResponse(revokedSessionIds);
   }
 
-  private getSessionUserId(session: {
-    userId?: unknown;
-    userCredentialId?: unknown;
-  }): string {
+  private getSessionUserId(session: { userId?: unknown }): string {
     if (typeof session.userId === 'string') {
       return session.userId;
-    }
-
-    if (typeof session.userCredentialId === 'string') {
-      return session.userCredentialId;
     }
 
     throw new UnauthorizedException('Invalid refresh token');

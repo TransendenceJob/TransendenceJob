@@ -170,7 +170,7 @@ export class SessionRepository {
         userId,
         revokedAt: null,
         expiresAt: {
-          gt: new Date(),
+          gt: revokedAt,
         },
       },
       data: {

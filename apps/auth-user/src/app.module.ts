@@ -10,6 +10,7 @@ import { HealthModule } from './modules/health/health.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { AppConfigModule } from './modules/config/config.module';
 import { AuthController } from './modules/auth/auth.controller';
+import { AuthAdminController } from './modules/auth/auth-admin.controller';
 import { RedisModule } from './modules/redis/redis.module';
 import { AuthPersistenceModule } from './modules/persistence/auth-persistence.module';
 import { UserAgentMiddleware } from './modules/common/middleware/user-agent.middleware';
@@ -36,7 +37,9 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(TracingHeaderMiddleware).forRoutes('*');
 
-    consumer.apply(UserAgentMiddleware).forRoutes(AuthController);
+    consumer
+      .apply(UserAgentMiddleware)
+      .forRoutes(AuthController, AuthAdminController);
 
     consumer.apply(BearerTokenMiddleware).forRoutes({
       path: 'verify',
@@ -45,6 +48,11 @@ export class AppModule implements NestModule {
 
     consumer.apply(BearerTokenMiddleware).forRoutes({
       path: 'users/:userId/disable',
+      method: RequestMethod.POST,
+    });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users/:userId/role',
       method: RequestMethod.POST,
     });
   }

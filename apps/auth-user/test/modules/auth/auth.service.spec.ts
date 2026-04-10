@@ -11,6 +11,7 @@ import { PasswordHashService } from '../../../src/modules/auth/hashing/password-
 import { AccessTokenService } from '../../../src/modules/auth/tokens/access-token.service';
 import { RefreshTokenService } from '../../../src/modules/auth/tokens/refresh-token.service';
 import { AuditLogRepository } from '../../../src/modules/persistence/repositories/audit-log.repository';
+import { UserRoleDto } from '../../../src/modules/auth/contracts/enums/user-role.enum';
 
 describe('AuthService', () => {
   it('delegates register to AuthRegisterService', async () => {
@@ -380,6 +381,107 @@ describe('AuthService', () => {
     expect(disableUser).toHaveBeenCalledWith(
       'user-1',
       { reason: 'fraud', revokeSessions: true },
+      { requestId: 'req-1' },
+    );
+  });
+
+  it('delegates setUserRoles to AuthAdminService', async () => {
+    const setUserRoles = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      roles: ['user', 'moderator'],
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: AuthRegisterService,
+          useValue: {
+            register: jest.fn(),
+          },
+        },
+        {
+          provide: AuthRefreshService,
+          useValue: {
+            refresh: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLogoutService,
+          useValue: {
+            logout: jest.fn(),
+          },
+        },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser: jest.fn(),
+            setUserRoles,
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    const authService = moduleRef.get(AuthService);
+
+    await expect(
+      authService.setUserRoles(
+        'user-1',
+        { roles: [UserRoleDto.USER, UserRoleDto.MODERATOR] },
+        { requestId: 'req-1' },
+      ),
+    ).resolves.toEqual({
+      userId: 'user-1',
+      roles: ['user', 'moderator'],
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect(setUserRoles).toHaveBeenCalledWith(
+      'user-1',
+      { roles: [UserRoleDto.USER, UserRoleDto.MODERATOR] },
       { requestId: 'req-1' },
     );
   });
