@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { createClient } from 'redis';
 import { AppModule } from './../src/app.module';
 
 describe('Auth flows (e2e)', () => {
@@ -17,6 +18,33 @@ describe('Auth flows (e2e)', () => {
   const authHeader = (accessToken: string): Record<string, string> => ({
     Authorization: `Bearer ${accessToken}`,
   });
+
+  const clearAuthRateLimitKeys = async (): Promise<void> => {
+    const client = createClient({
+      socket: {
+        host: process.env.REDIS_HOST ?? 'redis',
+        port: Number(process.env.REDIS_PORT ?? '6379'),
+      },
+    });
+
+    await client.connect();
+
+    const keyPatterns = [
+      'register:*',
+      'refresh:*',
+      'login:*',
+      'logout:*',
+    ] as const;
+
+    for (const pattern of keyPatterns) {
+      const keys = await client.keys(pattern);
+      if (keys.length > 0) {
+        await client.del(keys);
+      }
+    }
+
+    await client.disconnect();
+  };
 
   const promoteToAdmin = async (userId: string): Promise<void> => {
     const adminRole = await prisma!.role.upsert({
@@ -73,6 +101,8 @@ describe('Auth flows (e2e)', () => {
     const adapter = new PrismaPg({ connectionString });
     prisma = new PrismaClient({ adapter });
 
+    await clearAuthRateLimitKeys();
+
     await prisma.$executeRawUnsafe(
       'TRUNCATE TABLE "audit_logs", "password_reset_tokens", "auth_providers", "sessions", "user_roles", "roles", "users" RESTART IDENTITY CASCADE',
     );
@@ -106,6 +136,8 @@ describe('Auth flows (e2e)', () => {
       );
       await prisma.$disconnect();
     }
+
+    await clearAuthRateLimitKeys();
   });
 
   it('register/login/logoutAll revokes all active sessions', async () => {
@@ -298,30 +330,41 @@ describe('Auth flows (e2e)', () => {
     const targetOneEmail = `e2e.target1.${unique}@example.com`;
     const targetTwoEmail = `e2e.target2.${unique}@example.com`;
 
-    const adminRegister = await request(app!.getHttpServer())
-      .post('/internal/auth/register')
-      .send({ email: adminEmail, password })
-      .expect(201);
+    const adminFetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sub: 'google-sub-admin-e2e',
+        email: adminEmail,
+        email_verified: true,
+        aud: process.env.GOOGLE_CLIENT_ID,
+        iss: 'https://accounts.google.com',
+      }),
+    } as Response);
 
-    const adminUserId = adminRegister.body.user.id as string;
+    const adminExchange = await request(app!.getHttpServer())
+      .post('/internal/auth/google/exchange')
+      .send({ provider: 'google', idToken: 'test-id-token' })
+      .expect(200);
+
+    const adminUserId = adminExchange.body.user.id as string;
     await promoteToAdmin(adminUserId);
 
     const adminLogin = await request(app!.getHttpServer())
-      .post('/internal/auth/login')
-      .send({ email: adminEmail, password })
+      .post('/internal/auth/google/exchange')
+      .send({ provider: 'google', idToken: 'test-id-token' })
       .expect(200);
+
+    adminFetchSpy.mockRestore();
+
     const adminAccessToken = adminLogin.body.tokens.accessToken as string;
 
-    const targetOneRegister = await request(app!.getHttpServer())
-      .post('/internal/auth/register')
-      .send({ email: targetOneEmail, password })
-      .expect(201);
-    const targetOneId = targetOneRegister.body.user.id as string;
-
-    await request(app!.getHttpServer())
-      .post('/internal/auth/login')
-      .send({ email: targetOneEmail, password })
-      .expect(200);
+    const targetOne = await prisma!.user.create({
+      data: {
+        email: targetOneEmail,
+        status: 'ACTIVE',
+      },
+    });
+    const targetOneId = targetOne.id;
 
     await request(app!.getHttpServer())
       .post(`/internal/auth/users/${targetOneId}/sessions/revoke`)
@@ -329,16 +372,13 @@ describe('Auth flows (e2e)', () => {
       .send({ reason: 'e2e pagination test one' })
       .expect(200);
 
-    const targetTwoRegister = await request(app!.getHttpServer())
-      .post('/internal/auth/register')
-      .send({ email: targetTwoEmail, password })
-      .expect(201);
-    const targetTwoId = targetTwoRegister.body.user.id as string;
-
-    await request(app!.getHttpServer())
-      .post('/internal/auth/login')
-      .send({ email: targetTwoEmail, password })
-      .expect(200);
+    const targetTwo = await prisma!.user.create({
+      data: {
+        email: targetTwoEmail,
+        status: 'ACTIVE',
+      },
+    });
+    const targetTwoId = targetTwo.id;
 
     await request(app!.getHttpServer())
       .post(`/internal/auth/users/${targetTwoId}/sessions/revoke`)
@@ -353,7 +393,7 @@ describe('Auth flows (e2e)', () => {
       .expect(200);
 
     expect(firstPage.body.items).toHaveLength(1);
-    expect(firstPage.body.items[0].action).toEqual('SESSION_REVOKED');
+    expect(firstPage.body.items[0].action).toEqual('SESSIONS_REVOKED');
     expect(firstPage.body.pageInfo?.nextCursor).toBeTruthy();
 
     const secondPage = await request(app!.getHttpServer())
@@ -367,7 +407,7 @@ describe('Auth flows (e2e)', () => {
       .expect(200);
 
     expect(secondPage.body.items).toHaveLength(1);
-    expect(secondPage.body.items[0].action).toEqual('SESSION_REVOKED');
+    expect(secondPage.body.items[0].action).toEqual('SESSIONS_REVOKED');
   });
 
   it('google-authenticated user can set password then login normally with same account', async () => {
