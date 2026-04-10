@@ -11,3 +11,4 @@ export class PlayerStatsController {
 		return this.service.createStatsForUser(Number(id));
 	}
 }
+
