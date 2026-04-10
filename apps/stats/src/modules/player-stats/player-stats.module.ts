@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PlayerStatsController } from './player-stats.controller.js';
+import { MatchStatsController, PlayerStatsController } from './player-stats.controller.js';
 import { PlayerStatsService } from './player-stats.service.js';
 import { PlayerStatsRepository } from './player-stats.repository.js';
 // import { PlayerStatsController } from './player-stats.controller';
@@ -7,7 +7,7 @@ import { PlayerStatsRepository } from './player-stats.repository.js';
 // import { PlayerStatsRepository } from './player-stats.repository';
 
 @Module({
-  controllers: [PlayerStatsController],
+  controllers: [PlayerStatsController,MatchStatsController],
   providers: [PlayerStatsService, PlayerStatsRepository],
 })
 export class PlayerStatsModule {}

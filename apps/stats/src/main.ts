@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() : Promise<void> {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('/internal/auth')
+  app.setGlobalPrefix('/internal/stats')
   app.useGlobalPipes(
     new ValidationPipe({
         whitelist: true,
@@ -14,6 +14,7 @@ async function bootstrap() : Promise<void> {
   );
   
   app.enableShutdownHooks()
-  await app.listen(3004);
+  const port = Number(process.env.PORT ?? 3004);
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
