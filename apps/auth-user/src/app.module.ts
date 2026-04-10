@@ -55,5 +55,10 @@ export class AppModule implements NestModule {
       path: 'users/:userId/role',
       method: RequestMethod.POST,
     });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users/:userId/sessions/revoke',
+      method: RequestMethod.POST,
+    });
   }
 }

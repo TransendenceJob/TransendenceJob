@@ -256,4 +256,50 @@ describe('AuthAdminService', () => {
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
+
+  it('revokes all active sessions for a user and records audit event', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    users.findById.mockResolvedValue({ id: 'user-1' });
+    sessions.revokeAllSessionsForUser.mockResolvedValue({ count: 4 });
+
+    const response = await service.revokeUserSessions(
+      'user-1',
+      { reason: 'security remediation' },
+      {
+        bearerToken: 'token',
+        ip: '127.0.0.1',
+        userAgent: 'jest',
+        requestId: 'req-revoke',
+        serviceName: 'system',
+      },
+    );
+
+    expect(accessTokens.verifyAccessToken).toHaveBeenCalledWith('token');
+    expect(sessions.revokeAllSessionsForUser).toHaveBeenCalledWith(
+      'user-1',
+      expect.any(Date),
+      db,
+    );
+    expect(auditLogs.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'SESSION_REVOKED',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        metadataJson: expect.objectContaining({
+          source: 'internal/auth/users/sessions/revoke',
+          reason: 'security remediation',
+          revokedSessions: 4,
+          authMode: 'admin',
+        }),
+      }),
+      db,
+    );
+    expect(response).toEqual({
+      userId: 'user-1',
+      revokedSessions: 4,
+    });
+  });
 });

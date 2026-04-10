@@ -124,7 +124,7 @@ export class AuthRegisterService {
 
       await this.roles.assignRoleToUser(user.id, DEFAULT_USER_ROLE, db);
 
-      await this.users.enableUser(user.id, db);
+      const activeUser = await this.users.enableUser(user.id, db);
 
       const session = await this.sessions.createSession(
         {
@@ -155,10 +155,10 @@ export class AuthRegisterService {
 
       const createdRegisterData = {
         user: {
-          id: user.id,
-          email: user.email,
-          status: user.status,
-          createdAt: user.createdAt,
+          id: activeUser.id,
+          email: activeUser.email,
+          status: activeUser.status,
+          createdAt: activeUser.createdAt,
         },
         session: {
           id: session.id,

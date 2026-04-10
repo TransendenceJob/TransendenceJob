@@ -37,6 +37,12 @@ describe('AuthRegisterService', () => {
       createLocalUser: jest.fn().mockResolvedValue({
         id: 'user-1',
         email: baseInput.email,
+        status: 'PENDING_VERIFICATION',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      }),
+      enableUser: jest.fn().mockResolvedValue({
+        id: 'user-1',
+        email: baseInput.email,
         status: 'ACTIVE',
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
       }),
@@ -124,15 +130,17 @@ describe('AuthRegisterService', () => {
   }
 
   it('registers a user and caches the session', async () => {
-    const { moduleRef, sessionCache, tokenIssue } = await createModule();
+    const { moduleRef, sessionCache, tokenIssue, users } = await createModule();
     const service = moduleRef.get(AuthRegisterService);
     const response = await service.register(baseInput, baseContext);
 
     expect(response.user.email).toBe(baseInput.email);
+    expect(response.user.status).toBe('active');
     expect(response.session.id).toBe('session-1');
     expect(response.tokens.refreshToken).toBe('refresh-token');
     expect(tokenIssue.issueAccessToken).toHaveBeenCalled();
     expect(sessionCache.cacheSession).toHaveBeenCalled();
+    expect(users.enableUser).toHaveBeenCalledWith('user-1', expect.anything());
   });
 
   it('rejects duplicate emails', async () => {

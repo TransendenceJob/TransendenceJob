@@ -11,6 +11,8 @@ import { RoleRepository } from '../../persistence/repositories/role.repository';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { UserRepository } from '../../persistence/repositories/user.repository';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
+import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
+import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
@@ -151,6 +153,51 @@ export class AuthAdminService {
       roleNames: result.roleNames,
       updatedAt: result.updatedAt,
     });
+  }
+
+  async revokeUserSessions(
+    userId: string,
+    input: RevokeSessionsRequestDto,
+    context: DisableUserContext,
+  ): Promise<RevokeSessionsResponseDto> {
+    const actor = await this.authorize(context);
+
+    const revokedSessions = await this.prisma.$transaction(async (db) => {
+      const user = await this.users.findById(userId, db);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const revokedAt = new Date();
+      const revoked = await this.sessions.revokeAllSessionsForUser(
+        userId,
+        revokedAt,
+        db,
+      );
+
+      await this.auditLogs.createEvent(
+        {
+          action: 'SESSION_REVOKED',
+          userId,
+          actorUserId: actor.actorUserId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/users/sessions/revoke',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            reason: input.reason ?? null,
+            revokedSessions: revoked.count,
+            authMode: actor.authMode,
+          },
+        },
+        db,
+      );
+
+      return revoked.count;
+    });
+
+    return AuthContractMapper.toRevokeSessionsResponse(userId, revokedSessions);
   }
 
   private toCanonicalRoles(inputRoles: readonly string[]): string[] {
