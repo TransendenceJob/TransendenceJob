@@ -11,6 +11,8 @@ import { RoleRepository } from '../../persistence/repositories/role.repository';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { UserRepository } from '../../persistence/repositories/user.repository';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
+import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
+import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
@@ -38,6 +40,10 @@ type AuthorizedActor = {
   actorUserId: string | null;
   authMode: AuthMode;
 };
+
+function isMappedRole(role: string): role is keyof typeof ROLE_NAME_MAP {
+  return role in ROLE_NAME_MAP;
+}
 
 @Injectable()
 export class AuthAdminService {
@@ -153,16 +159,60 @@ export class AuthAdminService {
     });
   }
 
+  async revokeUserSessions(
+    userId: string,
+    input: RevokeSessionsRequestDto,
+    context: DisableUserContext,
+  ): Promise<RevokeSessionsResponseDto> {
+    const actor = await this.authorize(context);
+
+    const revokedSessions = await this.prisma.$transaction(async (db) => {
+      const user = await this.users.findById(userId, db);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const revokedAt = new Date();
+      const revoked = await this.sessions.revokeAllSessionsForUser(
+        userId,
+        revokedAt,
+        db,
+      );
+
+      await this.auditLogs.createEvent(
+        {
+          action: 'SESSION_REVOKED',
+          userId,
+          actorUserId: actor.actorUserId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/users/sessions/revoke',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            reason: input.reason ?? null,
+            revokedSessions: revoked.count,
+            authMode: actor.authMode,
+          },
+        },
+        db,
+      );
+
+      return revoked.count;
+    });
+
+    return AuthContractMapper.toRevokeSessionsResponse(userId, revokedSessions);
+  }
+
   private toCanonicalRoles(inputRoles: readonly string[]): string[] {
     const canonicalRoles = inputRoles.map((role) => {
-      const normalizedRole = role
-        .trim()
-        .toLowerCase() as keyof typeof ROLE_NAME_MAP;
-      const canonicalRole = ROLE_NAME_MAP[normalizedRole];
+      const normalizedRole = role.trim().toLowerCase();
 
-      if (!canonicalRole) {
+      if (!isMappedRole(normalizedRole)) {
         throw new BadRequestException(`Unsupported role: ${role}`);
       }
+
+      const canonicalRole = ROLE_NAME_MAP[normalizedRole];
 
       return canonicalRole;
     });
@@ -195,7 +245,7 @@ export class AuthAdminService {
       SERVICE_ACTOR_ALLOWLIST.has(serviceName);
 
     if (!isTrustedService) {
-      throw new ForbiddenException('Admin role required');
+      throw new ForbiddenException('Admin or trusted service role required');
     }
 
     return {

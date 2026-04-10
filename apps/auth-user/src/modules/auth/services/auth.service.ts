@@ -9,6 +9,8 @@ import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
 import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
+import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
+import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import {
@@ -84,5 +86,13 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<UserRolesResponseDto> {
     return this.authAdminService.setUserRoles(userId, input, context);
+  }
+
+  revokeUserSessions(
+    userId: string,
+    input: RevokeSessionsRequestDto,
+    context: DisableUserContext,
+  ): Promise<RevokeSessionsResponseDto> {
+    return this.authAdminService.revokeUserSessions(userId, input, context);
   }
 }

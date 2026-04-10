@@ -2,10 +2,11 @@ import { AuthAdminController } from '../../../src/modules/auth/auth-admin.contro
 import { type AuthService } from '../../../src/modules/auth/services/auth.service';
 import { UserRoleDto } from '../../../src/modules/auth/contracts/enums/user-role.enum';
 
-describe('AuthAdminController.disableUser', () => {
+describe('AuthAdminController', () => {
   const authService = {
     disableUser: jest.fn(),
     setUserRoles: jest.fn(),
+    revokeUserSessions: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthAdminController(authService);
@@ -71,6 +72,39 @@ describe('AuthAdminController.disableUser', () => {
     expect(authService.setUserRoles).toHaveBeenCalledWith(
       'user-1',
       { roles: [UserRoleDto.USER, UserRoleDto.ADMIN] },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+        serviceName: 'bff',
+        bearerToken: 'access-token',
+      },
+    );
+  });
+
+  it('delegates revoke sessions request with normalized context', async () => {
+    authService.revokeUserSessions = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      revokedSessions: 3,
+    });
+
+    const req = {
+      ip: '10.0.0.5',
+      userAgent: 'Mozilla/5.0',
+      requestId: 'd79023c7-f5e5-49d9-a8c8-6df8f7c6386d',
+      serviceName: 'bff',
+      bearerToken: 'access-token',
+    } as any;
+
+    await controller.revokeUserSessions(
+      { userId: 'user-1' },
+      { reason: 'security-remediation' },
+      req,
+    );
+
+    expect(authService.revokeUserSessions).toHaveBeenCalledWith(
+      'user-1',
+      { reason: 'security-remediation' },
       {
         ip: '10.0.0.5',
         userAgent: 'Mozilla/5.0',
