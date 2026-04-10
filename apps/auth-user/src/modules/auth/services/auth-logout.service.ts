@@ -51,16 +51,21 @@ export class AuthLogoutService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
+      const storedRefreshTokenHash = session.refreshTokenHash;
+      if (!storedRefreshTokenHash) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
       if (
         !this.refreshTokens.verifyRefreshToken(
           input.refreshToken,
-          session.refreshTokenHash,
+          storedRefreshTokenHash,
         )
       ) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const userId = session.userId;
+      const userId = this.getSessionUserId(session);
       const revocationTime = new Date();
       const sessionIds: string[] = [];
 
@@ -71,7 +76,7 @@ export class AuthLogoutService {
         );
         sessionIds.push(...activeSessions.map((s) => s.id));
 
-        const result = await this.sessions.revokeAllSessionsForUser(
+        await this.sessions.revokeAllSessionsForUser(
           userId,
           revocationTime,
           db,
@@ -88,7 +93,7 @@ export class AuthLogoutService {
             requestId: context.requestId ?? null,
             serviceName: context.serviceName ?? null,
             logoutAll: true,
-            revokedCount: result.count,
+            revokedCount: sessionIds.length,
           },
         } satisfies Parameters<AuditLogRepository['createEvent']>[0];
 
@@ -124,5 +129,20 @@ export class AuthLogoutService {
     }
 
     return AuthContractMapper.toLogoutResponse(revokedSessionIds);
+  }
+
+  private getSessionUserId(session: {
+    userId?: unknown;
+    userCredentialId?: unknown;
+  }): string {
+    if (typeof session.userId === 'string') {
+      return session.userId;
+    }
+
+    if (typeof session.userCredentialId === 'string') {
+      return session.userCredentialId;
+    }
+
+    throw new UnauthorizedException('Invalid refresh token');
   }
 }
