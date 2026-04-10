@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthAdminService } from '../../../src/modules/auth/services/auth-admin.service';
+import { AuditActionDto } from '../../../src/modules/auth/contracts/enums/audit-action.enum';
 import { UserRoleDto } from '../../../src/modules/auth/contracts/enums/user-role.enum';
 
 describe('AuthAdminService', () => {
@@ -21,7 +22,7 @@ describe('AuthAdminService', () => {
   let sessions: {
     revokeAllSessionsForUser: jest.Mock;
   };
-  let auditLogs: { createEvent: jest.Mock };
+  let auditLogs: { createEvent: jest.Mock; searchAuditLogs: jest.Mock };
   let accessTokens: { verifyAccessToken: jest.Mock };
   let service: AuthAdminService;
 
@@ -48,6 +49,7 @@ describe('AuthAdminService', () => {
 
     auditLogs = {
       createEvent: jest.fn(),
+      searchAuditLogs: jest.fn(),
     };
 
     accessTokens = {
@@ -301,5 +303,89 @@ describe('AuthAdminService', () => {
       userId: 'user-1',
       revokedSessions: 4,
     });
+  });
+
+  it('lists audit logs with action filter and cursor pagination', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    auditLogs.searchAuditLogs.mockResolvedValue([
+      {
+        id: 'audit-3',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        action: 'LOGIN_SUCCEEDED',
+        ip: '127.0.0.1',
+        userAgent: 'jest',
+        metadataJson: { key: 'value' },
+        createdAt: new Date('2026-04-10T10:00:00.000Z'),
+      },
+      {
+        id: 'audit-2',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        action: 'LOGIN_SUCCEEDED',
+        ip: '127.0.0.1',
+        userAgent: 'jest',
+        metadataJson: 'unsafe-string',
+        createdAt: new Date('2026-04-10T09:59:00.000Z'),
+      },
+      {
+        id: 'audit-1',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        action: 'LOGIN_SUCCEEDED',
+        ip: '127.0.0.1',
+        userAgent: 'jest',
+        metadataJson: null,
+        createdAt: new Date('2026-04-10T09:58:00.000Z'),
+      },
+    ]);
+
+    const response = await service.listAuditLogs(
+      {
+        userId: 'user-1',
+        action: AuditActionDto.LOGIN_SUCCESS,
+        cursor: 'audit-4',
+        limit: 2,
+      },
+      {
+        bearerToken: 'token',
+      },
+    );
+
+    expect(auditLogs.searchAuditLogs).toHaveBeenCalledWith({
+      userId: 'user-1',
+      action: ['LOGIN_SUCCEEDED'],
+      cursor: 'audit-4',
+      take: 3,
+    });
+    expect(response.items).toHaveLength(2);
+    expect(response.items[0].id).toBe('audit-3');
+    expect(response.items[0].metadata).toEqual({ key: 'value' });
+    expect(response.items[1].metadata).toEqual({});
+    expect(response.pageInfo).toEqual({
+      nextCursor: 'audit-2',
+      hasNextPage: true,
+    });
+  });
+
+  it('rejects audit listing for non-admin and non-service actors', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'user-2',
+      roles: ['USER'],
+    });
+
+    await expect(
+      service.listAuditLogs(
+        {
+          limit: 10,
+        },
+        {
+          bearerToken: 'token',
+        },
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 });

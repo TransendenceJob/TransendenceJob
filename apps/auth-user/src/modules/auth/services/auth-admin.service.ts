@@ -5,6 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { type AuditAction, type AuditLog } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditLogRepository } from '../../persistence/repositories/audit-log.repository';
 import { RoleRepository } from '../../persistence/repositories/role.repository';
@@ -13,6 +14,9 @@ import { UserRepository } from '../../persistence/repositories/user.repository';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
 import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
+import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
+import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
+import { AuditActionDto } from '../contracts/enums/audit-action.enum';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
@@ -204,6 +208,31 @@ export class AuthAdminService {
     return AuthContractMapper.toRevokeSessionsResponse(userId, revokedSessions);
   }
 
+  async listAuditLogs(
+    input: AuditQueryDto,
+    context: DisableUserContext,
+  ): Promise<AuditListResponseDto> {
+    await this.authorize(context);
+
+    const limit = input.limit ?? 20;
+    const actions = this.toAuditActions(input.action);
+    const logs = await this.auditLogs.searchAuditLogs({
+      userId: input.userId,
+      action: actions,
+      cursor: input.cursor,
+      take: limit + 1,
+    });
+
+    const hasNextPage = logs.length > limit;
+    const pageItems = hasNextPage ? logs.slice(0, limit) : logs;
+    const nextCursor = hasNextPage ? pageItems[pageItems.length - 1].id : null;
+
+    return {
+      items: pageItems.map((log) => this.toAuditLogItem(log)),
+      pageInfo: AuthContractMapper.toPageInfo(nextCursor),
+    };
+  }
+
   private toCanonicalRoles(inputRoles: readonly string[]): string[] {
     const canonicalRoles = inputRoles.map((role) => {
       const normalizedRole = role.trim().toLowerCase();
@@ -218,6 +247,51 @@ export class AuthAdminService {
     });
 
     return Array.from(new Set(canonicalRoles));
+  }
+
+  private toAuditActions(action?: AuditActionDto): AuditAction[] | undefined {
+    if (!action) {
+      return undefined;
+    }
+
+    switch (action) {
+      case AuditActionDto.REGISTER:
+        return ['USER_REGISTERED', 'USER_VERIFIED'];
+      case AuditActionDto.LOGIN_SUCCESS:
+        return ['LOGIN_SUCCEEDED'];
+      case AuditActionDto.LOGIN_FAILED:
+        return ['LOGIN_FAILED'];
+      case AuditActionDto.LOGOUT:
+        return ['LOGOUT'];
+      case AuditActionDto.TOKEN_REFRESH:
+        return [
+          'REFRESH_SUCCEEDED',
+          'REFRESH_FAILED',
+          'PASSWORD_RESET_REQUESTED',
+          'PASSWORD_RESET_COMPLETED',
+        ];
+      case AuditActionDto.GOOGLE_EXCHANGE:
+        return ['GOOGLE_EXCHANGE'];
+      case AuditActionDto.USER_DISABLED:
+        return ['USER_DISABLED', 'USER_ENABLED'];
+      case AuditActionDto.ROLE_UPDATED:
+        return ['ROLE_ASSIGNED', 'ROLE_REMOVED', 'ROLE_CHANGED'];
+      case AuditActionDto.SESSIONS_REVOKED:
+        return ['SESSION_REVOKED'];
+    }
+  }
+
+  private toAuditLogItem(log: AuditLog): AuditListResponseDto['items'][number] {
+    return AuthContractMapper.toAuditLogItem({
+      id: log.id,
+      userId: log.userId,
+      actorUserId: log.actorUserId,
+      action: log.action,
+      ip: log.ip,
+      userAgent: log.userAgent,
+      metadataJson: log.metadataJson,
+      createdAt: log.createdAt,
+    });
   }
 
   private async authorize(

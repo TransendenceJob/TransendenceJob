@@ -1,5 +1,6 @@
 import { AuthController } from '../../../src/modules/auth/auth.controller';
 import { type AuthService } from '../../../src/modules/auth/services/auth.service';
+import { AuditActionDto } from '../../../src/modules/auth/contracts/enums/audit-action.enum';
 
 describe('AuthController.register', () => {
   const authService = {
@@ -7,6 +8,7 @@ describe('AuthController.register', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -74,6 +76,7 @@ describe('AuthController.logout', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -189,6 +192,7 @@ describe('AuthController.verify', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -254,5 +258,64 @@ describe('AuthController.verify', () => {
         req,
       ),
     ).rejects.toThrow('Missing authorization header');
+  });
+});
+
+describe('AuthController.audit', () => {
+  const authService = {
+    register: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+    verify: jest.fn(),
+    listAuditLogs: jest.fn(),
+  } as unknown as AuthService;
+
+  const controller = new AuthController(authService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authService.listAuditLogs = jest.fn().mockResolvedValue({
+      items: [],
+      pageInfo: {
+        nextCursor: null,
+        hasNextPage: false,
+      },
+    });
+  });
+
+  it('delegates audit query with context and auth token', async () => {
+    const req = {
+      ip: '10.0.0.5',
+      userAgent: 'Mozilla/5.0',
+      requestId: 'req-audit-1',
+      serviceName: 'bff',
+      bearerToken: 'access-token',
+    } as any;
+
+    await controller.listAuditLogs(
+      {
+        userId: 'user-1',
+        action: AuditActionDto.LOGIN_SUCCESS,
+        cursor: 'audit-1',
+        limit: 10,
+      },
+      req,
+    );
+
+    expect(authService.listAuditLogs).toHaveBeenCalledWith(
+      {
+        userId: 'user-1',
+        action: AuditActionDto.LOGIN_SUCCESS,
+        cursor: 'audit-1',
+        limit: 10,
+      },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'req-audit-1',
+        serviceName: 'bff',
+        bearerToken: 'access-token',
+      },
+    );
   });
 });
