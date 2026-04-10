@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { AppModule } from './../src/app.module';
 
 describe('Auth flows (e2e)', () => {
@@ -12,6 +13,32 @@ describe('Auth flows (e2e)', () => {
   const unique = `${Date.now()}`;
   const email = `e2e.${unique}@example.com`;
   const password = 'StrongPassword123!';
+
+  const authHeader = (accessToken: string): Record<string, string> => ({
+    Authorization: `Bearer ${accessToken}`,
+  });
+
+  const promoteToAdmin = async (userId: string): Promise<void> => {
+    const adminRole = await prisma!.role.upsert({
+      where: { name: 'ADMIN' },
+      update: {},
+      create: { name: 'ADMIN' },
+    });
+
+    await prisma!.userRole.upsert({
+      where: {
+        userId_roleId: {
+          userId,
+          roleId: adminRole.id,
+        },
+      },
+      update: {},
+      create: {
+        userId,
+        roleId: adminRole.id,
+      },
+    });
+  };
 
   beforeAll(async () => {
     process.env.NODE_ENV ??= 'test';
@@ -33,7 +60,8 @@ describe('Auth flows (e2e)', () => {
     process.env.JWT_AUDIENCE ??= 'transcendence-internal';
     process.env.GOOGLE_CLIENT_ID ??= 'test-google-client-id';
     process.env.GOOGLE_CLIENT_SECRET ??= 'test-google-client-secret';
-    process.env.GOOGLE_REDIRECT_URI ??= 'http://localhost:3000/auth/google/callback';
+    process.env.GOOGLE_REDIRECT_URI ??=
+      'http://localhost:3000/auth/google/callback';
     process.env.REFRESH_TOKEN_BYTES ??= '48';
     process.env.REFRESH_TOKEN_TTL ??= '7d';
     process.env.REFRESH_TOKEN_HASH_PEPPER ??= '';
@@ -41,7 +69,9 @@ describe('Auth flows (e2e)', () => {
     process.env.SERVICE_NAME ??= 'auth-service';
     process.env.SERVICE_VERSION ??= '1.0.0';
 
-    prisma = new PrismaClient();
+    const connectionString = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?schema=public`;
+    const adapter = new PrismaPg({ connectionString });
+    prisma = new PrismaClient({ adapter });
 
     await prisma.$executeRawUnsafe(
       'TRUNCATE TABLE "audit_logs", "password_reset_tokens", "auth_providers", "sessions", "user_roles", "roles", "users" RESTART IDENTITY CASCADE',
@@ -101,9 +131,9 @@ describe('Auth flows (e2e)', () => {
       .expect(200);
 
     expect(logoutAllResponse.body.success).toBe(true);
-    expect(logoutAllResponse.body.revokedSessionIds.length).toBeGreaterThanOrEqual(
-      2,
-    );
+    expect(
+      logoutAllResponse.body.revokedSessionIds.length,
+    ).toBeGreaterThanOrEqual(2);
 
     await request(app!.getHttpServer())
       .post('/internal/auth/refresh')
@@ -184,5 +214,207 @@ describe('Auth flows (e2e)', () => {
     expect(registeredCount).toBe(1);
     expect(exchangeCount).toBeGreaterThanOrEqual(2);
     expect(loginSucceededCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it('refresh rotates token and invalidates old refresh token', async () => {
+    const rotateEmail = `e2e.rotate.${unique}@example.com`;
+
+    const registerResponse = await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: rotateEmail, password })
+      .expect(201);
+
+    const firstRefreshToken = registerResponse.body.tokens
+      .refreshToken as string;
+
+    const refreshResponse = await request(app!.getHttpServer())
+      .post('/internal/auth/refresh')
+      .send({ refreshToken: firstRefreshToken })
+      .expect(200);
+
+    const secondRefreshToken = refreshResponse.body.tokens
+      .refreshToken as string;
+    expect(secondRefreshToken).toBeTruthy();
+    expect(secondRefreshToken).not.toEqual(firstRefreshToken);
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/refresh')
+      .send({ refreshToken: firstRefreshToken })
+      .expect(401);
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/refresh')
+      .send({ refreshToken: secondRefreshToken })
+      .expect(200);
+  });
+
+  it('records LOGIN_FAILED audit on bad password', async () => {
+    const loginFailEmail = `e2e.badpass.${unique}@example.com`;
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: loginFailEmail, password })
+      .expect(201);
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/login')
+      .send({ email: loginFailEmail, password: 'totally-wrong-password' })
+      .expect(401);
+
+    const user = await prisma!.user.findUnique({
+      where: { email: loginFailEmail },
+    });
+    expect(user).toBeTruthy();
+
+    const failedLoginCount = await prisma!.auditLog.count({
+      where: {
+        userId: user!.id,
+        action: 'LOGIN_FAILED',
+      },
+    });
+
+    expect(failedLoginCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('enforces admin authorization on audit listing endpoint', async () => {
+    await request(app!.getHttpServer()).get('/internal/auth/audit').expect(401);
+
+    const nonAdminEmail = `e2e.nonadmin.${unique}@example.com`;
+    const registerResponse = await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: nonAdminEmail, password })
+      .expect(201);
+
+    const userToken = registerResponse.body.tokens.accessToken as string;
+
+    await request(app!.getHttpServer())
+      .get('/internal/auth/audit')
+      .set(authHeader(userToken))
+      .expect(403);
+  });
+
+  it('admin can filter and paginate SESSION_REVOKED audit events', async () => {
+    const adminEmail = `e2e.admin.${unique}@example.com`;
+    const targetOneEmail = `e2e.target1.${unique}@example.com`;
+    const targetTwoEmail = `e2e.target2.${unique}@example.com`;
+
+    const adminRegister = await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: adminEmail, password })
+      .expect(201);
+
+    const adminUserId = adminRegister.body.user.id as string;
+    await promoteToAdmin(adminUserId);
+
+    const adminLogin = await request(app!.getHttpServer())
+      .post('/internal/auth/login')
+      .send({ email: adminEmail, password })
+      .expect(200);
+    const adminAccessToken = adminLogin.body.tokens.accessToken as string;
+
+    const targetOneRegister = await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: targetOneEmail, password })
+      .expect(201);
+    const targetOneId = targetOneRegister.body.user.id as string;
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/login')
+      .send({ email: targetOneEmail, password })
+      .expect(200);
+
+    await request(app!.getHttpServer())
+      .post(`/internal/auth/users/${targetOneId}/sessions/revoke`)
+      .set(authHeader(adminAccessToken))
+      .send({ reason: 'e2e pagination test one' })
+      .expect(200);
+
+    const targetTwoRegister = await request(app!.getHttpServer())
+      .post('/internal/auth/register')
+      .send({ email: targetTwoEmail, password })
+      .expect(201);
+    const targetTwoId = targetTwoRegister.body.user.id as string;
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/login')
+      .send({ email: targetTwoEmail, password })
+      .expect(200);
+
+    await request(app!.getHttpServer())
+      .post(`/internal/auth/users/${targetTwoId}/sessions/revoke`)
+      .set(authHeader(adminAccessToken))
+      .send({ reason: 'e2e pagination test two' })
+      .expect(200);
+
+    const firstPage = await request(app!.getHttpServer())
+      .get('/internal/auth/audit')
+      .query({ action: 'SESSIONS_REVOKED', limit: 1 })
+      .set(authHeader(adminAccessToken))
+      .expect(200);
+
+    expect(firstPage.body.items).toHaveLength(1);
+    expect(firstPage.body.items[0].action).toEqual('SESSION_REVOKED');
+    expect(firstPage.body.pageInfo?.nextCursor).toBeTruthy();
+
+    const secondPage = await request(app!.getHttpServer())
+      .get('/internal/auth/audit')
+      .query({
+        action: 'SESSIONS_REVOKED',
+        limit: 1,
+        cursor: firstPage.body.pageInfo.nextCursor,
+      })
+      .set(authHeader(adminAccessToken))
+      .expect(200);
+
+    expect(secondPage.body.items).toHaveLength(1);
+    expect(secondPage.body.items[0].action).toEqual('SESSION_REVOKED');
+  });
+
+  it('google-authenticated user can set password then login normally with same account', async () => {
+    const googleEmail = `e2e.hybrid.${unique}@example.com`;
+    const normalPassword = 'HybridPassword123!';
+
+    const fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        sub: 'google-sub-hybrid-e2e',
+        email: googleEmail,
+        email_verified: true,
+        aud: process.env.GOOGLE_CLIENT_ID,
+        iss: 'https://accounts.google.com',
+      }),
+    } as Response);
+
+    const googleExchange = await request(app!.getHttpServer())
+      .post('/internal/auth/google/exchange')
+      .send({ provider: 'google', idToken: 'test-id-token' })
+      .expect(200);
+
+    fetchSpy.mockRestore();
+
+    const userId = googleExchange.body.user.id as string;
+    const accessToken = googleExchange.body.tokens.accessToken as string;
+    const refreshToken = googleExchange.body.tokens.refreshToken as string;
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/password/set')
+      .set(authHeader(accessToken))
+      .send({ password: normalPassword })
+      .expect(200);
+
+    await request(app!.getHttpServer())
+      .post('/internal/auth/logout')
+      .send({
+        refreshToken,
+        logoutAll: false,
+      })
+      .expect(200);
+
+    const loginResponse = await request(app!.getHttpServer())
+      .post('/internal/auth/login')
+      .send({ email: googleEmail, password: normalPassword })
+      .expect(200);
+
+    expect(loginResponse.body.user.id).toEqual(userId);
   });
 });

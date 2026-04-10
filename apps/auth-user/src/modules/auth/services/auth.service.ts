@@ -5,6 +5,8 @@ import { RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
 import { RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
 import { LogoutRequestDto } from '../contracts/dto/logout-request.dto';
 import { LogoutResponseDto } from '../contracts/dto/logout-response.dto';
+import { SetPasswordRequestDto } from '../contracts/dto/set-password-request.dto';
+import { SetPasswordResponseDto } from '../contracts/dto/set-password-response.dto';
 import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
 import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
@@ -116,5 +118,12 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<AuditListResponseDto> {
     return this.authAdminService.listAuditLogs(input, context);
+  }
+
+  setPassword(
+    input: SetPasswordRequestDto,
+    context: DisableUserContext,
+  ): Promise<SetPasswordResponseDto> {
+    return this.authAdminService.setOwnPassword(input, context);
   }
 }

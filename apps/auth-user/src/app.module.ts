@@ -65,5 +65,10 @@ export class AppModule implements NestModule {
       path: 'audit',
       method: RequestMethod.GET,
     });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'password/set',
+      method: RequestMethod.POST,
+    });
   }
 }

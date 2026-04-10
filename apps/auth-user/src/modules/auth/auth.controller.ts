@@ -16,6 +16,8 @@ import { RefreshRequestDto } from './contracts/dto/refresh-request.dto';
 import { RefreshResponseDto } from './contracts/dto/refresh-response.dto';
 import { LogoutRequestDto } from './contracts/dto/logout-request.dto';
 import { LogoutResponseDto } from './contracts/dto/logout-response.dto';
+import { SetPasswordRequestDto } from './contracts/dto/set-password-request.dto';
+import { SetPasswordResponseDto } from './contracts/dto/set-password-response.dto';
 import { VerifyQueryDto } from './contracts/dto/verify-query.dto';
 import { VerifyResponseDto } from './contracts/dto/verify-response.dto';
 import { AuthService } from './services/auth.service';
@@ -125,6 +127,23 @@ export class AuthController {
     } satisfies RegisterContext;
 
     return this.authService.googleExchange(body, context);
+  }
+
+  @Post('password/set')
+  @HttpCode(HttpStatus.OK)
+  setPassword(
+    @Body() body: SetPasswordRequestDto,
+    @Req() req: Request,
+  ): Promise<SetPasswordResponseDto> {
+    const context = {
+      ip: req.ip ?? null,
+      userAgent: req.userAgent ?? null,
+      requestId: req.requestId,
+      serviceName: req.serviceName,
+      bearerToken: req.bearerToken,
+    } satisfies DisableUserContext;
+
+    return this.authService.setPassword(body, context);
   }
 
   @Get('audit')
