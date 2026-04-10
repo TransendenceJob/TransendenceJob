@@ -2,7 +2,7 @@ import { AuthAdminController } from '../../../src/modules/auth/auth-admin.contro
 import { type AuthService } from '../../../src/modules/auth/services/auth.service';
 import { UserRoleDto } from '../../../src/modules/auth/contracts/enums/user-role.enum';
 
-describe('AuthAdminController.disableUser', () => {
+describe('AuthAdminController', () => {
   const authService = {
     disableUser: jest.fn(),
     setUserRoles: jest.fn(),

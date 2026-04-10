@@ -41,6 +41,10 @@ type AuthorizedActor = {
   authMode: AuthMode;
 };
 
+function isMappedRole(role: string): role is keyof typeof ROLE_NAME_MAP {
+  return role in ROLE_NAME_MAP;
+}
+
 @Injectable()
 export class AuthAdminService {
   constructor(
@@ -202,14 +206,13 @@ export class AuthAdminService {
 
   private toCanonicalRoles(inputRoles: readonly string[]): string[] {
     const canonicalRoles = inputRoles.map((role) => {
-      const normalizedRole = role
-        .trim()
-        .toLowerCase() as keyof typeof ROLE_NAME_MAP;
-      const canonicalRole = ROLE_NAME_MAP[normalizedRole];
+      const normalizedRole = role.trim().toLowerCase();
 
-      if (!canonicalRole) {
+      if (!isMappedRole(normalizedRole)) {
         throw new BadRequestException(`Unsupported role: ${role}`);
       }
+
+      const canonicalRole = ROLE_NAME_MAP[normalizedRole];
 
       return canonicalRole;
     });
@@ -242,7 +245,7 @@ export class AuthAdminService {
       SERVICE_ACTOR_ALLOWLIST.has(serviceName);
 
     if (!isTrustedService) {
-      throw new ForbiddenException('Admin role required');
+      throw new ForbiddenException('Admin or trusted service role required');
     }
 
     return {
