@@ -124,6 +124,8 @@ export class AuthRegisterService {
 
       await this.roles.assignRoleToUser(user.id, DEFAULT_USER_ROLE, db);
 
+      await this.users.enableUser(user.id, db);
+
       const session = await this.sessions.createSession(
         {
           userId: user.id,
