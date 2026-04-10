@@ -9,6 +9,7 @@ import { AuthRegisterService } from './services/auth-register.service';
 import { AuthRefreshService } from './services/auth-refresh.service';
 import { AuthLogoutService } from './services/auth-logout.service';
 import { AuthVerifyService } from './services/auth-verify.service';
+import { AuthLoginService } from './services/auth-login.service';
 import { AuthRateLimitService } from './shared/auth-rate-limit.service';
 import { AuthTokenIssueService } from './shared/auth-token-issue.service';
 import { AuthSessionCacheService } from './shared/auth-session-cache.service';
@@ -25,6 +26,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthRefreshService,
     AuthLogoutService,
     AuthVerifyService,
+    AuthLoginService,
     AuthService,
   ],
   exports: [
@@ -38,6 +40,7 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthRefreshService,
     AuthLogoutService,
     AuthVerifyService,
+    AuthLoginService,
   ],
 })
 export class AuthModule {}

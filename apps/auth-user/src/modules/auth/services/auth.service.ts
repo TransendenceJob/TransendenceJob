@@ -1,5 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuditAction, UserStatus } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 import { RegisterRequestDto } from '../contracts/dto/register-request.dto';
 import { AuthSuccessResponseDto } from '../contracts/dto/auth-success-response.dto';
 import { RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
@@ -7,6 +6,7 @@ import { RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
 import { LogoutRequestDto } from '../contracts/dto/logout-request.dto';
 import { LogoutResponseDto } from '../contracts/dto/logout-response.dto';
 import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
+import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import {
   AuthRegisterService,
   type RegisterContext,
@@ -17,11 +17,7 @@ import {
 } from './auth-refresh.service';
 import { AuthLogoutService, type LogoutContext } from './auth-logout.service';
 import { AuthVerifyService, type VerifyInput } from './auth-verify.service';
-import { UsersAuthService } from '../../users-auth/users-auth.service';
-import { PasswordHashService } from '../hashing/password-hash.service';
-import { AccessTokenService } from '../tokens/access-token.service';
-import { RefreshTokenService } from '../tokens/refresh-token.service';
-import { AuditLogRepository } from '../../persistence/repositories';
+import { AuthLoginService, type LoginContext } from './auth-login.service';
 
 @Injectable()
 export class AuthService {
@@ -30,54 +26,14 @@ export class AuthService {
     private readonly authRefreshService: AuthRefreshService,
     private readonly authLogoutService: AuthLogoutService,
     private readonly authVerifyService: AuthVerifyService,
-    private readonly usersService: UsersAuthService,
-    private readonly passwordHashService: PasswordHashService,
-    private readonly accessTokenService: AccessTokenService,
-    private readonly refreshTokenService: RefreshTokenService,
-    private readonly auditLogRepository: AuditLogRepository,
+    private readonly authLoginService: AuthLoginService,
   ) {}
 
-  async login(
-    email: string,
-    pass: string,
-    userAgent: string,
-    ip: string,
+  login(
+    input: LoginRequestDto,
+    context: LoginContext,
   ): Promise<AuthSuccessResponseDto> {
-    const user = await this.usersService.findByEmail(email);
-
-    const targetUserId = user?.id ?? null;
-
-    if (user && user.passwordHash) {
-      const isMatch = await this.passwordHashService.compare(
-        pass,
-        user.passwordHash,
-      );
-
-      if (isMatch) {
-        if (user.status === UserStatus.DISABLED) {
-          await this.auditLogRepository.createEvent({
-            action: AuditAction.LOGIN_FAILED,
-            userId: targetUserId,
-            actorUserId: targetUserId,
-            ip,
-            userAgent,
-            metadataJson: { email, reason: 'DISABLED' },
-          });
-          throw new UnauthorizedException('Invalid email or password');
-        }
-        return await this.generateSuccessResponse(user, userAgent, ip);
-      }
-    }
-
-    await this.auditLogRepository.createEvent({
-      action: AuditAction.LOGIN_FAILED,
-      userId: targetUserId,
-      actorUserId: targetUserId,
-      ip,
-      userAgent,
-      metadataJson: { email },
-    });
-    throw new UnauthorizedException('Invalid email or password');
+    return this.authLoginService.login(input, context);
   }
 
   register(
@@ -103,53 +59,5 @@ export class AuthService {
 
   verify(input: VerifyInput): Promise<VerifyResponseDto> {
     return this.authVerifyService.verify(input);
-  }
-
-  private async generateSuccessResponse(
-    user: any,
-    userAgent: string,
-    ip: string,
-  ): Promise<AuthSuccessResponseDto> {
-    const { sessionId, refreshToken, expiresAt } =
-      await this.refreshTokenService.createSessionWithRefreshToken({
-        userId: user.id,
-        userAgent: userAgent,
-        ipAddress: ip,
-      });
-
-    const accessToken = await this.accessTokenService.generateAccessToken({
-      sub: user.id,
-      email: user.email,
-      roles: user.roleNames,
-      sessionId: sessionId,
-    });
-
-    await this.auditLogRepository.createEvent({
-      action: AuditAction.LOGIN_SUCCEEDED,
-      userId: user.id,
-      actorUserId: user.id,
-      ip,
-      userAgent,
-    });
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        status: user.status,
-        roles: user.roleNames,
-        displayName: user.email.split('@')[0],
-      },
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: 900,
-        tokenType: 'Bearer',
-      },
-      session: {
-        id: sessionId,
-        expiresAt: expiresAt.toISOString(),
-      },
-    };
   }
 }

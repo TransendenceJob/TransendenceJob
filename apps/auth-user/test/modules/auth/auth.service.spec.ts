@@ -3,6 +3,7 @@ import { AuthRegisterService } from '../../../src/modules/auth/services/auth-reg
 import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refresh.service';
 import { AuthLogoutService } from '../../../src/modules/auth/services/auth-logout.service';
 import { AuthVerifyService } from '../../../src/modules/auth/services/auth-verify.service';
+import { AuthLoginService } from '../../../src/modules/auth/services/auth-login.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
 import { UsersAuthService } from '../../../src/modules/users-auth/users-auth.service';
 import { PasswordHashService } from '../../../src/modules/auth/hashing/password-hash.service';
@@ -39,6 +40,12 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
           },
         },
         {
@@ -116,6 +123,12 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
           },
         },
         {
@@ -199,6 +212,12 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify,
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
           },
         },
         {

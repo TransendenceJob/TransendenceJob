@@ -53,10 +53,12 @@ export class AuthRegisterService {
     input: RegisterRequestDto,
     context: RegisterContext,
   ): Promise<AuthSuccessResponseDto> {
-    await this.rateLimit.ensureRegisterAllowed({
+    const registerRateLimitInput = {
       email: input.email,
       ip: context.ip,
-    });
+    } satisfies Parameters<AuthRateLimitService['ensureRegisterAllowed']>[0];
+
+    await this.rateLimit.ensureRegisterAllowed(registerRateLimitInput);
     await this.ensureEmailAvailable(input.email);
     const passwordHash = await this.passwordHashService.hashPassword(
       input.password,
@@ -73,12 +75,16 @@ export class AuthRegisterService {
 
       await this.cacheRegisteredSession(created, context);
 
-      const accessToken = await this.tokenIssue.issueAccessToken({
+      const issueAccessTokenInput = {
         userId: created.user.id,
         email: created.user.email,
         roles: [DEFAULT_USER_ROLE],
         sessionId: created.session.id,
-      });
+      } satisfies Parameters<AuthTokenIssueService['issueAccessToken']>[0];
+
+      const accessToken = await this.tokenIssue.issueAccessToken(
+        issueAccessTokenInput,
+      );
 
       return this.buildRegisterResponse(
         created,
@@ -125,7 +131,7 @@ export class AuthRegisterService {
           expiresAt: refreshPair.expiresAt,
           ipAddress: context.ip ?? undefined,
           userAgent: context.userAgent ?? undefined,
-        },
+        } satisfies Parameters<SessionRepository['createSession']>[0],
         db,
       );
 
@@ -141,7 +147,7 @@ export class AuthRegisterService {
             requestId: context.requestId ?? null,
             serviceName: context.serviceName ?? null,
           },
-        },
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0],
         db,
       );
 
@@ -167,7 +173,7 @@ export class AuthRegisterService {
     created: CreatedRegisterData,
     context: RegisterContext,
   ): Promise<void> {
-    await this.sessionCache.cacheSession({
+    const cacheSessionInput = {
       session: {
         id: created.session.id,
         expiresAt: created.session.expiresAt,
@@ -179,7 +185,9 @@ export class AuthRegisterService {
       roles: [DEFAULT_USER_ROLE],
       requestId: context.requestId,
       serviceName: context.serviceName,
-    });
+    } satisfies Parameters<AuthSessionCacheService['cacheSession']>[0];
+
+    await this.sessionCache.cacheSession(cacheSessionInput);
   }
 
   private buildRegisterResponse(
@@ -187,7 +195,7 @@ export class AuthRegisterService {
     refreshToken: string,
     accessToken: string,
   ): AuthSuccessResponseDto {
-    return AuthContractMapper.toAuthSuccessResponse({
+    const authSuccessInput = {
       user: {
         id: created.user.id,
         email: created.user.email,
@@ -203,7 +211,9 @@ export class AuthRegisterService {
         expiresIn: this.tokenIssue.accessTokenExpiresInSeconds(),
         tokenType: 'Bearer',
       },
-    });
+    } satisfies Parameters<typeof AuthContractMapper.toAuthSuccessResponse>[0];
+
+    return AuthContractMapper.toAuthSuccessResponse(authSuccessInput);
   }
 
   private isEmailUniqueViolation(error: unknown): boolean {
