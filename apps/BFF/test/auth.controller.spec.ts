@@ -12,6 +12,8 @@ describe('AuthController', () => {
     register: jest.fn(),
     login: jest.fn(),
     googleExchange: jest.fn(),
+    googleStart: jest.fn(),
+    googleCallback: jest.fn(),
     logout: jest.fn(),
     refresh: jest.fn(),
     verify: jest.fn(),
@@ -121,5 +123,47 @@ describe('AuthController', () => {
     expect(body.user.id).toBe('u1');
     expect(body.user.providers?.[0]?.provider).toBe('google');
     expect(body.tokens.tokenType).toBe('Bearer');
+  });
+
+  it('redirects to Google OAuth authorize URL from start endpoint', async () => {
+    authServiceMock.googleStart.mockReturnValue(
+      'https://accounts.google.com/o/oauth2/v2/auth?state=abc',
+    );
+
+    const response = await request(server).get('/auth/google/start');
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain(
+      'https://accounts.google.com/o/oauth2/v2/auth',
+    );
+  });
+
+  it('redirects to frontend callback from Google callback endpoint', async () => {
+    authServiceMock.googleCallback.mockResolvedValue(
+      'http://localhost:3005/auth/google/callback#accessToken=at&refreshToken=rt',
+    );
+
+    const response = await request(server)
+      .get('/auth/google/callback')
+      .query({
+        code: 'google-auth-code',
+        state: 'signed-state',
+      });
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain(
+      '/auth/google/callback',
+    );
+    expect(authServiceMock.googleCallback).toHaveBeenCalledWith(
+      {
+        code: 'google-auth-code',
+        state: 'signed-state',
+        error: undefined,
+        errorDescription: undefined,
+      },
+      {
+        requestId: undefined,
+      },
+    );
   });
 });

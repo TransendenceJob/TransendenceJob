@@ -17,6 +17,13 @@ export type GoogleExchangeRequestDto = {
   redirectUri?: string;
 };
 
+export type GoogleCallbackQueryDto = {
+  code?: string;
+  state?: string;
+  error?: string;
+  errorDescription?: string;
+};
+
 export type LogoutRequestDto = {
   refreshToken: string;
   logoutAll?: boolean;

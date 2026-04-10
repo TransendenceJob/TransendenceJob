@@ -3,50 +3,6 @@
 import { useRouter } from "next/navigation"; //used for placeholder
 import { useState } from "react";
 
-declare global {
-    interface Window {
-        google?: {
-            accounts: {
-                id: {
-                    initialize: (config: {
-                        client_id: string;
-                        callback: (response: { credential?: string }) => void;
-                    }) => void;
-                    prompt: () => void;
-                };
-            };
-        };
-    }
-}
-
-let googleScriptLoadPromise: Promise<void> | null = null;
-
-function loadGoogleIdentityScript(): Promise<void> {
-    if (typeof window === "undefined") {
-        return Promise.reject(new Error("Google identity is only available in browser"));
-    }
-
-    if (window.google?.accounts?.id) {
-        return Promise.resolve();
-    }
-
-    if (googleScriptLoadPromise) {
-        return googleScriptLoadPromise;
-    }
-
-    googleScriptLoadPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = "https://accounts.google.com/gsi/client";
-        script.async = true;
-        script.defer = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error("Failed to load Google Identity script"));
-        document.head.appendChild(script);
-    });
-
-    return googleScriptLoadPromise;
-}
-
 export default function AuthModal({
                                       isOpen,
                                       onClose,
@@ -73,65 +29,9 @@ export default function AuthModal({
     };
 
     const handleGoogleLogin = async () => {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-        if (!clientId) {
-            alert("Google client id is missing. Please check environment configuration.");
-            return;
-        }
-
         try {
             setGoogleLoading(true);
-            await loadGoogleIdentityScript();
-
-            await new Promise<void>((resolve, reject) => {
-                if (!window.google?.accounts?.id) {
-                    reject(new Error("Google Identity not available"));
-                    return;
-                }
-
-                window.google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: async (response) => {
-                        try {
-                            if (!response.credential) {
-                                reject(new Error("No Google credential returned"));
-                                return;
-                            }
-
-                            const exchangeResponse = await fetch("/api/auth/google/exchange", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                    provider: "google",
-                                    idToken: response.credential,
-                                }),
-                            });
-
-                            if (!exchangeResponse.ok) {
-                                const payload = await exchangeResponse.json().catch(() => ({}));
-                                const message =
-                                    typeof payload?.message === "string"
-                                        ? payload.message
-                                        : "Google authentication failed";
-                                reject(new Error(message));
-                                return;
-                            }
-
-                            resolve();
-                        } catch (error) {
-                            reject(error);
-                        }
-                    },
-                });
-
-                window.google.accounts.id.prompt();
-            });
-
-            onClose();
-            router.push("/homepage");
+            window.location.assign("/api/auth/google/start");
         } catch (error) {
             const message = error instanceof Error ? error.message : "Google authentication failed";
             alert(message);
