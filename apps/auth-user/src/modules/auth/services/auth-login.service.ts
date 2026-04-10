@@ -99,8 +99,8 @@ export class AuthLoginService {
           const createSessionInput = {
             userId: user.id,
             refreshTokenHash: refreshPair.refreshTokenHash,
-            userAgent: context.userAgent ?? null,
-            ipAddress: context.ip ?? null,
+            userAgent: context.userAgent ?? undefined,
+            ipAddress: context.ip ?? undefined,
             expiresAt: refreshPair.expiresAt,
           } satisfies Parameters<SessionRepository['createSession']>[0];
 
