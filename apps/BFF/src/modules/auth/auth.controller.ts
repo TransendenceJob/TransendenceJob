@@ -1,7 +1,18 @@
-import { Body, Controller, Get, Headers, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Post,
+  Query,
+  Redirect,
+} from '@nestjs/common';
 import {
   type AuthMeResponseDto,
   type AuthSuccessResponseDto,
+  type GoogleCallbackQueryDto,
+  type GoogleExchangeRequestDto,
   type LoginRequestDto,
   type LogoutRequestDto,
   type RefreshRequestDto,
@@ -10,10 +21,14 @@ import {
   type VerifyResponseDto,
 } from './contracts/dto/auth-contracts.dto';
 import { AuthService } from './auth.service';
+import { GoogleAuthService } from './google-auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleAuthService: GoogleAuthService,
+  ) {}
 
   @Post('register')
   register(
@@ -30,6 +45,51 @@ export class AuthController {
     @Headers('x-request-id') requestId?: string,
   ): Promise<AuthSuccessResponseDto> {
     return this.authService.login(input, { requestId });
+  }
+
+  @Post('google/exchange')
+  @HttpCode(200)
+  googleExchange(
+    @Body() input: GoogleExchangeRequestDto,
+    @Headers('x-request-id') requestId?: string,
+  ): Promise<AuthSuccessResponseDto> {
+    return this.authService.googleExchange(input, { requestId });
+  }
+
+  @Get('google/start')
+  @Redirect()
+  googleStart() {
+    const url = this.googleAuthService.googleStart();
+    return {
+      url,
+      statusCode: 302,
+    };
+  }
+
+  @Get('google/callback')
+  @Redirect()
+  async googleCallback(
+    @Query('code') code?: string,
+    @Query('state') state?: string,
+    @Query('error') error?: string,
+    @Query('error_description') errorDescription?: string,
+    @Headers('x-request-id') requestId?: string,
+  ) {
+    const input = {
+      code,
+      state,
+      error,
+      errorDescription,
+    } satisfies GoogleCallbackQueryDto;
+
+    const url = await this.googleAuthService.googleCallback(input, {
+      requestId,
+    });
+
+    return {
+      url,
+      statusCode: 302,
+    };
   }
 
   @Post('logout')

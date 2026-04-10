@@ -4,6 +4,7 @@ import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refr
 import { AuthLogoutService } from '../../../src/modules/auth/services/auth-logout.service';
 import { AuthVerifyService } from '../../../src/modules/auth/services/auth-verify.service';
 import { AuthLoginService } from '../../../src/modules/auth/services/auth-login.service';
+import { AuthGoogleExchangeService } from '../../../src/modules/auth/services/auth-google-exchange.service';
 import { AuthAdminService } from '../../../src/modules/auth/services/auth-admin.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
 import { UsersAuthService } from '../../../src/modules/users-auth/users-auth.service';
@@ -48,6 +49,12 @@ describe('AuthService', () => {
           provide: AuthLoginService,
           useValue: {
             login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange: jest.fn(),
           },
         },
         {
@@ -137,6 +144,12 @@ describe('AuthService', () => {
           provide: AuthLoginService,
           useValue: {
             login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange: jest.fn(),
           },
         },
         {
@@ -235,6 +248,12 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange: jest.fn(),
+          },
+        },
+        {
           provide: AuthAdminService,
           useValue: {
             disableUser: jest.fn(),
@@ -323,6 +342,12 @@ describe('AuthService', () => {
           provide: AuthLoginService,
           useValue: {
             login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange: jest.fn(),
           },
         },
         {
@@ -426,6 +451,12 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange: jest.fn(),
+          },
+        },
+        {
           provide: AuthAdminService,
           useValue: {
             disableUser: jest.fn(),
@@ -484,5 +515,122 @@ describe('AuthService', () => {
       { roles: [UserRoleDto.USER, UserRoleDto.MODERATOR] },
       { requestId: 'req-1' },
     );
+  });
+
+  it('delegates googleExchange to AuthGoogleExchangeService', async () => {
+    const exchange = jest.fn().mockResolvedValue({
+      user: {
+        id: 'user-1',
+        email: 'user@example.com',
+        status: 'active',
+        roles: ['user'],
+        createdAt: null,
+        displayName: null,
+        username: null,
+        providers: [{ name: 'google', providerUserId: 'google-uid' }],
+      },
+      tokens: {
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        expiresIn: 900,
+        tokenType: 'Bearer',
+      },
+      session: {
+        id: 'session-1',
+        expiresAt: '2026-04-10T00:00:00.000Z',
+        revoked: false,
+      },
+    });
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: AuthRegisterService,
+          useValue: {
+            register: jest.fn(),
+          },
+        },
+        {
+          provide: AuthRefreshService,
+          useValue: {
+            refresh: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLogoutService,
+          useValue: {
+            logout: jest.fn(),
+          },
+        },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthGoogleExchangeService,
+          useValue: {
+            exchange,
+          },
+        },
+        {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser: jest.fn(),
+            setUserRoles: jest.fn(),
+            revokeUserSessions: jest.fn(),
+            listAuditLogs: jest.fn(),
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    const authService = moduleRef.get(AuthService);
+    const input = {
+      provider: 'google',
+      idToken: 'id-token',
+    } as never;
+
+    await authService.googleExchange(input, { requestId: 'req-google' });
+
+    expect(exchange).toHaveBeenCalledWith(input, { requestId: 'req-google' });
   });
 });

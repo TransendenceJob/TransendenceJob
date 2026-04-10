@@ -10,6 +10,20 @@ export type LoginRequestDto = {
   password: string;
 };
 
+export type GoogleExchangeRequestDto = {
+  provider: 'google';
+  authorizationCode?: string;
+  idToken?: string;
+  redirectUri?: string;
+};
+
+export type GoogleCallbackQueryDto = {
+  code?: string;
+  state?: string;
+  error?: string;
+  errorDescription?: string;
+};
+
 export type LogoutRequestDto = {
   refreshToken: string;
   logoutAll?: boolean;

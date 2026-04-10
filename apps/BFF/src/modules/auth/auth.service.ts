@@ -9,6 +9,7 @@ import {
   type ApiErrorDto,
   type AuthMeResponseDto,
   type AuthSuccessResponseDto,
+  type GoogleExchangeRequestDto,
   type InternalAuthSuccessResponse,
   type InternalLogoutResponse,
   type InternalRefreshResponse,
@@ -53,6 +54,20 @@ export class AuthService {
     const response = await this.callAuthService<InternalAuthSuccessResponse>({
       method: 'POST',
       path: '/internal/auth/login',
+      data: input,
+      context,
+    });
+
+    return AuthContractMapper.toAuthSuccess(response);
+  }
+
+  async googleExchange(
+    input: GoogleExchangeRequestDto,
+    context: RequestContext,
+  ): Promise<AuthSuccessResponseDto> {
+    const response = await this.callAuthService<InternalAuthSuccessResponse>({
+      method: 'POST',
+      path: '/internal/auth/google/exchange',
       data: input,
       context,
     });

@@ -16,11 +16,14 @@ import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-reque
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
 import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
+import { SetPasswordRequestDto } from '../contracts/dto/set-password-request.dto';
+import { SetPasswordResponseDto } from '../contracts/dto/set-password-response.dto';
 import { AuditActionDto } from '../contracts/enums/audit-action.enum';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import { AuthContractMapper } from '../contracts/mappers/auth-contract.mapper';
+import { PasswordHashService } from '../hashing/password-hash.service';
 import { AccessTokenService } from '../tokens/access-token.service';
 
 const SERVICE_ACTOR_ALLOWLIST = new Set(['auth-service', 'system']);
@@ -57,8 +60,57 @@ export class AuthAdminService {
     private readonly roles: RoleRepository,
     private readonly sessions: SessionRepository,
     private readonly auditLogs: AuditLogRepository,
+    private readonly passwordHash: PasswordHashService,
     private readonly accessTokens: AccessTokenService,
   ) {}
+
+  async setOwnPassword(
+    input: SetPasswordRequestDto,
+    context: DisableUserContext,
+  ): Promise<SetPasswordResponseDto> {
+    const token = context.bearerToken;
+    if (!token) {
+      throw new UnauthorizedException('Missing authorization header');
+    }
+
+    const claims = await this.accessTokens.verifyAccessToken(token);
+    const currentUser = await this.users.findById(claims.sub);
+
+    if (!currentUser) {
+      throw new UnauthorizedException('Invalid access token');
+    }
+
+    if (currentUser.status !== 'ACTIVE' || currentUser.disabledAt) {
+      throw new ForbiddenException('User is disabled');
+    }
+
+    const passwordHash = await this.passwordHash.hashPassword(input.password);
+
+    await this.prisma.$transaction(async (db) => {
+      await this.users.setPasswordHash(currentUser.id, passwordHash, db);
+
+      await this.auditLogs.createEvent(
+        {
+          action: 'PASSWORD_RESET_COMPLETED',
+          userId: currentUser.id,
+          actorUserId: currentUser.id,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/password/set',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            hadPassword: !!currentUser.passwordHash,
+          },
+        },
+        db,
+      );
+    });
+
+    return {
+      success: true,
+    } satisfies SetPasswordResponseDto;
+  }
 
   async disableUser(
     userId: string,

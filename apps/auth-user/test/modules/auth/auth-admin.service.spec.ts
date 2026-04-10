@@ -15,6 +15,7 @@ describe('AuthAdminService', () => {
   let users: {
     findById: jest.Mock;
     disableUser: jest.Mock;
+    setPasswordHash: jest.Mock;
   };
   let roles: {
     replaceUserRoles: jest.Mock;
@@ -23,6 +24,7 @@ describe('AuthAdminService', () => {
     revokeAllSessionsForUser: jest.Mock;
   };
   let auditLogs: { createEvent: jest.Mock; searchAuditLogs: jest.Mock };
+  let passwordHash: { hashPassword: jest.Mock };
   let accessTokens: { verifyAccessToken: jest.Mock };
   let service: AuthAdminService;
 
@@ -37,6 +39,7 @@ describe('AuthAdminService', () => {
     users = {
       findById: jest.fn(),
       disableUser: jest.fn(),
+      setPasswordHash: jest.fn(),
     };
 
     roles = {
@@ -52,6 +55,10 @@ describe('AuthAdminService', () => {
       searchAuditLogs: jest.fn(),
     };
 
+    passwordHash = {
+      hashPassword: jest.fn(),
+    };
+
     accessTokens = {
       verifyAccessToken: jest.fn(),
     };
@@ -62,8 +69,52 @@ describe('AuthAdminService', () => {
       roles as never,
       sessions as never,
       auditLogs as never,
+      passwordHash as never,
       accessTokens as never,
     );
+  });
+
+  it('sets own password for an authenticated active user and audits it', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'user-1',
+      roles: ['USER'],
+    });
+    users.findById.mockResolvedValue({
+      id: 'user-1',
+      status: 'ACTIVE',
+      disabledAt: null,
+      passwordHash: null,
+    });
+    passwordHash.hashPassword.mockResolvedValue('hashed-password');
+
+    const response = await service.setOwnPassword(
+      {
+        password: 'StrongPassword123!',
+      },
+      {
+        bearerToken: 'user-token',
+        requestId: 'req-password',
+        serviceName: 'bff',
+      },
+    );
+
+    expect(accessTokens.verifyAccessToken).toHaveBeenCalledWith('user-token');
+    expect(passwordHash.hashPassword).toHaveBeenCalledWith(
+      'StrongPassword123!',
+    );
+    expect(users.setPasswordHash).toHaveBeenCalledWith(
+      'user-1',
+      'hashed-password',
+      db,
+    );
+    expect(auditLogs.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'PASSWORD_RESET_COMPLETED',
+        userId: 'user-1',
+      }),
+      db,
+    );
+    expect(response).toEqual({ success: true });
   });
 
   it('disables a user with admin token and revokes sessions', async () => {

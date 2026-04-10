@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation"; //used for placeholder
-import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 export default function AuthModal({
                                       isOpen,
@@ -15,6 +15,7 @@ export default function AuthModal({
     setType: (type: 'Login' | 'Register') => void;
 }) {
     const router = useRouter(); // for placeholder
+    const [googleLoading, setGoogleLoading] = useState(false);
 
     if (!isOpen) return null;
 
@@ -25,6 +26,18 @@ export default function AuthModal({
 
         onClose();
         router.push("/homepage"); // redirect to homepage
+    };
+
+    const handleGoogleLogin = async () => {
+        try {
+            setGoogleLoading(true);
+            window.location.assign("/api/auth/google/start");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Google authentication failed";
+            alert(message);
+        } finally {
+            setGoogleLoading(false);
+        }
     };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -64,14 +77,14 @@ export default function AuthModal({
                     </button>
                 </form>
 
-                {/* Google Sign In Button */}
                 <button
-                    onClick={() => signIn("google", { callbackUrl: "/homepage" })}
+                    onClick={handleGoogleLogin}
                     type="button"
-                    className="w-full flex items-center justify-center gap-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all mb-4"
+                    disabled={googleLoading}
+                    className="w-full mt-4 flex items-center justify-center gap-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all"
                 >
                     <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-5 h-5" />
-                    Continue with Google
+                    {googleLoading ? "Connecting..." : "Continue with Google"}
                 </button>
 
                 <div className="relative my-6">

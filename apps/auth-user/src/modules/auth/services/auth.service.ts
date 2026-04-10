@@ -5,6 +5,8 @@ import { RefreshRequestDto } from '../contracts/dto/refresh-request.dto';
 import { RefreshResponseDto } from '../contracts/dto/refresh-response.dto';
 import { LogoutRequestDto } from '../contracts/dto/logout-request.dto';
 import { LogoutResponseDto } from '../contracts/dto/logout-response.dto';
+import { SetPasswordRequestDto } from '../contracts/dto/set-password-request.dto';
+import { SetPasswordResponseDto } from '../contracts/dto/set-password-response.dto';
 import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
 import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
@@ -13,6 +15,7 @@ import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-reque
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
 import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
+import { GoogleExchangeRequestDto } from '../contracts/dto/google-exchange-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import {
@@ -27,6 +30,10 @@ import { AuthLogoutService, type LogoutContext } from './auth-logout.service';
 import { AuthVerifyService, type VerifyInput } from './auth-verify.service';
 import { AuthLoginService, type LoginContext } from './auth-login.service';
 import {
+  AuthGoogleExchangeService,
+  type GoogleExchangeContext,
+} from './auth-google-exchange.service';
+import {
   AuthAdminService,
   type DisableUserContext,
 } from './auth-admin.service';
@@ -39,6 +46,7 @@ export class AuthService {
     private readonly authLogoutService: AuthLogoutService,
     private readonly authVerifyService: AuthVerifyService,
     private readonly authLoginService: AuthLoginService,
+    private readonly authGoogleExchangeService: AuthGoogleExchangeService,
     private readonly authAdminService: AuthAdminService,
   ) {}
 
@@ -47,6 +55,13 @@ export class AuthService {
     context: LoginContext,
   ): Promise<AuthSuccessResponseDto> {
     return this.authLoginService.login(input, context);
+  }
+
+  googleExchange(
+    input: GoogleExchangeRequestDto,
+    context: GoogleExchangeContext,
+  ): Promise<AuthSuccessResponseDto> {
+    return this.authGoogleExchangeService.exchange(input, context);
   }
 
   register(
@@ -103,5 +118,12 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<AuditListResponseDto> {
     return this.authAdminService.listAuditLogs(input, context);
+  }
+
+  setPassword(
+    input: SetPasswordRequestDto,
+    context: DisableUserContext,
+  ): Promise<SetPasswordResponseDto> {
+    return this.authAdminService.setOwnPassword(input, context);
   }
 }
