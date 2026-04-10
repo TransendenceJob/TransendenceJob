@@ -42,5 +42,10 @@ export class AppModule implements NestModule {
       path: 'verify',
       method: RequestMethod.GET,
     });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users/:userId/disable',
+      method: RequestMethod.POST,
+    });
   }
 }

@@ -4,6 +4,7 @@ import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refr
 import { AuthLogoutService } from '../../../src/modules/auth/services/auth-logout.service';
 import { AuthVerifyService } from '../../../src/modules/auth/services/auth-verify.service';
 import { AuthLoginService } from '../../../src/modules/auth/services/auth-login.service';
+import { AuthAdminService } from '../../../src/modules/auth/services/auth-admin.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
 import { UsersAuthService } from '../../../src/modules/users-auth/users-auth.service';
 import { PasswordHashService } from '../../../src/modules/auth/hashing/password-hash.service';
@@ -46,6 +47,12 @@ describe('AuthService', () => {
           provide: AuthLoginService,
           useValue: {
             login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser: jest.fn(),
           },
         },
         {
@@ -129,6 +136,12 @@ describe('AuthService', () => {
           provide: AuthLoginService,
           useValue: {
             login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser: jest.fn(),
           },
         },
         {
@@ -221,6 +234,12 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser: jest.fn(),
+          },
+        },
+        {
           provide: UsersAuthService,
           useValue: {
             findByEmail: jest.fn(),
@@ -263,5 +282,105 @@ describe('AuthService', () => {
       token: 'token',
       audience: 'audience',
     });
+  });
+
+  it('delegates disableUser to AuthAdminService', async () => {
+    const disableUser = jest.fn().mockResolvedValue({
+      userId: 'user-1',
+      status: 'disabled',
+      revokedSessions: 1,
+    });
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: AuthRegisterService,
+          useValue: {
+            register: jest.fn(),
+          },
+        },
+        {
+          provide: AuthRefreshService,
+          useValue: {
+            refresh: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLogoutService,
+          useValue: {
+            logout: jest.fn(),
+          },
+        },
+        {
+          provide: AuthVerifyService,
+          useValue: {
+            verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: AuthAdminService,
+          useValue: {
+            disableUser,
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
+          },
+        },
+      ],
+    }).compile();
+
+    const authService = moduleRef.get(AuthService);
+
+    await expect(
+      authService.disableUser(
+        'user-1',
+        { reason: 'fraud', revokeSessions: true },
+        { requestId: 'req-1' },
+      ),
+    ).resolves.toEqual({
+      userId: 'user-1',
+      status: 'disabled',
+      revokedSessions: 1,
+    });
+
+    expect(disableUser).toHaveBeenCalledWith(
+      'user-1',
+      { reason: 'fraud', revokeSessions: true },
+      { requestId: 'req-1' },
+    );
   });
 });

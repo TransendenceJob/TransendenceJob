@@ -93,7 +93,7 @@ export class AuthLogoutService {
             requestId: context.requestId ?? null,
             serviceName: context.serviceName ?? null,
             logoutAll: true,
-            revokedCount: result.count,
+            revokedCount: sessionIds.length,
           },
         } satisfies Parameters<AuditLogRepository['createEvent']>[0];
 
