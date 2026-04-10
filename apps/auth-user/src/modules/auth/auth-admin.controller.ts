@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthService } from './services/auth.service';
@@ -17,8 +18,19 @@ import { RevokeSessionsResponseDto } from './contracts/dto/revoke-sessions-respo
 import { UserDisabledResponseDto } from './contracts/dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from './contracts/dto/user-roles-response.dto';
 import { type DisableUserContext } from './services/auth-admin.service';
+import {
+  Roles,
+  AllowTrustedService,
+} from './security/decorators/roles.decorator';
+import { BearerAuthGuard } from './security/guards/bearer-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { CurrentUser } from './security/decorators/current-user.decorator';
+import type { AuthPrincipal } from './security/auth-principal';
 
 @Controller('users')
+@Roles('ADMIN')
+@AllowTrustedService()
+@UseGuards(BearerAuthGuard, RolesGuard)
 export class AuthAdminController {
   constructor(private readonly authService: AuthService) {}
 
@@ -28,13 +40,14 @@ export class AuthAdminController {
     @Param() params: UserIdParamDto,
     @Body() body: DisableUserRequestDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<UserDisabledResponseDto> {
     const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-      bearerToken: req.bearerToken,
+      bearerToken: principal?.token ?? req.bearerToken,
     } satisfies DisableUserContext;
 
     return this.authService.disableUser(params.userId, body, context);
@@ -46,13 +59,14 @@ export class AuthAdminController {
     @Param() params: UserIdParamDto,
     @Body() body: SetUserRolesRequestDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<UserRolesResponseDto> {
     const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-      bearerToken: req.bearerToken,
+      bearerToken: principal?.token ?? req.bearerToken,
     } satisfies DisableUserContext;
 
     return this.authService.setUserRoles(params.userId, body, context);
@@ -64,13 +78,14 @@ export class AuthAdminController {
     @Param() params: UserIdParamDto,
     @Body() body: RevokeSessionsRequestDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<RevokeSessionsResponseDto> {
     const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-      bearerToken: req.bearerToken,
+      bearerToken: principal?.token ?? req.bearerToken,
     } satisfies DisableUserContext;
 
     return this.authService.revokeUserSessions(params.userId, body, context);

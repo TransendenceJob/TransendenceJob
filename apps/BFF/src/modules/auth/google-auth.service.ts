@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, HttpException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { AuthService } from './auth.service';
 import {
@@ -21,6 +26,8 @@ const GOOGLE_STATE_TTL_SECONDS = 300;
 
 @Injectable()
 export class GoogleAuthService {
+  private readonly logger = new Logger(GoogleAuthService.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly config: BffConfigService,
@@ -40,14 +47,28 @@ export class GoogleAuthService {
       prompt: 'select_account',
     });
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+    this.logger.log(
+      `Google start URL generated with redirectUri=${this.config.auth.google.redirectUri}`,
+    );
+
+    return url;
   }
 
   async googleCallback(
     input: GoogleCallbackQueryDto,
     context: RequestContext,
   ): Promise<string> {
+    this.logger.log(
+      `Google callback received: hasCode=${Boolean(input.code)}, hasState=${Boolean(input.state)}, hasError=${Boolean(input.error)}`,
+    );
+
     if (input.error) {
+      this.logger.warn(
+        `Google callback returned error=${input.error}, description=${input.errorDescription ?? 'n/a'}`,
+      );
+
       return this.buildFrontendCallbackUrl({
         error: input.error,
         errorDescription:
@@ -71,6 +92,10 @@ export class GoogleAuthService {
     }
 
     try {
+      this.logger.log(
+        `Google callback exchanging authorization code using redirectUri=${this.config.auth.google.redirectUri}`,
+      );
+
       const authSuccess = await this.authService.googleExchange(
         {
           provider: 'google',
@@ -91,6 +116,10 @@ export class GoogleAuthService {
         error instanceof HttpException
           ? (error.getResponse() as { message?: unknown })?.message
           : undefined;
+
+      this.logger.error(
+        `Google callback exchange failed: redirectUri=${this.config.auth.google.redirectUri}, message=${typeof message === 'string' ? message : 'Unable to complete Google OAuth exchange'}`,
+      );
 
       return this.buildFrontendCallbackUrl({
         error: 'exchange_failed',
