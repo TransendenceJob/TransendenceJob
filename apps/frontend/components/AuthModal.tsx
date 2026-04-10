@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation"; //used for placeholder
+import { signIn } from "next-auth/react";
 
 export default function AuthModal({
                                       isOpen,
@@ -62,6 +63,20 @@ export default function AuthModal({
                         {type === 'Login' ? 'Sign In' : 'Create Account'}
                     </button>
                 </form>
+
+                <button
+                    onClick={() => signIn("google", { callbackUrl: "/homepage" })}
+                    type="button"
+                    className="w-full mt-4 flex items-center justify-center gap-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all"
+                >
+                    <img src="https://authjs.dev/img/providers/google.svg" alt="Google" className="w-5 h-5" />
+                    Continue with Google
+                </button>
+
+                <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200 dark:border-zinc-800"></span></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-zinc-900 px-2 text-zinc-500">Or continue with email</span></div>
+                </div>
                 <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 text-center">
                     <p className="text-sm text-zinc-500">
                         {type === 'Login' ? "Don't have an account?" : "Already have an account?"}

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Headers, HttpCode, Post } from '@nestjs/common';
 import {
   type AuthMeResponseDto,
   type AuthSuccessResponseDto,
+  type GoogleExchangeRequestDto,
   type LoginRequestDto,
   type LogoutRequestDto,
   type RefreshRequestDto,
@@ -30,6 +31,15 @@ export class AuthController {
     @Headers('x-request-id') requestId?: string,
   ): Promise<AuthSuccessResponseDto> {
     return this.authService.login(input, { requestId });
+  }
+
+  @Post('google/exchange')
+  @HttpCode(200)
+  googleExchange(
+    @Body() input: GoogleExchangeRequestDto,
+    @Headers('x-request-id') requestId?: string,
+  ): Promise<AuthSuccessResponseDto> {
+    return this.authService.googleExchange(input, { requestId });
   }
 
   @Post('logout')

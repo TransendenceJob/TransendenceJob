@@ -11,6 +11,7 @@ describe('AuthController', () => {
   const authServiceMock = {
     register: jest.fn(),
     login: jest.fn(),
+    googleExchange: jest.fn(),
     logout: jest.fn(),
     refresh: jest.fn(),
     verify: jest.fn(),
@@ -85,5 +86,40 @@ describe('AuthController', () => {
     expect(body.success).toBe(true);
     expect(body.valid).toBe(true);
     expect(body.claims.iss).toBe('auth_service');
+  });
+
+  it('returns typed google exchange shape', async () => {
+    authServiceMock.googleExchange.mockResolvedValue({
+      success: true,
+      user: {
+        id: 'u1',
+        email: 'john@example.com',
+        status: 'ACTIVE',
+        providers: [{ provider: 'google', providerUserId: 'google-uid' }],
+      },
+      tokens: {
+        accessToken: 'at',
+        refreshToken: 'rt',
+        expiresIn: 900,
+        tokenType: 'Bearer',
+      },
+      session: { id: 's1', expiresAt: '2030-01-01T00:00:00.000Z' },
+    });
+
+    const response = await request(server)
+      .post('/auth/google/exchange')
+      .send({ provider: 'google', idToken: 'id-token' });
+
+    const body = response.body as {
+      success: boolean;
+      user: { id: string; providers?: Array<{ provider: string }> };
+      tokens: { tokenType: string };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.user.id).toBe('u1');
+    expect(body.user.providers?.[0]?.provider).toBe('google');
+    expect(body.tokens.tokenType).toBe('Bearer');
   });
 });
