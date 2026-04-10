@@ -8,6 +8,7 @@ import {
   Req,
   Query,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { RegisterRequestDto } from './contracts/dto/register-request.dto';
@@ -31,6 +32,14 @@ import { type RefreshContext } from './services/auth-refresh.service';
 import { type RegisterContext } from './services/auth-register.service';
 import { type DisableUserContext } from './services/auth-admin.service';
 import { type GoogleExchangeContext } from './services/auth-google-exchange.service';
+import { BearerAuthGuard } from './security/guards/bearer-auth.guard';
+import { CurrentUser } from './security/decorators/current-user.decorator';
+import type { AuthPrincipal } from './security/auth-principal';
+import {
+  AllowTrustedService,
+  Roles,
+} from './security/decorators/roles.decorator';
+import { RolesGuard } from './security/guards/roles.guard';
 
 @Controller()
 export class AuthController {
@@ -84,16 +93,19 @@ export class AuthController {
   }
 
   @Get('verify')
+  @UseGuards(BearerAuthGuard)
   async verify(
     @Query() query: VerifyQueryDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<VerifyResponseDto> {
-    if (!req.bearerToken) {
+    const token = principal?.token ?? req.bearerToken;
+    if (!token) {
       throw new UnauthorizedException('Missing authorization header');
     }
 
     return await this.authService.verify({
-      token: req.bearerToken,
+      token,
       audience: query.audience,
     });
   }
@@ -132,16 +144,18 @@ export class AuthController {
 
   @Post('password/set')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(BearerAuthGuard)
   setPassword(
     @Body() body: SetPasswordRequestDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<SetPasswordResponseDto> {
     const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-      bearerToken: req.bearerToken,
+      bearerToken: principal?.token ?? req.bearerToken,
     } satisfies DisableUserContext;
 
     return this.authService.setPassword(body, context);
@@ -149,16 +163,20 @@ export class AuthController {
 
   @Get('audit')
   @HttpCode(HttpStatus.OK)
+  @Roles('ADMIN')
+  @AllowTrustedService()
+  @UseGuards(BearerAuthGuard, RolesGuard)
   listAuditLogs(
     @Query() query: AuditQueryDto,
     @Req() req: Request,
+    @CurrentUser() principal?: AuthPrincipal,
   ): Promise<AuditListResponseDto> {
     const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-      bearerToken: req.bearerToken,
+      bearerToken: principal?.token ?? req.bearerToken,
     } satisfies DisableUserContext;
 
     return this.authService.listAuditLogs(query, context);

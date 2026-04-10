@@ -16,6 +16,8 @@ import { AuthAdminService } from './services/auth-admin.service';
 import { AuthRateLimitService } from './shared/auth-rate-limit.service';
 import { AuthTokenIssueService } from './shared/auth-token-issue.service';
 import { AuthSessionCacheService } from './shared/auth-session-cache.service';
+import { BearerAuthGuard } from './security/guards/bearer-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
 
 @Module({
   imports: [AppConfigModule, TokensModule, UsersAuthModule],
@@ -25,6 +27,8 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthRateLimitService,
     AuthTokenIssueService,
     AuthSessionCacheService,
+    BearerAuthGuard,
+    RolesGuard,
     AuthRegisterService,
     AuthRefreshService,
     AuthLogoutService,
@@ -40,6 +44,8 @@ import { AuthSessionCacheService } from './shared/auth-session-cache.service';
     AuthRateLimitService,
     AuthTokenIssueService,
     AuthSessionCacheService,
+    BearerAuthGuard,
+    RolesGuard,
     AuthService,
     AuthRegisterService,
     AuthRefreshService,
