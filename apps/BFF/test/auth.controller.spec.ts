@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AuthController } from '../src/modules/auth/auth.controller';
 import { AuthService } from '../src/modules/auth/auth.service';
+import { GoogleAuthService } from '../src/modules/auth/google-auth.service';
 
 describe('AuthController', () => {
   let app: INestApplication;
@@ -12,19 +13,25 @@ describe('AuthController', () => {
     register: jest.fn(),
     login: jest.fn(),
     googleExchange: jest.fn(),
-    googleStart: jest.fn(),
-    googleCallback: jest.fn(),
     logout: jest.fn(),
     refresh: jest.fn(),
     verify: jest.fn(),
     me: jest.fn(),
   };
 
+  const googleAuthServiceMock = {
+    googleStart: jest.fn(),
+    googleCallback: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: authServiceMock }],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock },
+        { provide: GoogleAuthService, useValue: googleAuthServiceMock },
+      ],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -126,7 +133,7 @@ describe('AuthController', () => {
   });
 
   it('redirects to Google OAuth authorize URL from start endpoint', async () => {
-    authServiceMock.googleStart.mockReturnValue(
+    googleAuthServiceMock.googleStart.mockReturnValue(
       'https://accounts.google.com/o/oauth2/v2/auth?state=abc',
     );
 
@@ -139,22 +146,18 @@ describe('AuthController', () => {
   });
 
   it('redirects to frontend callback from Google callback endpoint', async () => {
-    authServiceMock.googleCallback.mockResolvedValue(
+    googleAuthServiceMock.googleCallback.mockResolvedValue(
       'http://localhost:3005/auth/google/callback#accessToken=at&refreshToken=rt',
     );
 
-    const response = await request(server)
-      .get('/auth/google/callback')
-      .query({
-        code: 'google-auth-code',
-        state: 'signed-state',
-      });
+    const response = await request(server).get('/auth/google/callback').query({
+      code: 'google-auth-code',
+      state: 'signed-state',
+    });
 
     expect(response.status).toBe(302);
-    expect(response.headers.location).toContain(
-      '/auth/google/callback',
-    );
-    expect(authServiceMock.googleCallback).toHaveBeenCalledWith(
+    expect(response.headers.location).toContain('/auth/google/callback');
+    expect(googleAuthServiceMock.googleCallback).toHaveBeenCalledWith(
       {
         code: 'google-auth-code',
         state: 'signed-state',

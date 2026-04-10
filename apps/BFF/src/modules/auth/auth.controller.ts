@@ -21,10 +21,14 @@ import {
   type VerifyResponseDto,
 } from './contracts/dto/auth-contracts.dto';
 import { AuthService } from './auth.service';
+import { GoogleAuthService } from './google-auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleAuthService: GoogleAuthService,
+  ) {}
 
   @Post('register')
   register(
@@ -55,7 +59,7 @@ export class AuthController {
   @Get('google/start')
   @Redirect()
   googleStart() {
-    const url = this.authService.googleStart();
+    const url = this.googleAuthService.googleStart();
     return {
       url,
       statusCode: 302,
@@ -78,7 +82,9 @@ export class AuthController {
       errorDescription,
     } satisfies GoogleCallbackQueryDto;
 
-    const url = await this.authService.googleCallback(input, { requestId });
+    const url = await this.googleAuthService.googleCallback(input, {
+      requestId,
+    });
 
     return {
       url,
