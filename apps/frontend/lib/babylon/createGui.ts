@@ -1,23 +1,18 @@
-import {
-  AdvancedDynamicTexture,
-  TextBlock,
-  Button,
-} from "@babylonjs/gui";
+// @ts-ignore
+import { AdvancedDynamicTexture, TextBlock, Button} from "@babylonjs/gui";
+// @ts-ignore
+import { Scene } from "@babylonjs/core";
+// @ts-ignore
+import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress } from "../../shared/packets/ClientServerPackets"
 
-function setButtonSize(button, canvas, size_x, size_y)
-{
-	button.widthInPixels = canvas.width * size_x;
-	button.heightInPixels = canvas.height * size_y;
-}
+import { setButtonSize, setButtonPos } from './guiUtil';
+import type { msgToServerType } from '../packets/msgToServerType';
 
-function setButtonPos(button, canvas, pos_x, pos_y)
-{
-	button.left =  pos_x * ((canvas.width - button.widthInPixels) / 2);
-	button.top =  pos_y * ((canvas.height - button.heightInPixels) / 2);
-}
-
-export default function createGui(scene, canvas, socket)
-{
+export default function createGui(
+	scene: Scene, 
+	canvas: HTMLCanvasElement,
+	msgToServer: msgToServerType
+): AdvancedDynamicTexture {
 	let count = 0;
 	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
 		"GUI",
@@ -26,9 +21,10 @@ export default function createGui(scene, canvas, socket)
 	);
 
 	const socket_status = new TextBlock("socket_status", "Connection Status: Disconnected");
-	socket_status.fontSize = 24;
+	const fontSizeValue = 24;
+	socket_status.fontSize = fontSizeValue;
 	socket_status.color = "red";
-	const size = socket_status.fontSize.replace('px', '');
+	const size = fontSizeValue;
 	socket_status.top =  -1 * ((canvas.height - size) / 2);
 	gui.addControl(socket_status);
 
@@ -44,16 +40,9 @@ export default function createGui(scene, canvas, socket)
 	setButtonPos(endGameButton, canvas, -1, 0.5);
 	endGameButton.color = "#FFF";
 	endGameButton.onPointerUpObservable.add(() => {
-		const data = {
-			// will need lobbyId field
-			type: "cs.DEV.start.endscreen",
-			};
-			if (socket && socket.connected) {
-				socket.emit('msgToServer', JSON.stringify(data));
-			}
-		});
+		msgToServer<CS_DEV_StartEndscreen>(CS_Type.CS_DEV_StartEndscreen, {});
+	});
 	gui.addControl(endGameButton);
-
 
 	const button = Button.CreateSimpleButton("send", "SEND");
 	setButtonSize(button, canvas, 0.2, 0.2);
@@ -61,15 +50,11 @@ export default function createGui(scene, canvas, socket)
 	button.color = "#FFF";
 	button.onPointerUpObservable.add(() => {
 		count++;
-		const data = {
-			type: "cs.DEV.buttonPress",
+		msgToServer<CS_DEV_ButtonPress>(CS_Type.CS_DEV_ButtonPress, {
 			timestamp: Date.now(),
 			message: `User pressed button for the ${count} time`,
-			};
-			if (socket && socket.connected) {
-				socket.emit('msgToServer', JSON.stringify(data));
-			}
-		})
+		});
+	});
 	gui.addControl(button);
 
 	return (gui)

@@ -5,13 +5,14 @@ import BabylonCanvas from "@/src/components/game/babylon/Babyloncanvas";
 import EndPage from "@/src/components/game/lobby/EndPage";
 import ErrorPage from '@/src/components/game/lobby/ErrorPage';
 import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
+import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
 interface Params {
-  state: string;
-  msgToServer: (data: string) => void;
-  socket: Socket;
-  isConnected: boolean;
-  DEBUG: boolean;
+  state: string,
+  msgToServer: msgToServerType,
+  socket: Socket,
+  isConnected: boolean,
+  DEBUG: boolean,
 }
 
 /**
@@ -23,22 +24,22 @@ interface Params {
  * @param isConnected boolean, wether socket connection is established
  * @param DEBUG boolean wether Debug messages should be printed
  */
-export default function SubPages({state,
-                                  msgToServer,
-                                  socket,
-                                  isConnected,
-                                  DEBUG,
-  }: Params) {
-
+export default function SubPages({
+  state,
+  msgToServer,
+  socket,
+  isConnected,
+  DEBUG,
+}: Params) {
   if (state == 'CONNECTING') {
-    return <ConnectingPage msgToServer={msgToServer} 
+    return <ConnectingPage  msgToServer={msgToServer}
                             isConnected={isConnected}/>
   }
   else if (state === 'LOBBY') {
     return <LobbyPage msgToServer={msgToServer}/>
   }
   else if (state === 'LOADING') {
-    return <LoadingPage msgToServer={msgToServer} />
+    return <LoadingPage msgToServer={msgToServer}/>
   }
   else if (state === 'GAME') {
     return <BabylonCanvas msgToServer={msgToServer}

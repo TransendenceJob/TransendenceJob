@@ -26,10 +26,16 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+
+# COPY THE SHARED FILES HERE:
+# This pulls from the "shared_logic" name defined in your YAML
+COPY --from=shared . ./shared
+
 COPY . .
 
 ENV NODE_ENV=production
 RUN npm run build
+RUN ls -R /app/dist
 
 # ---------- production ----------
 FROM node:20-alpine AS production
@@ -45,4 +51,4 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
