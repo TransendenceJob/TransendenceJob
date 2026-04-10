@@ -31,9 +31,11 @@ export class AuthLogoutService {
     input: LogoutRequestDto,
     context: LogoutContext,
   ): Promise<LogoutResponseDto> {
-    await this.rateLimit.ensureLogoutAllowed({
+    const logoutRateLimitInput = {
       ip: context.ip,
-    });
+    } satisfies Parameters<AuthRateLimitService['ensureLogoutAllowed']>[0];
+
+    await this.rateLimit.ensureLogoutAllowed(logoutRateLimitInput);
 
     const refreshTokenHash = this.refreshTokens.hashRefreshToken(
       input.refreshToken,
@@ -75,45 +77,43 @@ export class AuthLogoutService {
           db,
         );
 
-        await this.auditLogs.createEvent(
-          {
-            action: 'LOGOUT',
-            userId,
-            actorUserId: userId,
-            ip: context.ip ?? null,
-            userAgent: context.userAgent ?? null,
-            metadataJson: {
-              source: 'internal/auth/logout',
-              requestId: context.requestId ?? null,
-              serviceName: context.serviceName ?? null,
-              logoutAll: true,
-              revokedCount: result.count,
-            },
+        const logoutAllAudit = {
+          action: 'LOGOUT',
+          userId,
+          actorUserId: userId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/logout',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            logoutAll: true,
+            revokedCount: result.count,
           },
-          db,
-        );
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+        await this.auditLogs.createEvent(logoutAllAudit, db);
       } else {
         await this.sessions.revokeSession(session.id, revocationTime, db);
 
         sessionIds.push(session.id);
 
-        await this.auditLogs.createEvent(
-          {
-            action: 'LOGOUT',
-            userId,
-            actorUserId: userId,
-            ip: context.ip ?? null,
-            userAgent: context.userAgent ?? null,
-            metadataJson: {
-              source: 'internal/auth/logout',
-              requestId: context.requestId ?? null,
-              serviceName: context.serviceName ?? null,
-              logoutAll: false,
-              sessionId: session.id,
-            },
+        const logoutSingleAudit = {
+          action: 'LOGOUT',
+          userId,
+          actorUserId: userId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/logout',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            logoutAll: false,
+            sessionId: session.id,
           },
-          db,
-        );
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+        await this.auditLogs.createEvent(logoutSingleAudit, db);
       }
 
       return sessionIds;

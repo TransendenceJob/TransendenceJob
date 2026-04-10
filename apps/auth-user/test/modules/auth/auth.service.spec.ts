@@ -3,7 +3,13 @@ import { AuthRegisterService } from '../../../src/modules/auth/services/auth-reg
 import { AuthRefreshService } from '../../../src/modules/auth/services/auth-refresh.service';
 import { AuthLogoutService } from '../../../src/modules/auth/services/auth-logout.service';
 import { AuthVerifyService } from '../../../src/modules/auth/services/auth-verify.service';
+import { AuthLoginService } from '../../../src/modules/auth/services/auth-login.service';
 import { AuthService } from '../../../src/modules/auth/services/auth.service';
+import { UsersAuthService } from '../../../src/modules/users-auth/users-auth.service';
+import { PasswordHashService } from '../../../src/modules/auth/hashing/password-hash.service';
+import { AccessTokenService } from '../../../src/modules/auth/tokens/access-token.service';
+import { RefreshTokenService } from '../../../src/modules/auth/tokens/refresh-token.service';
+import { AuditLogRepository } from '../../../src/modules/persistence/repositories/audit-log.repository';
 
 describe('AuthService', () => {
   it('delegates register to AuthRegisterService', async () => {
@@ -34,6 +40,42 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
           },
         },
       ],
@@ -81,6 +123,42 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify: jest.fn(),
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
           },
         },
       ],
@@ -134,6 +212,42 @@ describe('AuthService', () => {
           provide: AuthVerifyService,
           useValue: {
             verify,
+          },
+        },
+        {
+          provide: AuthLoginService,
+          useValue: {
+            login: jest.fn(),
+          },
+        },
+        {
+          provide: UsersAuthService,
+          useValue: {
+            findByEmail: jest.fn(),
+          },
+        },
+        {
+          provide: PasswordHashService,
+          useValue: {
+            compare: jest.fn(),
+          },
+        },
+        {
+          provide: AccessTokenService,
+          useValue: {
+            generateAccessToken: jest.fn(),
+          },
+        },
+        {
+          provide: RefreshTokenService,
+          useValue: {
+            createSessionWithRefreshToken: jest.fn(),
+          },
+        },
+        {
+          provide: AuditLogRepository,
+          useValue: {
+            createEvent: jest.fn(),
           },
         },
       ],

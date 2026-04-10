@@ -19,6 +19,11 @@ import { LogoutResponseDto } from './contracts/dto/logout-response.dto';
 import { VerifyQueryDto } from './contracts/dto/verify-query.dto';
 import { VerifyResponseDto } from './contracts/dto/verify-response.dto';
 import { AuthService } from './services/auth.service';
+import { LoginRequestDto } from './contracts/dto/login-request.dto';
+import { type LoginContext } from './services/auth-login.service';
+import { type LogoutContext } from './services/auth-logout.service';
+import { type RefreshContext } from './services/auth-refresh.service';
+import { type RegisterContext } from './services/auth-register.service';
 
 @Controller()
 export class AuthController {
@@ -29,12 +34,14 @@ export class AuthController {
     @Body() body: RegisterRequestDto,
     @Req() req: Request,
   ): Promise<AuthSuccessResponseDto> {
-    return this.authService.register(body, {
+    const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-    });
+    } satisfies RegisterContext;
+
+    return this.authService.register(body, context);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -43,12 +50,14 @@ export class AuthController {
     @Body() body: RefreshRequestDto,
     @Req() req: Request,
   ): Promise<RefreshResponseDto> {
-    return this.authService.refresh(body, {
+    const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-    });
+    } satisfies RefreshContext;
+
+    return this.authService.refresh(body, context);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -57,12 +66,14 @@ export class AuthController {
     @Body() body: LogoutRequestDto,
     @Req() req: Request,
   ): Promise<LogoutResponseDto> {
-    return this.authService.logout(body, {
+    const context = {
       ip: req.ip ?? null,
       userAgent: req.userAgent ?? null,
       requestId: req.requestId,
       serviceName: req.serviceName,
-    });
+    } satisfies LogoutContext;
+
+    return this.authService.logout(body, context);
   }
 
   @Get('verify')
@@ -78,5 +89,21 @@ export class AuthController {
       token: req.bearerToken,
       audience: query.audience,
     });
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  login(
+    @Body() body: LoginRequestDto,
+    @Req() req: Request,
+  ): Promise<AuthSuccessResponseDto> {
+    const context = {
+      ip: req.ip ?? null,
+      userAgent: req.userAgent ?? null,
+      requestId: req.requestId,
+      serviceName: req.serviceName,
+    } satisfies LoginContext;
+
+    return this.authService.login(body, context);
   }
 }

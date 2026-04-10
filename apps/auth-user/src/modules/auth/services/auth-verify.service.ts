@@ -78,7 +78,7 @@ export class AuthVerifyService {
       throw new UnauthorizedException('Invalid access token');
     }
 
-    return AuthContractMapper.toVerifyResponse({
+    const verifyResponseInput = {
       user: {
         id: session.user.id,
         email: session.user.email,
@@ -103,6 +103,8 @@ export class AuthVerifyService {
         iss: claims.iss,
         aud: claims.aud,
       },
-    });
+    } satisfies Parameters<typeof AuthContractMapper.toVerifyResponse>[0];
+
+    return AuthContractMapper.toVerifyResponse(verifyResponseInput);
   }
 }
