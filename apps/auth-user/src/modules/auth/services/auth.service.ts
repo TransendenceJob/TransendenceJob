@@ -8,7 +8,9 @@ import { LogoutResponseDto } from '../contracts/dto/logout-response.dto';
 import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
 import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
+import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
+import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import {
   AuthRegisterService,
   type RegisterContext,
@@ -74,5 +76,13 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<UserDisabledResponseDto> {
     return this.authAdminService.disableUser(userId, input, context);
+  }
+
+  setUserRoles(
+    userId: string,
+    input: SetUserRolesRequestDto,
+    context: DisableUserContext,
+  ): Promise<UserRolesResponseDto> {
+    return this.authAdminService.setUserRoles(userId, input, context);
   }
 }
