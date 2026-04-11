@@ -184,6 +184,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${STATS_INTERNAL_PORT:-3000}
+      # PORT: asdasd
       DB_HOST: postgres_stats
       DB_PORT: 5432
       DB_USER: ${STATS_DB_USER}

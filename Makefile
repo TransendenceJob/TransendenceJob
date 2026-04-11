@@ -105,6 +105,7 @@ ifeq ($(NOCACHE),1)
 	$(DC_DEV) build --no-cache
 else
 	$(DC_DEV) build
+	@echo "Successfuly rebuilded ✅"
 endif
 
 pull: check-env

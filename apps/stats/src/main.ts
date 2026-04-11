@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigSchema } from './config/config.schema';
+import { ConfigSchema } from './modules/config/config.schema';
 
 async function bootstrap() : Promise<void> {
   
@@ -28,6 +28,7 @@ async function bootstrap() : Promise<void> {
   app.enableShutdownHooks()
   // Parse and validate the port
   
+
   const port = Number(process.env.PORT?? 3004);
 
   if (isNaN(port)) {
