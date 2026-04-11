@@ -47,3 +47,17 @@ model WeaponUsage {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
+// audit tabel for tracing what is heppening inside the audit
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  requestId  String?
+  actorId    String? // user id or service id
+  action     String // e.g. "update_player_stats"
+  entityType String // e.g. "Player", "Match"
+  entityId   String? // e.g. "player:123"
+  before     Json?
+  after      Json?
+  source     String // "stats_service"
+}

@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheckService, TypeOrmHealthIndicator, HealthCheck } from '@nestjs/terminus';
-import { PrismaService } from '../../infra/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
-@Controller('health/db')
+@Controller('health')
 export class HealthController {
 	constructor(
 		private health: HealthCheckService,
@@ -10,6 +10,11 @@ export class HealthController {
 	) {}
 
 	@Get()
+    checkStatus() {
+        return { status: 'ok' };
+    }
+	
+	@Get('db')
 	@HealthCheck()
 	async check() {
 		return this.health.check([
@@ -22,6 +27,7 @@ export class HealthController {
 				}
 			}
 		]);
+		
 	}
 }
 

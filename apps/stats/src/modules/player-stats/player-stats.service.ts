@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStatsRepository } from './player-stats.repository.js';
+import { PlayerStatsRepository } from 'src/modules/persistence/repository/player-stats.repository';
+// import { PlayerStatsRepository } from './player-stats.repository.js';
 // import { PlayerStatsRepository } from './player-stats.repository';
 
 @Injectable()
