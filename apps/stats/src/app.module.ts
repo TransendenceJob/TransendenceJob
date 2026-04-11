@@ -9,17 +9,16 @@ import { RequestIdMiddleware } from './common/middleware/request-id.middleware.j
 // import { AppService } from './app.service';
 // import { PlayerStatsModule } from './modules/player-stats/player-stats.module';
 // import { MatchesModule } from './modules/matches/matches.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [PlayerStatsModule, MatchesModule,PrismaModule],
+  imports: [PlayerStatsModule, MatchesModule,PrismaModule, HealthModule],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-      consumer
-        .apply(RequestIdMiddleware)
-        .forRoutes('*'); // apply to ALL routes
+      consumer.apply(RequestIdMiddleware).forRoutes('*'); // apply to ALL routes
     }
   
 }
