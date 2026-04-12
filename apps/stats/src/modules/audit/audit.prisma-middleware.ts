@@ -19,6 +19,7 @@ export function createAuditExtension(auditService: AuditService) {
               return query(args);
             }
 
+            
             const ctx = auditContext.getStore() || {};
             const { requestId, actorId } = ctx;
 
