@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AuditService } from './audit.service.js';
-import { createAuditPrismaMiddleware } from './audit.prisma-middleware.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { createAuditExtension } from './audit.prisma-middleware.js';
+import { OnModuleInit } from '@nestjs/common';
+import { AuditRepository } from '../persistence/repository/audit.repository.js';
 
 @Module({
-  providers: [
-    PrismaService,
-    AuditService,
-    {
-      provide: 'PRISMA_AUDIT_MIDDLEWARE',
-      inject: [AuditService, PrismaService],
-      useFactory: (auditService: AuditService, prisma: PrismaService) => {
-        return createAuditPrismaMiddleware(auditService, prisma);
-      },
-    },
-  ],
+  providers: [AuditService, AuditRepository],
+  imports: [],
 })
+export class AuditModule implements OnModuleInit {
+  constructor(
+    private auditService: AuditService,
+    private prismaService: PrismaService,
+  ) {}
 
-export class AuditModule {}
+  onModuleInit() {
+    this.prismaService.attachAuditMiddleware(this.auditService);
+  }
+}

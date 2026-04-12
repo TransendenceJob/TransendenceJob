@@ -5,17 +5,11 @@ import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(
-    @Inject('PRISMA_AUDIT_MIDDLEWARE')
-    private auditMiddleware: Prisma.Middleware,
-  ) {
+  constructor() {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) throw new Error('DATABASE_URL is not set');
 
     super({ adapter: new PrismaPg({ connectionString }) });
-
-    // ✔ now $use exists
-    this.$use(this.auditMiddleware);
   }
 
   async onModuleInit() {
@@ -24,5 +18,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleDestroy() {
     await this.$disconnect();
+  }
+
+  attachAuditMiddleware(auditService: any) {
+    const { createAuditExtension } = require('../audit/audit.prisma-middleware');
+    createAuditExtension(auditService)(this);
   }
 }

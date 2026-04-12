@@ -10,6 +10,11 @@ export class AuditRepository {
       data: entry,
     });
   }
+
+  // find the old audit for update and delete
+  async findById(model: string, where: Record<string, any>){
+	return this.prisma[model].findUnique({ where });
+  }
 }
 
 	// create: Inserts a new record into the database.

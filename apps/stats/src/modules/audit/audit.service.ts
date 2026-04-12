@@ -9,4 +9,13 @@ export class AuditService {
   async write(entry: any) {
     return this.auditRepository.create(entry);
   }
+  
+  async findById(model: string, where: Record<string, any>) {
+    return this.auditRepository.findById(model, where);
+  }
 }
+
+// before = await auditService.findById(
+//   params.model,
+//   params.args.where
+// );

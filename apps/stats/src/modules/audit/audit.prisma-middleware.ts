@@ -1,44 +1,48 @@
-import type { Prisma } from '@prisma/client';
 import { auditContext } from './audit.context.js';
 import { AuditService } from './audit.service.js';
-import { PrismaService } from '../../prisma/prisma.service.js';
+// import { PrismaService } from '../../prisma/prisma.service.js';
 
-export function createAuditPrismaMiddleware(
-  auditService: AuditService,
-  prisma: PrismaService,
-) {
-  return async (params: Prisma.MiddlewareParams, next) => {
-    const writeOps = ['create', 'update', 'delete'];
+import { PrismaClient } from '@prisma/client';
 
-    if (!writeOps.includes(params.action)) {
-      return next(params);
-    }
+export function createAuditExtension(auditService: AuditService) {
+  return (client: PrismaClient) =>
+    client.$extends({
+      query: {
+        $allModels: {
+          async $allOperations({ model, operation, args, query }) {
+            const writeOps = ['create', 'update', 'delete'];
 
-    const ctx = auditContext.getStore() || {};
-    const requestId = ctx.requestId;
-    const actorId = ctx.actorId;
+            if (!writeOps.includes(operation)) {
+              return query(args);
+            }
 
-    let before = null;
+            const ctx = auditContext.getStore() || {};
+            const { requestId, actorId } = ctx;
 
-    if (params.action !== 'create') {
-      before = await prisma[params.model].findUnique({
-        where: params.args.where,
-      });
-    }
+            let before = null;
 
-    const result = await next(params);
+            if (operation !== 'create' && 'where' in args) {
+             before = await auditService.findById(model, (args as any).where);
+            }
+          
 
-    await auditService.write({
-      requestId,
-      actorId,
-      action: params.action,
-      entityType: params.model,
-      entityId: result?.id?.toString(),
-      before,
-      after: result,
-      source: 'stats_service',
+            const result = await query(args);
+
+            await auditService.write({
+              requestId,
+              actorId,
+              action: operation,
+              entityType: model,
+              entityId: (result as any)?.id?.toString(),
+              before,
+              after: result,
+              source: 'stats_service',
+            });
+
+            return result;
+          },
+        },
+      },
     });
-
-    return result;
-  };
 }
+
