@@ -15,19 +15,32 @@ import type
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL; // test without localhost line
 
-async function handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-        const errorData: ApiError = await response.json().catch(()=> ({
-            code: 'PARSING_ERROR',
-            message: 'Failed to parse error response from server',
-        }));
-
-        throw errorData;
-    }
+async function handleApiResponse<T>(response: Response): Promise<T> {
     // If status is 204 (No Content), return empty object cast as T, relevant for logout, delete, update...
     if (response.status === 204) return {} as T;
 
-    return response.json();
+    // If the response is OK, return the JSON
+    if (response.ok) {
+        return response.json();
+    }
+
+    // Try to get the real error from the server first, fallback to null if it's not JSON
+    const errorBody = await response.json().catch(() => null);
+
+    if (response.status === 429) {
+        throw {
+            code: 'TOO_MANY_REQUESTS',
+            message: errorBody?.message || 'Too many requests. Please try again later.',
+            details: { status: 429 }
+        } as ApiError;
+    }
+
+    // Handle all other errors (400, 401, 500)
+    throw {
+        code: errorBody?.code || 'SERVER_ERROR',
+        message: errorBody?.message || 'An unexpected error occurred',
+        details: errorBody?.details || { status: response.status }
+    } as ApiError;
 }
 
 export const authClient = {
@@ -39,7 +52,7 @@ export const authClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         })
-        return handleResponse<AuthSuccessResponse>(response);
+        return handleApiResponse<AuthSuccessResponse>(response);
     },
 
     async login(data: LoginRequest): Promise<AuthSuccessResponse> {
@@ -48,7 +61,7 @@ export const authClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        return handleResponse<AuthSuccessResponse>(response);
+        return handleApiResponse<AuthSuccessResponse>(response);
     },
 
     // --- Session Management ---
@@ -58,7 +71,7 @@ export const authClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        return handleResponse<LogoutResponse>(response);
+        return handleApiResponse<LogoutResponse>(response);
     },
 
     async refresh(data: RefreshRequest): Promise<RefreshResponse> {
@@ -67,7 +80,7 @@ export const authClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        return handleResponse<RefreshResponse>(response);
+        return handleApiResponse<RefreshResponse>(response);
     },
 
     // --- Identity & Verification ---
@@ -90,7 +103,7 @@ export const authClient = {
                 'Content-Type': 'application/json'
             },
         });
-        return handleResponse<VerifyResponse>(response);
+        return handleApiResponse<VerifyResponse>(response);
     },
 
     // --- Social Auth ---
@@ -104,7 +117,7 @@ export const authClient = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        return handleResponse<AuthSuccessResponse>(response);
+        return handleApiResponse<AuthSuccessResponse>(response);
     },
 
 }
