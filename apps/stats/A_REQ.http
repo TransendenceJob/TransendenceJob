@@ -1,0 +1,14 @@
+
+### send post request
+POST http://localhost:3004/internal/stats/user
+Content-Type: application/json
+
+{
+  "userId": "1234",
+  "xp": 50,
+  "level": 2,
+  "wins": 1,
+  "losses": 0,
+  "kills": 10,
+  "deaths": 2
+}

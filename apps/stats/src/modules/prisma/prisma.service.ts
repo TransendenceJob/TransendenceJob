@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/commo
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
+import { createAuditExtension } from '../audit/audit.prisma-middleware';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
@@ -21,7 +22,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   attachAuditMiddleware(auditService: any) {
-    const { createAuditExtension } = require('../audit/audit.prisma-middleware');
-    createAuditExtension(auditService)(this);
+    const extended = createAuditExtension(auditService)(this);
+    Object.assign(this, extended);
   }
 }

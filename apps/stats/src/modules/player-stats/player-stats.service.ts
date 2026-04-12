@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PlayerStatsRepository } from 'src/modules/persistence/repository/player-stats.repository';
+import { CreateStatsDto } from './dto/statsRegister.dto';
 // import { PlayerStatsRepository } from './player-stats.repository.js';
 // import { PlayerStatsRepository } from './player-stats.repository';
 
@@ -7,8 +8,8 @@ import { PlayerStatsRepository } from 'src/modules/persistence/repository/player
 export class PlayerStatsService {
   constructor(private repo: PlayerStatsRepository) {}
 
-  async createStatsForUser(userId: number) {
-    return this.repo.createInitialStats(userId);
+  async createStatsForUser(createStatsDto: CreateStatsDto) {
+    return this.repo.createStats(createStatsDto);
   }
 
   async getStats(userId: number) {

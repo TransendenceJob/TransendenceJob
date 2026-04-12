@@ -12,6 +12,9 @@ export function createAuditExtension(auditService: AuditService) {
           async $allOperations({ model, operation, args, query }) {
             const writeOps = ['create', 'update', 'delete'];
 
+              if (model === 'AuditLog') {
+                return query(args);
+              }
             if (!writeOps.includes(operation)) {
               return query(args);
             }
@@ -22,7 +25,7 @@ export function createAuditExtension(auditService: AuditService) {
             let before = null;
 
             if (operation !== 'create' && 'where' in args) {
-             before = await auditService.findById(model, (args as any).where);
+              before = await auditService.findById(model, (args as any).where);
             }
           
 
