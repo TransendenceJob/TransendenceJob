@@ -6,6 +6,8 @@ import { createAuditExtension } from '../audit/audit.prisma-middleware';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  private auditMiddlewareAttached = false;
+
   constructor() {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) throw new Error('DATABASE_URL is not set');
@@ -22,9 +24,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   attachAuditMiddleware(auditService: any) {
-    
+    if (this.auditMiddlewareAttached) return;
     console.log("test");
     const extended = createAuditExtension(auditService)(this);
     Object.assign(this, extended);
+    this.auditMiddlewareAttached = true;
   }
 }
