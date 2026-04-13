@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigSchema } from './modules/config/config.schema';
+import { GlobalExceptionFilter } from './modules/common/filters/global-filter.exceptin';
 
 async function bootstrap() : Promise<void> {
   
@@ -24,7 +25,9 @@ async function bootstrap() : Promise<void> {
         transform: true,
     }),
   );
-  
+  console.log("TEST GLOBAL PIP WILL FINSHED?")
+  // main.ts
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableShutdownHooks()
   // Parse and validate the port
   

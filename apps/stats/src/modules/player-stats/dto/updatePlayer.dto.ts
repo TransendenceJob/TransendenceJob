@@ -1,9 +1,6 @@
 import { IsString, IsNumber, IsOptional, IsDateString, IsUUID } from 'class-validator';
 
-export class CreateStatsDto {
-  @IsUUID()
-  userId: string;
-
+export class UpdatePlayerDto {
   @IsNumber()
   @IsOptional()
   xp?: number;

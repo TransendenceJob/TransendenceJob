@@ -7,8 +7,8 @@ datasource db {
 }
 
 model PlayerStats {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @unique
+  id          String   @id @default(uuid())
+  userId      String   @unique
   xp          Int      @default(0)
   level       Int      @default(1)
   wins        Int      @default(0)
@@ -22,23 +22,23 @@ model PlayerStats {
 }
 
 model Match {
-  id        Int      @id @default(autoincrement())
-  winnerId  Int
-  loserId   Int
+  id        String   @id @default(uuid())
+  winnerId  String
+  loserId   String
   duration  Int
   createdAt DateTime @default(now())
 }
 
 model Achievement {
-  id        Int      @id @default(autoincrement())
-  userId    Int
+  id        String   @id @default(uuid())
+  userId    String
   type      String
   createdAt DateTime @default(now())
 }
 
 model WeaponUsage {
-  id         Int      @id @default(autoincrement())
-  userId     Int
+  id         String   @id @default(uuid())
+  userId     String
   weapon     String
   shotsFired Int      @default(0)
   hits       Int      @default(0)
@@ -50,7 +50,7 @@ model WeaponUsage {
 
 // audit tabel for tracing what is heppening inside the audit
 model AuditLog {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   timestamp  DateTime @default(now())
   requestId  String?
   actorId    String? // user id or service id
