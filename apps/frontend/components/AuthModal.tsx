@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation"; //used for placeholder
-import { useState } from "react";
+import {useEffect, useState} from "react";
+import {authClient} from "@/src/core/api/auth/auth.client";
 
 export default function AuthModal({
                                       isOpen,
@@ -16,7 +17,12 @@ export default function AuthModal({
 }) {
     const router = useRouter(); // for placeholder
     const [googleLoading, setGoogleLoading] = useState(false);
-
+    useEffect(() => {
+        if (isOpen && typeof window !== 'undefined') {
+            (window as any).authClient = authClient;
+            console.log("authClient is now available in the console.");
+        }
+    }, [isOpen]);
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
