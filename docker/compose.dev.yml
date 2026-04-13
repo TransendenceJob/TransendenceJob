@@ -36,6 +36,9 @@ services:
       PORT: ${FRONTEND_INTERNAL_PORT:-3000}
       BFF_INTERNAL_URL: http://bff:${BFF_INTERNAL_PORT:-3000}
     volumes:
+      - ../apps/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
       - ../shared/game:/app/shared
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
@@ -70,6 +73,10 @@ services:
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/BFF:/app
+      - bff_node_modules:/app/node_modules
+      - bff_dist:/app/dist
     command: ["npm", "run", "start:debug"]
     ports:
       - "${BFF_HOST_PORT:-3000}:${BFF_INTERNAL_PORT:-3000}"
@@ -127,7 +134,10 @@ services:
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
       PRISMA_GENERATE_ON_START: "true"
       PRISMA_RUN_MIGRATIONS: "true"
-
+    volumes:
+      - ../apps/auth-user:/app
+      - auth_service_node_modules:/app/node_modules
+      - auth_service_dist:/app/dist
     ports:
       - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
       - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
@@ -163,6 +173,10 @@ services:
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/social:/app
+      - social_service_node_modules:/app/node_modules
+      - social_service_dist:/app/dist
     ports:
       - "${SOCIAL_HOST_PORT:-3002}:${SOCIAL_INTERNAL_PORT:-3000}"
       - "${SOCIAL_DEBUG_HOST_PORT:-9232}:9229"
@@ -198,6 +212,10 @@ services:
       DB_NAME: ${STATS_DB_NAME}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/stats:/app
+      - stats_service_node_modules:/app/node_modules
+      - stats_service_dist:/app/dist
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
       - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
@@ -236,7 +254,11 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
       MAP_EXPORT_DIR: /app/generated/maps
     volumes:
+      - ../apps/game:/app
+      - game_service_node_modules:/app/node_modules
+      - game_service_dist:/app/dist
       - ../shared/game:/app/shared
+      - nginx_maps:/app/generated/maps
     ports:
       - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
       - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
@@ -256,4 +278,16 @@ services:
         max-file: "3"
 
 volumes:
+  auth_service_node_modules:
+  auth_service_dist:
+  bff_node_modules:
+  bff_dist:
+  frontend_node_modules:
+  frontend_next:
+  game_service_node_modules:
+  game_service_dist:
   nginx_maps:
+  social_service_node_modules:
+  social_service_dist:
+  stats_service_node_modules:
+  stats_service_dist:
