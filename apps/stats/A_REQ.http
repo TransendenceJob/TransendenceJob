@@ -34,5 +34,5 @@ Content-Type: application/json
 GET http://localhost:3004/internal/stats/user
 
 ### get by id
-GET http://localhost:3004/internal/stats/user/842e1132-2258-4b04-b2a2-dee603638c93
+GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb
 
