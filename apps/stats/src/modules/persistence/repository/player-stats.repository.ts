@@ -10,13 +10,13 @@ export class PlayerStatsRepository {
   constructor(private prisma: PrismaService) {}
 
   /* get all */
-  async getAll(){
-    return this.prisma.playerStats.findMany()
+  async getAll() {
+    return this.prisma.playerStats.findMany();
   }
-  async getStatsById(id : UUID){
+  async getStatsById(id: UUID) {
     return this.prisma.playerStats.findUnique({
-      where : {userId : id}
-    })
+      where: { userId: id },
+    });
   }
 
   /* create stats for the new user*/
@@ -36,20 +36,18 @@ export class PlayerStatsRepository {
     });
   }
 
-
-  async findByUserId(_id : string) {
+  async findByUserId(_id: string) {
     return await this.prisma.playerStats.findUnique({
-      where: { id:_id },
+      where: { id: _id },
     });
   }
 
   async updateStats(_id: string, dto: UpdatePlayerDto) {
     const { userId: _, ...data } = dto as any;
 
-      return this.prisma.playerStats.update({
-        where: { userId: _id },
-        data,
-      });
-}
-  
+    return this.prisma.playerStats.update({
+      where: { userId: _id },
+      data,
+    });
+  }
 }

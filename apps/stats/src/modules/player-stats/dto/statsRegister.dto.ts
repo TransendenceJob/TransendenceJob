@@ -1,8 +1,43 @@
-import { IsString, IsNumber, IsOptional, IsDateString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateStatsDto {
   @IsUUID()
-  userId: string;
+  @IsOptional()
+  id?: string;
+
+  @IsUUID()
+  userId!: string;
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchesWon?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchesLost?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  achievements?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  weapons?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchParticipants?: string[];
 
   @IsNumber()
   @IsOptional()
@@ -38,9 +73,9 @@ export class CreateStatsDto {
 
   @IsDateString()
   @IsOptional()
-  createdAt?: Date;
+  createdAt?: string;
 
   @IsDateString()
   @IsOptional()
-  updatedAt?: Date;
+  updatedAt?: string;
 }

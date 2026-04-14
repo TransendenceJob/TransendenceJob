@@ -1,6 +1,38 @@
-import { IsString, IsNumber, IsOptional, IsDateString, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsDateString,
+  IsUUID,
+  IsArray,
+} from 'class-validator';
 
 export class UpdatePlayerDto {
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchesWon?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchesLost?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  achievements?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  weapons?: string[];
+
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  matchParticipants?: string[];
+
   @IsNumber()
   @IsOptional()
   xp?: number;
@@ -35,9 +67,9 @@ export class UpdatePlayerDto {
 
   @IsDateString()
   @IsOptional()
-  createdAt?: Date;
+  createdAt?: string;
 
   @IsDateString()
   @IsOptional()
-  updatedAt?: Date;
+  updatedAt?: string;
 }

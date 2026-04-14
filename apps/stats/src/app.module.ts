@@ -9,17 +9,18 @@ import { HealthModule } from './modules/health/health.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 
 @Module({
-  imports: [PlayerStatsModule,
+  imports: [
+    PlayerStatsModule,
     MatchesModule,
     PrismaModule,
-     HealthModule,
-      AuditModule],
+    HealthModule,
+    AuditModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-      consumer.apply(RequestIdMiddleware).forRoutes('*'); // apply to ALL routes
-    }
-  
+    consumer.apply(RequestIdMiddleware).forRoutes('*'); // apply to ALL routes
+  }
 }

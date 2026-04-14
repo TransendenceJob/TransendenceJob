@@ -36,3 +36,29 @@ GET http://localhost:3004/internal/stats/user
 ### get by id
 GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb
 
+
+
+### create match request
+POST http://localhost:3004/internal/stats/match
+Content-Type: application/json
+
+{
+  "status" : "PENDING",
+  "duration": 2,
+  "participants": [
+    {
+      "userId"  :"d200724c-2856-4319-aefa-b41a73a0a0eb",
+      "isWinner" : true,
+      "kills"    : 2,
+      "deaths"   :3 
+    },
+    {
+      "userId"  :"3a6d6c5a-d4f6-4776-9932-477e7ef53dcb",
+      "isWinner" : true,
+      "kills"    : 2,
+      "deaths"   :3 
+    }
+      
+  ]
+
+}
