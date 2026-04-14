@@ -12,7 +12,7 @@ import type
     GoogleExchangeRequest,
 } from "@/src/core/api/auth/auth.types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL; // test without localhost line
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function handleApiResponse<T>(response: Response): Promise<T> {
     // If status is 204 (No Content), return empty object cast as T, relevant for logout, delete, update...
@@ -22,24 +22,8 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
     if (response.ok) {
         return response.json();
     }
-
-    // Try to get the real error from the server first, fallback to null if it's not JSON
-    // const errorBody = await response.json().catch(() => null);
-    //
-    // if (response.status === 429) {
-    //     throw {
-    //         code: 'TOO_MANY_REQUESTS',
-    //         message: errorBody?.message || 'Too many requests. Please try again later.',
-    //         details: { status: 429 }
-    //     } as ApiError;
-    // }
-    //
-    // // Handle all other errors (400, 401, 500)
-    // throw {
-    //     code: errorBody?.code || 'SERVER_ERROR',
-    //     message: errorBody?.message || 'An unexpected error occurred',
-    //     details: errorBody?.details || { status: response.status }
-    // } as ApiError;
+    // other errors (401, 404, 500) bff will return an error object no need to create my own
+    return response.json();
 }
 
 export const authClient = {

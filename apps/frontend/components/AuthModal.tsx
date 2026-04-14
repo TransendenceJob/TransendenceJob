@@ -17,12 +17,6 @@ export default function AuthModal({
 }) {
     const router = useRouter(); // for placeholder
     const [googleLoading, setGoogleLoading] = useState(false);
-    useEffect(() => {
-        if (isOpen && typeof window !== 'undefined') {
-            (window as any).authClient = authClient;
-            console.log("authClient is now available in the console.");
-        }
-    }, [isOpen]);
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
