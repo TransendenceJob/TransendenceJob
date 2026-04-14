@@ -72,7 +72,7 @@ export const authClient = {
      */
     async getMe(accessToken: string): Promise<UserAuthView> {
         const data = await this.verify(accessToken);
-        return data.user;
+        return data?.user;
     },
 
     /**
