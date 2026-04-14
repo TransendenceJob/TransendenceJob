@@ -13,7 +13,7 @@ services:
       - frontend_node_modules:/app/node_modules
       - frontend_next:/app/.next
       - ../shared/game:/app/shared
-    command: [ "sh", "-c", "npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
 
   nginx:
     image: nginx:1.27-alpine
@@ -76,7 +76,7 @@ services:
       - ../apps/BFF:/app
       - bff_node_modules:/app/node_modules
       - bff_dist:/app/dist
-    command: [ "sh", "-c", "npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
 
   bff:
     profiles: [ "prod" ]
@@ -136,7 +136,7 @@ services:
       - ../apps/auth-user:/app
       - auth_service_node_modules:/app/node_modules
       - auth_service_dist:/app/dist
-    command: [ "sh", "-c", "npx prisma generate && npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npx prisma generate && npm run build" ]
 
   auth_service:
     profiles: [ "prod" ]
@@ -209,7 +209,7 @@ services:
       - ../apps/social:/app
       - social_service_node_modules:/app/node_modules
       - social_service_dist:/app/dist
-    command: [ "sh", "-c", "npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
 
   social_service:
     profiles: [ "prod" ]
@@ -261,7 +261,7 @@ services:
       - ../apps/stats:/app
       - stats_service_node_modules:/app/node_modules
       - stats_service_dist:/app/dist
-    command: [ "sh", "-c", "npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
 
   stats_service:
     profiles: [ "prod" ]
@@ -312,7 +312,7 @@ services:
       - game_service_node_modules:/app/node_modules
       - game_service_dist:/app/dist
       - ../shared/game:/app/shared
-    command: [ "sh", "-c", "npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
 
   game_service:
     profiles: [ "prod" ]
