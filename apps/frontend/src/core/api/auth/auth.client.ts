@@ -10,7 +10,6 @@ import type
     UserAuthView,
     VerifyResponse,
     GoogleExchangeRequest,
-    ApiError
 } from "@/src/core/api/auth/auth.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL; // test without localhost line
@@ -25,22 +24,22 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
     }
 
     // Try to get the real error from the server first, fallback to null if it's not JSON
-    const errorBody = await response.json().catch(() => null);
-
-    if (response.status === 429) {
-        throw {
-            code: 'TOO_MANY_REQUESTS',
-            message: errorBody?.message || 'Too many requests. Please try again later.',
-            details: { status: 429 }
-        } as ApiError;
-    }
-
-    // Handle all other errors (400, 401, 500)
-    throw {
-        code: errorBody?.code || 'SERVER_ERROR',
-        message: errorBody?.message || 'An unexpected error occurred',
-        details: errorBody?.details || { status: response.status }
-    } as ApiError;
+    // const errorBody = await response.json().catch(() => null);
+    //
+    // if (response.status === 429) {
+    //     throw {
+    //         code: 'TOO_MANY_REQUESTS',
+    //         message: errorBody?.message || 'Too many requests. Please try again later.',
+    //         details: { status: 429 }
+    //     } as ApiError;
+    // }
+    //
+    // // Handle all other errors (400, 401, 500)
+    // throw {
+    //     code: errorBody?.code || 'SERVER_ERROR',
+    //     message: errorBody?.message || 'An unexpected error occurred',
+    //     details: errorBody?.details || { status: response.status }
+    // } as ApiError;
 }
 
 export const authClient = {
