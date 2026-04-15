@@ -22,6 +22,7 @@ export enum CS_Type {
 	CS_ReadyChange =			"CS_ReadyChange",
 	CS_FinishedLoading =		"CS_FinishedLoading",
 	CS_FailedLoading =			"CS_FailedLoading",
+	CS_DEV_SetGameState =		"CS_DEV_SetGameState",
 }
 
 /**
@@ -110,6 +111,14 @@ export interface CS_DEV_StartGame extends CS_Base {
 	type: CS_Type.CS_DEV_StartGame,
 }
 
+/**
+ * DELETE ME IM ONLY HERE DOR DEBUGGIN
+ */
+export interface CS_DEV_SetGameState extends CS_Base {
+	type: CS_Type.CS_DEV_SetGameState,
+	state: number,
+}
+
 // ENDSCREEN ==================================================================
 
 /**
@@ -122,5 +131,6 @@ export interface CS_DEV_StartEndscreen extends CS_Base {
 export type CS_GenericPacket = 
 			CS_ConnectAttempt | CS_ReadyChange | CS_DEV_StartLobby |
 			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
-			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen 
+			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen |
+			CS_DEV_SetGameState
 			;

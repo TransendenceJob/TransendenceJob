@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Lobby } from './Lobby';
 import { EventEmitter } from 'stream';
 import { Logger } from '@nestjs/common';
-import { CS_GenericPacket } from '@/packets/ClientServerPackets';
+import { CS_GenericPacket } from '@/shared/packets/ClientServerPackets';
 
 const DEBUG: boolean = process.env.NODE_ENV == 'development';
 

@@ -30,6 +30,7 @@ export enum SC_Type {
 	SC_GameFinished =			"SC_GameFinished",
 	SC_DEV_ButtonPress =		"SC_DEV_ButtonPress",
 	SC_DEV_Periodic =			"SC_DEV_Periodic",
+	SC_DEV_GameState =			"SC_DEV_GameState",
 }
 
 /**
@@ -229,6 +230,14 @@ export interface SC_DEV_Periodic extends SC_Base {
 	msg: string,
 }
 
+/**
+ * DELETE ME DEBUG ONLY
+ */
+export interface SC_DEV_GameState extends SC_Base {
+	type: SC_Type.SC_DEV_GameState,
+	msg: string
+}
+
 // ENDSCREEN ==================================================================
 
 
@@ -238,7 +247,7 @@ export type SC_GenericPacket =
 			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 
 			SC_StartLoading | SC_FinishedLoading | SC_FailedLoading | 
 			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
-			SC_DEV_ButtonPress | SC_DEV_Periodic
+			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading | SC_StartGame | SC_InvalidState;
