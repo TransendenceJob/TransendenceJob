@@ -22,9 +22,9 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/packets/*": [
-        "shared/packets/*",
-        "../../shared/game/packets/*",
+      "@/shared/*": [
+        "shared/*",
+        "../../shared/game/*",
       ]
     }
   }

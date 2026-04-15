@@ -5,8 +5,9 @@ import { Scene } from "@babylonjs/core";
 // @ts-ignore
 import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress } from "../../shared/packets/ClientServerPackets"
 
-import { setButtonSize, setButtonPos } from './guiUtil';
+import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';
+import { stateUi } from './stateMachine/stateUi';
 
 export default function createGui(
 	scene: Scene, 
@@ -56,6 +57,8 @@ export default function createGui(
 		});
 	});
 	gui.addControl(button);
+
+	stateUi(gui, canvas, msgToServer);
 
 	return (gui)
 }

@@ -1,5 +1,8 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
-import { CS_Type, CS_GenericPacket } from '@/packets/ClientServerPackets';
+import {
+  CS_Type,
+  CS_GenericPacket,
+} from '@/shared/packets/ClientServerPackets';
 import {
   SC_Type,
   SC_Base,
@@ -10,11 +13,10 @@ import {
   SC_GameFinished,
   SC_DEV_ButtonPress,
   SC_DEV_Periodic,
-  SC_ReadyChange,
-  PlayerInLobby,
-  SC_LobbyData,
-} from '@/packets/ServerClientPackets';
+  SC_DEV_GameState,
+} from '@/shared/packets/ServerClientPackets';
 import { SeqHandler } from './SeqHandler';
+import { Game } from './Game';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -61,7 +63,7 @@ export class Lobby {
   private lastTimestamp: number;
   private msgToClient: (msg: string) => void;
   private seqHandler: SeqHandler;
-  private players: PlayerInLobby[] = [];
+  private game: Game | null;
 
   /**
    * On Lobby Creation, call the constructor,
@@ -87,6 +89,7 @@ export class Lobby {
     // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
     this.seqHandler = new SeqHandler(1);
     this.seqHandler.registerPlayer(0, 0);
+    this.game = null;
     this.registerLoop();
   }
 
@@ -108,20 +111,20 @@ export class Lobby {
    * Currently has periodic output every 5 seconds
    */
   private gameServerLoop() {
-    this.sendPeriodicPacket();
+    if (this.state == LobbyStateEnum.Game && Date.now() > this.lastTimestamp)
+      this.sendPeridoicPacket();
+    if (this.game) this.game.tick();
   }
 
-  private sendPeriodicPacket() {
-    if (this.state == LobbyStateEnum.Game && Date.now() > this.lastTimestamp) {
-      const response = this.createBasePacket<SC_DEV_Periodic>(
-        SC_Type.SC_DEV_Periodic,
-        {
-          msg: '5 Seconds have passed',
-        },
-      );
-      this.msgToClient(JSON.stringify(response));
-      this.lastTimestamp = Date.now() + 5000;
-    }
+  private sendPeridoicPacket() {
+    const response = this.createBasePacket<SC_DEV_Periodic>(
+      SC_Type.SC_DEV_Periodic,
+      {
+        msg: '5 Seconds have passed',
+      },
+    );
+    this.msgToClient(JSON.stringify(response));
+    this.lastTimestamp = Date.now() + 5000;
   }
 
   /**
@@ -152,7 +155,7 @@ export class Lobby {
    * @param data any Client->Server packet, holds the payload as object
    */
   msgToServer(data: CS_GenericPacket) {
-    // Most of these should be removed later,
+    // Most of theese should be removed later,
     // only exists to move through game and lobby states as developer
 
     // Client wants to connect, so send them the current state to display
@@ -180,6 +183,7 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Loading
       case CS_Type.CS_DEV_StartLoading: {
+        this.game = new Game(this.engine, this.scene);
         const response = this.createBasePacket<SC_StartLoading>(
           SC_Type.SC_StartLoading,
           {},
@@ -191,6 +195,8 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Game
       case CS_Type.CS_DEV_StartGame: {
+        if (!this.game) this.game = new Game(this.engine, this.scene);
+        this.game.setState(1);
         const response = this.createBasePacket<SC_StartGame>(
           SC_Type.SC_StartGame,
           {},
@@ -202,6 +208,7 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
       case CS_Type.CS_DEV_StartEndscreen: {
+        this.game = null;
         const response = this.createBasePacket<SC_GameFinished>(
           SC_Type.SC_GameFinished,
           {},
@@ -224,46 +231,15 @@ export class Lobby {
         break;
       }
 
-      case CS_Type.CS_JoinLobby: {
-        //
-        const playerExists = this.players.find(p => p.userId === data.userId);
-
-        if (!playerExists && this.players.length < 4) {
-          //Add new player to our server-side array
-          this.players.push({
-            userId: data.userId,
-            userName: data.userName || `Player ${this.players.length + 1}`,
-            indexInLobby: this.players.length,
-            ready: false,
-            seq: [0]
-          });
-        }
-
-        // Create SC_LobbyData packet to sync the frontend
-        const response = this.createBasePacket<SC_LobbyData>(
-            SC_Type.SC_LobbyData,
-            {
-              userId: data.userId,
-              lobbyData: this.players // Contains the full player list
-            }
-        );
-
-        this.msgToClient(JSON.stringify(response));
-        break;
-      }
-
-      case CS_Type.CS_ReadyChange: {
-       // Update the state of server's player array
-        const player = this.players.find(p => p.userId === data.userId);
-        if (player) {
-          player.ready = data.ready;
-        }
-        const response = this.createBasePacket<SC_ReadyChange>(
-            SC_Type.SC_ReadyChange,
-            {
-              userId: data.userId,
-              ready: data.ready,
-            }
+      // For switching game state
+      case CS_Type.CS_DEV_SetGameState: {
+        if (!this.game) return;
+        this.game.setState(data.state);
+        const response = this.createBasePacket<SC_DEV_GameState>(
+          SC_Type.SC_DEV_GameState,
+          {
+            msg: `State was reached: ${this.game.get()}`,
+          },
         );
         this.msgToClient(JSON.stringify(response));
         break;
@@ -273,35 +249,6 @@ export class Lobby {
         console.log(
           `Error: Server received packet with unhandled type: ${JSON.stringify(data)}`,
         );
-      }
-    }
-  }
-
-  /**
-   * @brief Called by the LobbyManager when a user's websocket connection is lost
-   * @param userId ID of the player who disconnected
-   */
-  public handleDisconnect(userId: string) {
-    // Currently handle disconnection logic if we are currently in the lobby state but could also be used for game disconnects later on
-    if (this.state === LobbyStateEnum.OpenLobby) {
-      const playerIndex = this.players.findIndex(p => p.userId === userId);
-
-      if (playerIndex !== -1) {
-        // Remove the player from the lobby list
-        this.players.splice(playerIndex, 1);
-
-        // Re-index remaining players to make sure slots are correct
-        this.players.forEach((p, i) => p.indexInLobby = i);
-
-        const response = this.createBasePacket<SC_LobbyData>(
-            SC_Type.SC_LobbyData,
-            {
-              userId: userId,
-              lobbyData: this.players,
-            },
-        );
-
-        this.msgToClient(JSON.stringify(response));
       }
     }
   }
