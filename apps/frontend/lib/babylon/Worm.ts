@@ -1,7 +1,7 @@
 // @ts-ignore
-import { Scene, Vector3, Color4, Scalar, MeshBuilder, StandardMaterial } from "@babylonjs/core";
+import { Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 
-export function spawnWorms(scene: Scene, spawnAreas: Vector3[][], numPlayers: number, colors: Color4[])
+export function spawnWorms(scene: Scene, spawnAreas: Vector3[][], numPlayers: number, colors: Color3[])
 {
     for (let p = 0; p < numPlayers; p++)
     {
