@@ -28,7 +28,10 @@ describe('authClient', () => {
 
             const result = await authClient.login({ email: 'test@test.com', password: 'password123' });
 
-            expect(result).toEqual(mockResponse);
+            expect(result).toMatchObject({
+                ok: true,
+                data: mockResponse
+            });
             expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/login'), expect.any(Object));
         });
 
@@ -41,8 +44,12 @@ describe('authClient', () => {
                 json: async () => mockError,
             } as Response);
 
-            await expect(authClient.login({ email: 'wrong@test.com', password: 'wrong' }))
-                .resolves.toMatchObject(mockError);
+            const result = await authClient.login({ email: 'wrong@test.com', password: 'wrong' });
+            expect(result).toMatchObject({
+                ok: false,
+                status: 401,
+                error: mockError
+            });
         });
 
         it('should handle 204 No Content correctly', async () => {
@@ -51,8 +58,22 @@ describe('authClient', () => {
                 status: 204,
             } as Response);
 
-            const result = await authClient.logout({ refreshToken: 'some_token' });
-            expect(result).toEqual({});
+            const result = await authClient.logout({ refreshToken: 'some_token' }, 'fake-access-token');
+            expect(result).toMatchObject({
+                ok: true,
+                status: 204,
+                data: {}
+            });
+
+            // Verify the header was actually sent
+            expect(fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/auth/logout'),
+                expect.objectContaining({
+                    headers: expect.objectContaining({
+                        'Authorization': 'Bearer fake-access-token'
+                    })
+                })
+            );
         });
 
         it('should throw a specific error when the server returns 429 (Rate Limit)', async () => {
@@ -65,14 +86,18 @@ describe('authClient', () => {
             } as Response);
 
             const result = await authClient.login({ email: 'test@test.com', password: '123' });
-            expect(result).toMatchObject(mockRateLimitError);
+            expect(result).toMatchObject({
+                ok: false,
+                status: 429,
+                error: mockRateLimitError
+            });
         });
 
     });
-    // verify and refresh related test
-    describe('verify & getMe', () => {
-        it('should send the Authorization header in verify', async () => {
-            const mockVerifyResponse = { user: { id: '123', email: 'me@test.com' } };
+    // verify, getMe and refresh related test
+    describe('verify', () => {
+        it('should return an ApiResult containing the user identity and claims', async () => {
+            const mockVerifyResponse = { user: { id: '123' }, claims: { exp: 1 } };
 
             fetchMock.mockResolvedValue({
                 ok: true,
@@ -80,22 +105,21 @@ describe('authClient', () => {
                 json: async () => mockVerifyResponse,
             } as Response);
 
-            await authClient.verify('fake-access-token');
+            const result = await authClient.verify('fake-token');
 
-            expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/auth/verify'),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'Authorization': 'Bearer fake-access-token'
-                    })
-                })
-            );
+            expect(result).toMatchObject({
+                ok: true,
+                status: 200,
+                data: mockVerifyResponse
+            });
         });
+    });
 
-        it('should return only the user object when calling getMe', async () => {
+    describe('getMe', () => {
+        it('should return an ApiResult containing the current user identity data', async () => {
             const mockVerifyResponse = {
                 user: { id: '123', email: 'me@test.com' },
-                claims: { exp: 123456 }
+                claims: { exp: 999 }
             };
 
             fetchMock.mockResolvedValue({
@@ -104,10 +128,20 @@ describe('authClient', () => {
                 json: async () => mockVerifyResponse,
             } as Response);
 
-            const user = await authClient.getMe('fake-access-token');
+            const result = await authClient.getMe('fake-token');
 
-            expect(user).toEqual(mockVerifyResponse.user);
-            expect(user).not.toHaveProperty('claims');
+            expect(result).toMatchObject({
+                ok: true,
+                status: 200,
+                data: {
+                    user: {
+                        id: '123',
+                        email: 'me@test.com'
+                    }
+                }
+            });
+            expect(result).not.toHaveProperty('claims');
+            expect((result as any).data).toHaveProperty('claims');
         });
     });
 
@@ -155,7 +189,10 @@ describe('authClient', () => {
             };
 
             const result = await authClient.exchangeGoogleCallback(exchangeData);
-            expect(result).toEqual(mockAuthResponse);
+            expect(result).toMatchObject({
+                ok: true,
+                data: mockAuthResponse
+            });
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/auth/google/exchange'),
                 expect.objectContaining({

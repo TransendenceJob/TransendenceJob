@@ -109,7 +109,7 @@ export const authClient = {
 
     // --- Social Auth ---
     startGoogleOAuth(): void {
-        window.location.href = `${BASE_URL}/auth/google`;
+        window.location.href = `${BASE_URL}/auth/google/start`;
     },
 
     async exchangeGoogleCallback(data: GoogleExchangeRequest): Promise<ApiResult<AuthSuccessResponse>> {
