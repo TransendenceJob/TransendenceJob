@@ -11,8 +11,9 @@ import { points, spawnAreas } from "./data/vectorData";
 import { Ground } from "./Ground";
 import { spawnWorms } from "./Worm";
 import { createCamera } from "./Camera";
+import { msgToServerType } from "../packets/msgToServerType";
 
-export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: string, DEBUG: boolean) {
+export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: msgToServerType, DEBUG: boolean) {
 	var scene = new Scene(engine);
 	var camera = createCamera(scene, canvas, 0, 0, 62);
 	var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
@@ -27,7 +28,7 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
 
-	const gui = createGui(scene, canvas, socket);
+	const gui = createGui(scene, canvas, msgToServer);
 	const ground = new Ground(scene, points);
 
 	spawnWorms(scene, spawnAreas, numPlayers, colors);
