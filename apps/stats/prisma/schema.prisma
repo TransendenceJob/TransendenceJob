@@ -52,9 +52,8 @@ model PlayerStats {
   id     String @id @default(uuid())
   userId String @unique
 
-  achievements      Achievement[]
-  weapons           WeaponUsage[]
-  matchParticipants MatchParticipant[] // 1:n in which match this user particpated?
+  achievements Achievement[]
+  weapons      WeaponUsage[]
 
   xp          Int @default(0)
   level       Int @default(1)
@@ -65,8 +64,9 @@ model PlayerStats {
   damageDealt Int @default(0)
   damageTaken Int @default(0)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  matchHistory MatchParticipant[]
 }
 
 model Match {
@@ -75,6 +75,7 @@ model Match {
   duration          Int?
   createdAt         DateTime           @default(now())
   matchParticipants MatchParticipant[]
+  playerStatsId     String?
 }
 
 model MatchParticipant {

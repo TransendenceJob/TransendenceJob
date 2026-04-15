@@ -22,6 +22,7 @@ export class PlayerStatsController {
     const updated = this.service.update(id, updatePlayerDto);
     return updated;
   }
+  
   @Get()
   getAll() {
     return this.service.getAll();

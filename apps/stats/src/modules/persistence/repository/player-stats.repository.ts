@@ -13,9 +13,19 @@ export class PlayerStatsRepository {
   async getAll() {
     return this.prisma.playerStats.findMany();
   }
+
   async getStatsById(id: UUID) {
     return this.prisma.playerStats.findUnique({
       where: { userId: id },
+      include: {
+        matchHistory: {
+          include: {
+            match: true,
+          },
+        },
+        weapons: true,
+        achievements: true,
+      },
     });
   }
 
