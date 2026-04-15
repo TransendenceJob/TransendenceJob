@@ -93,6 +93,8 @@ export interface VerifyResponse {
     };
 }
 
+/** * --- Errors ---
+ */
 export interface ApiError {
     code: string;
     message: string;

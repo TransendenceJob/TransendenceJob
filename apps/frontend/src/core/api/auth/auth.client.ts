@@ -10,6 +10,7 @@ import type
     UserAuthView,
     VerifyResponse,
     GoogleExchangeRequest,
+    ApiError
 } from "@/src/core/api/auth/auth.types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -26,13 +27,20 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         return { ok: true, data: {} as T, status };
     }
 
+    // predefined message in case if the bff / server can't reply
+    const fallbackError: ApiError = {
+        code: 'UNKNOWN_ERROR',
+        message: 'An unexpected error occurred.',
+        details: null
+    };
+
     const data = await response.json().catch(() => ({}));
 
     if (response.ok) {
         return { ok: true, data, status };
     }
-    // other errors (401, 404, 500) Return as error object
-    return { ok: false, error: data, status };
+    // other errors (401, 404, 500) Return the server's error data if available otherwise use fallback
+    return { ok: false, error: data || fallbackError, status };
 }
 
 export const authClient = {
