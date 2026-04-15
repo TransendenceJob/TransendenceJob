@@ -3,7 +3,7 @@ import { Button} from "@babylonjs/gui";
 
 export function setButtonSize(
 	button: Button, 
-	canvas: any, 
+	canvas: HTMLCanvasElement, 
 	size_x: number, 
 	size_y: number)
 {
@@ -13,7 +13,7 @@ export function setButtonSize(
 
 export function setButtonPos(
 	button: Button, 
-	canvas: any, 
+	canvas: HTMLCanvasElement, 
 	pos_x: number, 
 	pos_y: number)
 {
