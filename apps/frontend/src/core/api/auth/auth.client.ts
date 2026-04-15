@@ -12,24 +12,33 @@ import type
     GoogleExchangeRequest,
 } from "@/src/core/api/auth/auth.types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-async function handleApiResponse<T>(response: Response): Promise<T> {
+type ApiResult<T> =
+    | { ok: true; data: T; status: number }
+    | { ok: false; error: any; status: number };
+
+async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
+    const status = response.status;
+
     // If status is 204 (No Content), return empty object cast as T, relevant for logout, delete, update...
-    if (response.status === 204) return {} as T;
-
-    // If the response is OK, return the JSON
-    if (response.ok) {
-        return response.json();
+    if (status === 204){
+        return { ok: true, data: {} as T, status };
     }
-    // other errors (401, 404, 500) bff will return an error object no need to create my own
-    return response.json();
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok) {
+        return { ok: true, data, status };
+    }
+    // other errors (401, 404, 500) Return as error object
+    return { ok: false, error: data, status };
 }
 
 export const authClient = {
 
     // --- Registration & Login ---
-    async register(data: RegisterRequest): Promise<AuthSuccessResponse> {
+    async register(data: RegisterRequest): Promise<ApiResult<AuthSuccessResponse>> {
         const response = await fetch(`${BASE_URL}/auth/register`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -38,7 +47,7 @@ export const authClient = {
         return handleApiResponse<AuthSuccessResponse>(response);
     },
 
-    async login(data: LoginRequest): Promise<AuthSuccessResponse> {
+    async login(data: LoginRequest): Promise<ApiResult<AuthSuccessResponse>> {
         const response = await fetch(`${BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -48,7 +57,7 @@ export const authClient = {
     },
 
     // --- Session Management ---
-    async logout(data: LogoutRequest): Promise<LogoutResponse> {
+    async logout(data: LogoutRequest): Promise<ApiResult<LogoutResponse>> {
         const response = await fetch(`${BASE_URL}/auth/logout`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -57,7 +66,7 @@ export const authClient = {
         return handleApiResponse<LogoutResponse>(response);
     },
 
-    async refresh(data: RefreshRequest): Promise<RefreshResponse> {
+    async refresh(data: RefreshRequest): Promise<ApiResult<RefreshResponse>> {
         const response = await fetch(`${BASE_URL}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -70,15 +79,15 @@ export const authClient = {
     /**
      * getMe: A convenience method that usually just returns the User object
      */
-    async getMe(accessToken: string): Promise<UserAuthView> {
-        const data = await this.verify(accessToken);
-        return data?.user;
+    async getMe(accessToken: string): Promise<UserAuthView | null> {
+        const result = await this.verify(accessToken);
+        return result.ok ? result.data.user : null;
     },
 
     /**
      * verify: Returns the full token validation data (claims, session info)
      */
-    async verify(accessToken: string): Promise<VerifyResponse> {
+    async verify(accessToken: string): Promise<ApiResult<VerifyResponse>> {
         const response = await fetch(`${BASE_URL}/auth/verify`, {
             method: 'GET',
             headers: {
@@ -94,7 +103,7 @@ export const authClient = {
         window.location.href = `${BASE_URL}/auth/google`;
     },
 
-    async exchangeGoogleCallback(data: GoogleExchangeRequest): Promise<AuthSuccessResponse> {
+    async exchangeGoogleCallback(data: GoogleExchangeRequest): Promise<ApiResult<AuthSuccessResponse>> {
         const response = await fetch(`${BASE_URL}/auth/google/exchange`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
