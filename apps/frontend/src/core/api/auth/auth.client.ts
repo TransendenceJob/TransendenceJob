@@ -57,10 +57,12 @@ export const authClient = {
     },
 
     // --- Session Management ---
-    async logout(data: LogoutRequest): Promise<ApiResult<LogoutResponse>> {
+    async logout(data: LogoutRequest, accessToken: string): Promise<ApiResult<LogoutResponse>> {
         const response = await fetch(`${BASE_URL}/auth/logout`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
         return handleApiResponse<LogoutResponse>(response);
@@ -77,11 +79,18 @@ export const authClient = {
 
     // --- Identity & Verification ---
     /**
-     * getMe: A convenience method that usually just returns the User object
+     * getMe: Fetches the current user profile directly from the BFF.
      */
-    async getMe(accessToken: string): Promise<UserAuthView | null> {
-        const result = await this.verify(accessToken);
-        return result.ok ? result.data.user : null;
+    async getMe(accessToken: string): Promise<ApiResult<UserAuthView>> {
+        const response = await fetch(`${BASE_URL}/auth/me`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+        });
+
+        return handleApiResponse<UserAuthView>(response);
     },
 
     /**
