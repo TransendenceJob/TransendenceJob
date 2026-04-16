@@ -37,6 +37,8 @@ GET http://localhost:3004/internal/stats/user
 GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb
 
 
+
+------------------------------------match request -----------------------------
 ### create match request
 POST http://localhost:3004/internal/stats/match
 Content-Type: application/json
@@ -65,11 +67,11 @@ Content-Type: application/json
 ### Get all the match from table
 GET  http://localhost:3004/internal/stats/match
 
+### Get match by Id
+GET    http://localhost:3004/internal/stats/match/5fc6115f-38a1-4aec-a510-11fb5da6a575
+
 ### Get all particicpnats of a match
 GET http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/members
-
-### Delete all match
-DELETE  http://localhost:3004/internal/stats/match
 
 ### Update match status and duration
 PATCH http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
@@ -79,6 +81,15 @@ Content-Type: application/json
   "status": "IN_PROGRESS",
   "duration": 1800
 }
+
+
+### Delete a match by id:
+DELETE http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
+
+
+### Delete all match
+DELETE  http://localhost:3004/internal/stats/match
+
 
 ### Add participant to match
 POST http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb

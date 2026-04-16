@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Patch,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { MatchesService } from './matches.service';
 import { UUID } from 'node:crypto';
@@ -17,16 +18,20 @@ import { UpdateMatchParticipantDto } from './dto/update.match.participant.dto';
 export class MatchesController {
   constructor(private matchService: MatchesService) {}
 
+  /* add match */
   @Post()
   createMatch(@Body() matchDto: CreateMatchDto) {
-    console.log('MATCH: ', matchDto);
-    console.log('CAME TO THE MATHCH CONTROLLER');
     return this.matchService.createMatch(matchDto);
   }
 
   @Get()
   getAllMatch() {
     return this.matchService.getMatches();
+  }
+
+  @Get(':matchId')
+  getMathById(@Param('matchId', ParseUUIDPipe) matchId: string) {
+    return this.matchService.getMatchById(matchId);
   }
 
   @Get(':matchId/members')
@@ -64,6 +69,13 @@ export class MatchesController {
     );
   }
 
+  /* Delete match by id */
+  @Delete(':matchId')
+  removeById(@Param('matchId', ParseUUIDPipe) matchId: string) {
+    return this.matchService.removeMatchById(matchId);
+  }
+
+  /* delete a paricipant from a match: left the loby */
   @Delete(':matchId/participants/:userId')
   removeParticipant(
     @Param('matchId') matchId: string,

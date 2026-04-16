@@ -24,13 +24,22 @@ export class MatchesService {
     return this.repo.createMatch(dto.participants, dto.status, dto.duration);
   }
 
+  /* Get match by id */
+  async getMatchById(matchId: string) {
+    return await this.repo.getMatchById(matchId);
+  }
+
   /* update a mathc */
   async updateMatch(matchId: string, dto: UpdateMatchDto) {
     return await this.repo.update(matchId, dto);
   }
 
   /* add aprticipant to a match */
-  async addParticipant(matchId: string, userId: string, participantData?: UpdateMatchParticipantDto) {
+  async addParticipant(
+    matchId: string,
+    userId: string,
+    participantData?: UpdateMatchParticipantDto,
+  ) {
     const player = await this.repo.findPlayers([userId]);
     if (player.length === 0) {
       throw new BadRequestException('User does not exist');
@@ -39,7 +48,11 @@ export class MatchesService {
   }
 
   /* update a participant */
-  async updateParticipant(matchId: string, userId: string, dto: UpdateMatchParticipantDto) {
+  async updateParticipant(
+    matchId: string,
+    userId: string,
+    dto: UpdateMatchParticipantDto,
+  ) {
     return await this.repo.updateParticipant(matchId, userId, dto);
   }
 
@@ -52,12 +65,16 @@ export class MatchesService {
   async getMatches() {
     return await this.repo.getMatches();
   }
-  
+
   /* get participants from a match */
   async getParicipants(matchId: string) {
     return await this.repo.getMembers(matchId);
   }
 
+  /* Remove a match by Id */
+  async removeMatchById(id: string) {
+    return await this.repo.removeMatchById(id);
+  }
   /* DELETE ALL MATCHES : DANGERS */
   async deleteAll() {
     return await this.repo.deleteAll();

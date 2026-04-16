@@ -7,16 +7,15 @@ import { v4 as uuid } from 'uuid';
 export class RequestIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // check if the client already sent a request id
-    let incoming = req.headers['x-request-id'];
+    const incoming = req.headers['x-request-id'];
 
     // If not, generate one
-    const requestId = typeof incoming === "string" ? incoming : uuid();
+    const requestId = typeof incoming === 'string' ? incoming : uuid();
 
     // Attach it to the request object for later use in handlers/logging
     auditContext.run({ requestId }, () => {
       res.setHeader('X-Request-Id', requestId);
       next();
     });
-    
   }
 }

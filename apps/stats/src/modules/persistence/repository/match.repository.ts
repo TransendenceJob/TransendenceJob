@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { CreateMatchParticipantDto } from 'src/modules/matches/dto/create.match.dto';
 
@@ -58,7 +58,11 @@ export class MatchStatsRepository {
 
   /* get all matches */
   async getMatches() {
-    return await this.prisma.match.findMany({});
+    return await this.prisma.match.findMany({
+      include: {
+        matchParticipants: true,
+      },
+    });
   }
 
   // update match
@@ -90,11 +94,27 @@ export class MatchStatsRepository {
       data: {
         matchId,
         userId,
-        ...(participantData?.isWinner !== undefined ? { isWinner: participantData.isWinner } : {}),
-        ...(participantData?.kills !== undefined ? { kills: participantData.kills } : {}),
-        ...(participantData?.deaths !== undefined ? { deaths: participantData.deaths } : {}),
+        ...(participantData?.isWinner !== undefined
+          ? { isWinner: participantData.isWinner }
+          : {}),
+        ...(participantData?.kills !== undefined
+          ? { kills: participantData.kills }
+          : {}),
+        ...(participantData?.deaths !== undefined
+          ? { deaths: participantData.deaths }
+          : {}),
       },
     });
+  }
+
+  /* Get match by ID */
+  async getMatchById(matchId: string) {
+    const findMatch = this.prisma.match.findUnique({
+      where: { id: matchId },
+    });
+    if (!findMatch)
+      throw new NotFoundException(`math with ${matchId} not found`);
+    return findMatch;
   }
 
   // update participant stats in match
@@ -120,6 +140,17 @@ export class MatchStatsRepository {
     });
   }
 
+  // remove a match by Id
+  async removeMatchById(matchId: string) {
+    // First delete all participants of this match
+    await this.prisma.matchParticipant.deleteMany({
+      where: { matchId },
+    });
+    // Then delete the match
+    return await this.prisma.match.delete({
+      where: { id: matchId },
+    });
+  }
   // delete all match table
   async deleteAll() {
     await this.prisma.matchParticipant.deleteMany({});

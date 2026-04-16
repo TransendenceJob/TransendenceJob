@@ -16,17 +16,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const request = ctx.getRequest();
+    const ctx = host.switchToHttp(); // convert the http mpde
+    const response = ctx.getResponse(); // extact the response
+    const request = ctx.getRequest(); // extract the request
 
-    const audit = auditContext.getStore() || {};
+    const audit = auditContext.getStore() || {}; // get the global context
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let status = HttpStatus.INTERNAL_SERVER_ERROR; // get the error statsu
+    let message = 'Internal server error'; // custome the message
 
     // Prisma errors
-    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) { // if error was prisma query
       switch (exception.code) {
         case 'P2025':
           status = HttpStatus.NOT_FOUND;
@@ -41,9 +41,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           message = 'Foreign key constraint failed';
           break;
       }
-    }
-
-    else if (exception instanceof HttpException) {
+    } else if (exception instanceof HttpException) { // if error came from other part of server
       status = exception.getStatus();
 
       const response = exception.getResponse();
@@ -53,17 +51,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else if (typeof response === 'object') {
         const r = response as any;
 
-        // 🔥 THIS is the important part
         message = r.message || r.error || exception.message;
       }
     }
 
-    // Unknown errors
+    // unknown errors
     else if (exception instanceof Error) {
       message = exception.message;
     }
 
-    // Logging (with request context 🔥)
     this.logger.error({
       requestId: audit.requestId,
       actorId: audit.actorId,
