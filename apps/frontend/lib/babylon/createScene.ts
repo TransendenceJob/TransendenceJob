@@ -7,7 +7,7 @@ import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 import createGui from "./createGui";
 import setupSocket from "./setupSocket";
 import { numPlayers, colors } from "./data/gameData";
-import { points, spawnAreas } from "./data/vectorData";
+import { points, generateSpawnAreas } from "./data/vectorData";
 import { Ground } from "./Ground";
 import { spawnWorms } from "./Worm";
 import { createCamera } from "./Camera";
@@ -31,7 +31,7 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 	const gui = createGui(scene, canvas, msgToServer);
 	const ground = new Ground(scene, points);
 
-	spawnWorms(scene, spawnAreas, numPlayers, colors);
+	spawnWorms(scene, generateSpawnAreas(), numPlayers, colors);
 	const cleanupSocket = setupSocket(socket, gui, DEBUG);
 
 	return { scene, cleanupSocket };
