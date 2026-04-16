@@ -18,6 +18,7 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 	var camera = createCamera(scene, canvas, 0, 0, 62);
 	var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;
+	console.log("Finished setting scene");
 
 	try {
 		const HavokPhysics = (await import("@babylonjs/havok")).default;
@@ -27,12 +28,15 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 	} catch (error) {
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
+	console.log("Finished setting up phys");
 
 	const gui = createGui(scene, canvas, msgToServer);
 	const ground = new Ground(scene, points);
+	console.log("Finished setting up gui");
 
 	spawnWorms(scene, generateSpawnAreas(), numPlayers, colors);
 	const cleanupSocket = setupSocket(socket, gui, DEBUG);
+	console.log("Finished setting up game");
 
 	return { scene, cleanupSocket };
 };
