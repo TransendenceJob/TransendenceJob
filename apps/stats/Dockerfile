@@ -10,7 +10,6 @@ FROM node:20-alpine AS development
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 
 ENV NODE_ENV=development
 ENV PORT=3000

@@ -82,9 +82,7 @@ export class AuthProviderRepository {
         provider: data.provider,
         providerUserId: data.providerUserId,
       },
-      update: {
-        userId: data.userId,
-      },
+      update: {},
     });
   }
 

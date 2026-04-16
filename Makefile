@@ -6,7 +6,7 @@ COMPOSE_PROD = docker/compose.prod.yml
 
 # ---------- Compose commands ----------
 DC_BASE = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)
-DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) -f $(COMPOSE_DEV) --profile prod --profile dev
+DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)  -f $(COMPOSE_DEV) --profile dev
 DC_PROD = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) --profile prod 
 DC_OBS  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) --profile dev --profile obs
 
@@ -15,7 +15,7 @@ SVC ?=
 CMD ?= sh
 
 .PHONY: help check-env up down down-base down-dev down-prod down-all \
-        ps logs health reset dev prod debug obs rebuild pull restart exec sh
+	ps logs health reset dev prod debug obs rebuild pull restart exec sh e2e-auth
 
 help:
 	@echo "Targets:"
@@ -36,6 +36,7 @@ help:
 	@echo "  make exec SVC=x CMD='...' - Exec command in service"
 	@echo "  make sh SVC=x    - Shell into service"
 	@echo "  make rebuild     - Build images"
+	@echo "  make e2e-auth    - Run auth-service e2e tests against isolated test DB"
 	@echo "  make reset       - Down all + delete volumes"
 
 check-env:
@@ -48,7 +49,7 @@ dev: check-env
 	$(DC_DEV) up -d --build
 
 prod: check-env
-	$(DC_PROD) up --build
+	$(DC_PROD) up -d --build
 
 debug: check-env
 	$(DC_DEV) up -d --build
@@ -129,6 +130,9 @@ ifndef SVC
 	$(error Please provide SVC=<service>, e.g. make sh SVC=nginx)
 endif
 	$(DC_DEV) exec $(SVC) sh
+
+e2e-auth: check-env
+	bash scripts/test-e2e.sh
 
 reset:
 	@echo "⚠️  This will DELETE ALL DATA (volumes). Ctrl+C to abort. 10 seconds..."

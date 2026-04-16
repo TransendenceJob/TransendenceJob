@@ -26,6 +26,29 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  postgres_auth_test:
+    image: postgres:16-alpine
+    container_name: postgres_auth_test
+    environment:
+      POSTGRES_USER: ${AUTH_TEST_DB_USER:-auth_test}
+      POSTGRES_PASSWORD: ${AUTH_TEST_DB_PASSWORD:-auth_test}
+      POSTGRES_DB: ${AUTH_TEST_DB_NAME:-auth_test_db}
+    ports:
+      - "${AUTH_TEST_DB_PORT:-5437}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
   
   postgres_game:
     image: postgres:16-alpine

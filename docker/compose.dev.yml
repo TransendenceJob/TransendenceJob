@@ -34,14 +34,15 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${FRONTEND_INTERNAL_PORT:-3000}
-      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID}
-      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET}
-      AUTH_SECRET: ${AUTH_SECRET}
-      AUTH_URL: ${AUTH_URL}
-      AUTH_TRUST_HOST: "true"
+      BFF_INTERNAL_URL: http://bff:${BFF_INTERNAL_PORT:-3000}
+    volumes:
+      - ../apps/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+      - ../shared/game:/app/shared
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
-    command: ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
+    command: ["sh", "-lc", "npm ci && npm run dev -- -H 0.0.0.0 -p ${FRONTEND_INTERNAL_PORT:-3000}"]
     networks: [backend]
     logging:
       driver: "json-file"
@@ -64,11 +65,19 @@ services:
       SOCIAL_SERVICE_URL: http://social_service:${SOCIAL_INTERNAL_PORT:-3000}
       STATS_SERVICE_URL: http://stats_service:${STATS_INTERNAL_PORT:-3000}
       GAME_SERVICE_HTTP_URL: http://game_service:${GAME_INTERNAL_PORT:-3001}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID}
+      GOOGLE_REDIRECT_URI: http://localhost:${BFF_HOST_PORT:-3000}/auth/google/callback
+      GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
+      GOOGLE_FRONTEND_CALLBACK_URL: http://localhost:${FRONTEND_HOST_PORT:-3005}/auth/google/callback
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
-    command: ["npm", "run", "start:debug"]
+    volumes:
+      - ../apps/BFF:/app
+      - bff_node_modules:/app/node_modules
+      - bff_dist:/app/dist
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     ports:
       - "${BFF_HOST_PORT:-3000}:${BFF_INTERNAL_PORT:-3000}"
       - "${BFF_DEBUG_HOST_PORT:-9229}:9229"
@@ -111,19 +120,28 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
-      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-dev-google-client-id}
-      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-dev-google-client-secret}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      REFRESH_TOKEN_BYTES: ${REFRESH_TOKEN_BYTES}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL}
+      REFRESH_TOKEN_HASH_PEPPER: ${REFRESH_TOKEN_HASH_PEPPER}
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID}
+      GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET}
+      GOOGLE_REDIRECT_URI: http://localhost:${BFF_HOST_PORT:-3000}/auth/google/callback
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
       SERVICE_NAME: ${SERVICE_NAME}
       SERVICE_VERSION: ${SERVICE_VERSION}
       DATABASE_URL: postgresql://${AUTH_DB_USER}:${AUTH_DB_PASSWORD}@postgres_auth:5432/${AUTH_DB_NAME}?schema=public
       PRISMA_GENERATE_ON_START: "true"
       PRISMA_RUN_MIGRATIONS: "true"
-
+    volumes:
+      - ../apps/auth-user:/app
+      - auth_service_node_modules:/app/node_modules
+      - auth_service_dist:/app/dist
     ports:
       - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
       - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
+    entrypoint: ["sh", "/app/scripts/prismarun.sh"]
     command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_auth:
@@ -156,10 +174,14 @@ services:
       REDIS_PORT: ${REDIS_INTERNAL_PORT:-6379}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/social:/app
+      - social_service_node_modules:/app/node_modules
+      - social_service_dist:/app/dist
     ports:
       - "${SOCIAL_HOST_PORT:-3002}:${SOCIAL_INTERNAL_PORT:-3000}"
       - "${SOCIAL_DEBUG_HOST_PORT:-9232}:9229"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_social:
         condition: service_healthy
@@ -193,10 +215,14 @@ services:
       RABBITMQ_HOST: rabbitmq
       DATABASE_URL: postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?schema=public
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
+    volumes:
+      - ../apps/stats:/app
+      - stats_service_node_modules:/app/node_modules
+      - stats_service_dist:/app/dist
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
       - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_stats:
         condition: service_healthy
@@ -234,10 +260,16 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
       MAP_EXPORT_DIR: /app/generated/maps
+    volumes:
+      - ../apps/game:/app
+      - game_service_node_modules:/app/node_modules
+      - game_service_dist:/app/dist
+      - ../shared/game:/app/shared
+      - nginx_maps:/app/generated/maps
     ports:
       - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
       - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_game:
         condition: service_healthy
@@ -253,4 +285,16 @@ services:
         max-file: "3"
 
 volumes:
+  auth_service_node_modules:
+  auth_service_dist:
+  bff_node_modules:
+  bff_dist:
+  frontend_node_modules:
+  frontend_next:
+  game_service_node_modules:
+  game_service_dist:
   nginx_maps:
+  social_service_node_modules:
+  social_service_dist:
+  stats_service_node_modules:
+  stats_service_dist:

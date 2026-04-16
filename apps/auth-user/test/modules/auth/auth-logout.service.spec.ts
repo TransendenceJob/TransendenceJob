@@ -283,6 +283,50 @@ describe('AuthLogoutService', () => {
         revokedSessionIds: ['sess_1'],
       });
     });
+
+    it('logs revokedCount based on returned revoked session ids', async () => {
+      refreshTokens.hashRefreshToken.mockReturnValue('incoming-hash');
+      refreshTokens.verifyRefreshToken.mockReturnValue(true);
+      sessions.findActiveByRefreshTokenHashWithUser.mockResolvedValue({
+        id: 'sess_1',
+        userId: 'user_1',
+        refreshTokenHash: 'incoming-hash',
+        revokedAt: null,
+        expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+        user: {
+          id: 'user_1',
+          email: 'john@example.com',
+          status: 'ACTIVE',
+          disabledAt: null,
+        },
+      });
+      sessions.findActiveSessionsByUserId.mockResolvedValue([
+        { id: 'sess_1' },
+        { id: 'sess_2' },
+      ]);
+      // Simulate a broader DB update count to ensure audit metadata stays consistent
+      sessions.revokeAllSessionsForUser.mockResolvedValue({ count: 99 });
+
+      await service.logout(
+        { refreshToken: 'refresh-token', logoutAll: true },
+        {
+          ip: '127.0.0.1',
+          userAgent: 'jest',
+          requestId: 'req-1',
+          serviceName: 'bff',
+        },
+      );
+
+      expect(auditLogs.createEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadataJson: expect.objectContaining({
+            logoutAll: true,
+            revokedCount: 2,
+          }),
+        }),
+        db,
+      );
+    });
   });
 
   describe('rate limiting', () => {

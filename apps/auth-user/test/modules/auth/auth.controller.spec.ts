@@ -1,5 +1,6 @@
 import { AuthController } from '../../../src/modules/auth/auth.controller';
 import { type AuthService } from '../../../src/modules/auth/services/auth.service';
+import { AuditActionDto } from '../../../src/modules/auth/contracts/enums/audit-action.enum';
 
 describe('AuthController.register', () => {
   const authService = {
@@ -7,6 +8,8 @@ describe('AuthController.register', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    googleExchange: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -74,6 +77,8 @@ describe('AuthController.logout', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    googleExchange: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -189,6 +194,8 @@ describe('AuthController.verify', () => {
     refresh: jest.fn(),
     logout: jest.fn(),
     verify: jest.fn(),
+    googleExchange: jest.fn(),
+    listAuditLogs: jest.fn(),
   } as unknown as AuthService;
 
   const controller = new AuthController(authService);
@@ -254,5 +261,135 @@ describe('AuthController.verify', () => {
         req,
       ),
     ).rejects.toThrow('Missing authorization header');
+  });
+});
+
+describe('AuthController.audit', () => {
+  const authService = {
+    register: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+    verify: jest.fn(),
+    googleExchange: jest.fn(),
+    listAuditLogs: jest.fn(),
+  } as unknown as AuthService;
+
+  const controller = new AuthController(authService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authService.listAuditLogs = jest.fn().mockResolvedValue({
+      items: [],
+      pageInfo: {
+        nextCursor: null,
+        hasNextPage: false,
+      },
+    });
+  });
+
+  it('delegates audit query with context and auth token', async () => {
+    const req = {
+      ip: '10.0.0.5',
+      userAgent: 'Mozilla/5.0',
+      requestId: 'req-audit-1',
+      serviceName: 'bff',
+      bearerToken: 'access-token',
+    } as any;
+
+    await controller.listAuditLogs(
+      {
+        userId: 'user-1',
+        action: AuditActionDto.LOGIN_SUCCESS,
+        cursor: 'audit-1',
+        limit: 10,
+      },
+      req,
+    );
+
+    expect(authService.listAuditLogs).toHaveBeenCalledWith(
+      {
+        userId: 'user-1',
+        action: AuditActionDto.LOGIN_SUCCESS,
+        cursor: 'audit-1',
+        limit: 10,
+      },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'req-audit-1',
+        serviceName: 'bff',
+        bearerToken: 'access-token',
+      },
+    );
+  });
+});
+
+describe('AuthController.googleExchange', () => {
+  const authService = {
+    register: jest.fn(),
+    refresh: jest.fn(),
+    logout: jest.fn(),
+    verify: jest.fn(),
+    googleExchange: jest.fn(),
+    listAuditLogs: jest.fn(),
+  } as unknown as AuthService;
+
+  const controller = new AuthController(authService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authService.googleExchange = jest.fn().mockResolvedValue({
+      user: {
+        id: 'usr_1',
+        email: 'john@example.com',
+        displayName: null,
+        username: null,
+        status: 'active',
+        roles: ['user'],
+        createdAt: '2026-04-03T13:00:00.000Z',
+        providers: [{ name: 'google', providerUserId: 'google-uid' }],
+      },
+      session: {
+        id: 'sess_1',
+        expiresAt: '2026-04-03T13:00:00.000Z',
+        revoked: false,
+      },
+      tokens: {
+        accessToken: 'access',
+        refreshToken: 'refresh',
+        expiresIn: 900,
+        tokenType: 'Bearer',
+      },
+    });
+  });
+
+  it('delegates google exchange with normalized context', async () => {
+    const req = {
+      ip: '10.0.0.5',
+      userAgent: 'Mozilla/5.0',
+      requestId: 'req-google-1',
+      serviceName: 'bff',
+    } as any;
+
+    await controller.googleExchange(
+      {
+        provider: 'google',
+        idToken: 'id-token',
+      } as never,
+      req,
+    );
+
+    expect(authService.googleExchange).toHaveBeenCalledWith(
+      {
+        provider: 'google',
+        idToken: 'id-token',
+      },
+      {
+        ip: '10.0.0.5',
+        userAgent: 'Mozilla/5.0',
+        requestId: 'req-google-1',
+        serviceName: 'bff',
+      },
+    );
   });
 });

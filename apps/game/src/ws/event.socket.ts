@@ -28,7 +28,7 @@ export class EventSocket
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, payload: string): void {
     // Log Event
-    this.logger.log(`Message received: ${payload}`);
+    // this.logger.log(`Message received: ${payload}`);
     // Handle Event
     this.lobbyManager.msgToServer(payload);
   }
