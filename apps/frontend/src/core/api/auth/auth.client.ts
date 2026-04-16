@@ -17,7 +17,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 type ApiResult<T> =
     | { ok: true; data: T; status: number }
-    | { ok: false; error: ApiError; status: number };
+    | { ok: false; error: ApiError | unknown; status: number };
 
 async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const status = response.status;
@@ -46,20 +46,8 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     if (response.ok) {
         return { ok: true, data, status };
     }
-    // prioritise the bff message
-    const message = data?.details?.error?.message || data?.message || 'An unexpected error occurred.';
-
-    // For errors (401, 404, 500, etc.), we return the server's data
-    // but overwrite the generic 'message' with the specific reason
-    return {
-        ok: false,
-        status,
-        error: {
-            code: data?.code || 'UNKNOWN_ERROR',
-            ...data,
-            message
-        }
-    };
+    // other errors (401, 404, 500) Return the server's error data if available otherwise use fallback
+    return { ok: false, error: data ?? fallbackError, status };
 }
 
 export const authClient = {
