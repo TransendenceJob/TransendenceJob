@@ -1,12 +1,27 @@
+resolver 127.0.0.11 valid=5s ipv6=off;
+
+upstream frontend_upstream {
+    zone frontend_upstream 64k;
+    server frontend:${FRONTEND_INTERNAL_PORT} resolve;
+}
+
+upstream bff_upstream {
+    zone bff_upstream 64k;
+    server bff:${BFF_INTERNAL_PORT} resolve;
+}
+
+upstream game_upstream {
+    zone game_upstream 64k;
+    server game_service:${GAME_INTERNAL_PORT} resolve;
+}
+
 server {
     listen ${NGINX_INTERNAL_PORT};
     server_name _;
-
-    resolver 127.0.0.11 valid=30s;
     client_max_body_size 20m;
 
     location / {
-        proxy_pass http://frontend:${FRONTEND_INTERNAL_PORT};
+        proxy_pass http://frontend_upstream;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -15,7 +30,7 @@ server {
     }
 
     location /api/ {
-        proxy_pass http://bff:${BFF_INTERNAL_PORT}/;
+        proxy_pass http://bff_upstream/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -24,7 +39,7 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://game_service:${GAME_INTERNAL_PORT};
+        proxy_pass http://game_upstream;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
