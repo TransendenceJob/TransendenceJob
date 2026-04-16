@@ -1,23 +1,23 @@
 import type
 {
     AuthSuccessResponse,
+    AuthMeResponse,
     LoginRequest,
     RegisterRequest,
     LogoutRequest,
     LogoutResponse,
     RefreshRequest,
     RefreshResponse,
-    UserAuthView,
     VerifyResponse,
     GoogleExchangeRequest,
     ApiError
 } from "@/src/core/api/auth/auth.types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 type ApiResult<T> =
     | { ok: true; data: T; status: number }
-    | { ok: false; error: any; status: number };
+    | { ok: false; error: ApiError | unknown; status: number };
 
 async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const status = response.status;
@@ -34,13 +34,20 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         details: null
     };
 
-    const data = await response.json().catch(() => ({}));
+    const contentType = response.headers?.get?.('content-type') ?? '';
+    const shouldParseJson =
+        contentType.includes('application/json') ||
+        typeof response.json === 'function';
+
+    const data = shouldParseJson
+        ? await response.json().catch(() => null)
+        : await response.text().catch(() => null);
 
     if (response.ok) {
         return { ok: true, data, status };
     }
     // other errors (401, 404, 500) Return the server's error data if available otherwise use fallback
-    return { ok: false, error: data || fallbackError, status };
+    return { ok: false, error: data ?? fallbackError, status };
 }
 
 export const authClient = {
@@ -89,7 +96,7 @@ export const authClient = {
     /**
      * getMe: Fetches the current user profile directly from the BFF.
      */
-    async getMe(accessToken: string): Promise<ApiResult<UserAuthView>> {
+    async getMe(accessToken: string): Promise<ApiResult<AuthMeResponse>> {
         const response = await fetch(`${BASE_URL}/auth/me`, {
             method: 'GET',
             headers: {
@@ -98,7 +105,7 @@ export const authClient = {
             },
         });
 
-        return handleApiResponse<UserAuthView>(response);
+        return handleApiResponse<AuthMeResponse>(response);
     },
 
     /**

@@ -11,6 +11,52 @@ describe('authClient', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
+
+    describe('register', () => {
+        it('should return AuthSuccessResponse on successful register', async () => {
+            const mockResponse = {
+                user: { id: '2', email: 'new@test.com', status: 'ACTIVE', roles: ['USER'] },
+                tokens: { accessToken: 'access', refreshToken: 'refresh', expiresIn: 3600, tokenType: 'Bearer' },
+                session: { id: 'sess_2', expiresAt: 'tomorrow' }
+            };
+
+            fetchMock.mockResolvedValue({
+                ok: true,
+                status: 201,
+                json: async () => mockResponse,
+            } as Response);
+
+            const result = await authClient.register({
+                email: 'new@test.com',
+                password: 'StrongPassword123!'
+            });
+
+            expect(result).toMatchObject({
+                ok: true,
+                status: 201,
+                data: mockResponse
+            });
+            expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/register'), expect.any(Object));
+        });
+
+        it('should return register validation error payload on 400', async () => {
+            const mockError = { code: 'bad_request', message: 'Invalid register payload' };
+
+            fetchMock.mockResolvedValue({
+                ok: false,
+                status: 400,
+                json: async () => mockError,
+            } as Response);
+
+            const result = await authClient.register({ email: 'bad', password: '123' });
+
+            expect(result).toMatchObject({
+                ok: false,
+                status: 400,
+                error: mockError
+            });
+        });
+    });
     // login related tests
     describe('login', () => {
         it('should return AuthSuccessResponse on successful login (Happy Path)', async () => {
@@ -117,15 +163,23 @@ describe('authClient', () => {
 
     describe('getMe', () => {
         it('should return an ApiResult containing the current user identity data', async () => {
-            const mockVerifyResponse = {
-                user: { id: '123', email: 'me@test.com' },
-                claims: { exp: 999 }
+            const mockMeResponse = {
+                user: {
+                    id: '123',
+                    email: 'me@test.com',
+                    displayName: null,
+                    username: null,
+                    status: 'ACTIVE',
+                    roles: ['USER']
+                },
+                session: { id: 'sess_1', expiresAt: 'tomorrow' },
+                claims: { sub: '123', iat: 1, exp: 999, iss: 'auth-service' }
             };
 
             fetchMock.mockResolvedValue({
                 ok: true,
                 status: 200,
-                json: async () => mockVerifyResponse,
+                json: async () => mockMeResponse,
             } as Response);
 
             const result = await authClient.getMe('fake-token');
@@ -133,15 +187,8 @@ describe('authClient', () => {
             expect(result).toMatchObject({
                 ok: true,
                 status: 200,
-                data: {
-                    user: {
-                        id: '123',
-                        email: 'me@test.com'
-                    }
-                }
+                data: mockMeResponse
             });
-            expect(result).not.toHaveProperty('claims');
-            expect((result as any).data).toHaveProperty('claims');
         });
     });
 
@@ -167,6 +214,20 @@ describe('authClient', () => {
     });
     // test google auth
     describe('Google OAuth', () => {
+        it('should navigate to Google start endpoint', () => {
+            Object.defineProperty(globalThis, 'window', {
+                value: { location: { href: '' } },
+                writable: true,
+                configurable: true,
+            });
+
+            authClient.startGoogleOAuth();
+
+            expect(window.location.href).toContain('/auth/google/start');
+
+            delete (globalThis as { window?: unknown }).window;
+        });
+
         it('should exchange the authorization code for tokens', async () => {
             const mockAuthResponse = {
                 user: { id: 'google-user-123', email: 'google@test.com' },

@@ -1,7 +1,7 @@
 /** * --- Types ---
  */
-export type UserStatus = 'active' | 'disabled' | 'pending';
-export type UserRole = 'user' | 'moderator' | 'admin';
+export type UserStatus = string;
+export type UserRole = string;
 
 /** * --- Sub-Entities ---
  */
@@ -64,7 +64,7 @@ export interface GoogleExchangeRequest {
 
 export interface AuthSuccessResponse {
     user: UserAuthView & { // & is intersection type for "merging"
-        providers?: Array<{ name: string; providerUserId: string }>;
+        providers?: Array<{ provider: string; providerUserId: string }>;
     };
     tokens: TokenPair;
     session: SessionInfo;
@@ -82,6 +82,18 @@ export interface RefreshResponse {
 
 export interface VerifyResponse {
     valid: boolean;
+    user: UserAuthView;
+    session: SessionInfo;
+    claims: {
+        sub: string;
+        iat: number;
+        exp: number;
+        iss: string;
+        aud?: string | null;
+    };
+}
+
+export interface AuthMeResponse {
     user: UserAuthView;
     session: SessionInfo;
     claims: {
