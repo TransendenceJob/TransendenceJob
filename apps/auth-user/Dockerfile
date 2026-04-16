@@ -3,7 +3,10 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public
+RUN npm ci && npx prisma generate
 
 # ---------- development ----------
 FROM node:20-alpine AS development

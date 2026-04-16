@@ -42,7 +42,7 @@ services:
       - ../shared/game:/app/shared
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
-    command: ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "${FRONTEND_INTERNAL_PORT:-3000}"]
+    command: ["sh", "-lc", "npm ci && npm run dev -- -H 0.0.0.0 -p ${FRONTEND_INTERNAL_PORT:-3000}"]
     networks: [backend]
     logging:
       driver: "json-file"
@@ -77,7 +77,7 @@ services:
       - ../apps/BFF:/app
       - bff_node_modules:/app/node_modules
       - bff_dist:/app/dist
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     ports:
       - "${BFF_HOST_PORT:-3000}:${BFF_INTERNAL_PORT:-3000}"
       - "${BFF_DEBUG_HOST_PORT:-9229}:9229"
@@ -141,7 +141,7 @@ services:
     ports:
       - "${AUTH_HOST_PORT:-3001}:${AUTH_INTERNAL_PORT:-3000}"
       - "${AUTH_DEBUG_HOST_PORT:-9230}:9229"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npx prisma generate && npm run start:debug"]
     depends_on:
       postgres_auth:
         condition: service_healthy
@@ -180,7 +180,7 @@ services:
     ports:
       - "${SOCIAL_HOST_PORT:-3002}:${SOCIAL_INTERNAL_PORT:-3000}"
       - "${SOCIAL_DEBUG_HOST_PORT:-9232}:9229"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_social:
         condition: service_healthy
@@ -219,7 +219,7 @@ services:
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
       - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_stats:
         condition: service_healthy
@@ -262,7 +262,7 @@ services:
     ports:
       - "${GAME_HOST_PORT:-3003}:${GAME_INTERNAL_PORT:-3001}"
       - "${GAME_DEBUG_HOST_PORT:-9231}:${GAME_DEBUG_INTERNAL_PORT:-9231}"
-    command: ["npm", "run", "start:debug"]
+    command: ["sh", "-lc", "npm ci && npm run start:debug"]
     depends_on:
       postgres_game:
         condition: service_healthy

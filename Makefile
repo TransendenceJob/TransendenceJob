@@ -6,7 +6,7 @@ COMPOSE_PROD = docker/compose.prod.yml
 
 # ---------- Compose commands ----------
 DC_BASE = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)
-DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) -f $(COMPOSE_DEV) --profile prod --profile dev
+DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)  -f $(COMPOSE_DEV) --profile dev
 DC_PROD = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) --profile prod 
 DC_OBS  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) --profile dev --profile obs
 
