@@ -8,9 +8,13 @@ export function spawnWorms(scene: Scene, spawnAreas: Vector3[][], numPlayers: nu
         let i = 0;
         while (i < 5)
         {
-            let num = Math.floor(Scalar.RandomRange(0, 10));
+            if (spawnAreas.length <= 0) {
+                console.warn("Error: Ran out of spawn Areas for worms!");
+                return ;
+            }
+            let num = Math.floor(Scalar.RandomRange(0, spawnAreas.length));
             while (!spawnAreas[num])
-                num = Math.floor(Scalar.RandomRange(0, 10));
+                num = Math.floor(Scalar.RandomRange(0, spawnAreas.length));
             
             let spawn_num = Math.floor(Scalar.RandomRange(1, 2));
             for (let j = spawn_num; j > 0; j--)

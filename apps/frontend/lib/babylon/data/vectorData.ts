@@ -174,8 +174,8 @@ let area23 =
 	new Vector3(30.5, -24.6, 0)
 ]
 
-export const spawnAreas =
-[
+export function generateSpawnAreas(): Vector3[][] {
+	return [
 	area1,
 	area2,
 	area3,
@@ -200,7 +200,7 @@ export const spawnAreas =
 	area22,
 	area23
 ]
-
+}
 
 // GROUND VECTORS
 export const points =
