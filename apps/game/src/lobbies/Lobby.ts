@@ -117,6 +117,7 @@ export class Lobby {
   }
 
   private sendPeridoicPacket() {
+    /*
     const response = this.createBasePacket<SC_DEV_Periodic>(
       SC_Type.SC_DEV_Periodic,
       {
@@ -125,6 +126,7 @@ export class Lobby {
     );
     this.msgToClient(JSON.stringify(response));
     this.lastTimestamp = Date.now() + 5000;
+    */
   }
 
   /**
