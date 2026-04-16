@@ -34,4 +34,13 @@ export class PlayerStatsService {
     if (!updatd) throw new NotFoundException(`user with ${id} does not exit`);
     return updatd;
   }
+
+  /* get match history of a user */
+  async getMatchHistory(id: UUID) {
+    const playerStats = await this.repo.getStatsById(id);
+    if (!playerStats)
+      throw new NotFoundException(`user with ${id} does not exit`);
+
+    return await this.repo.getMatchHistory(id);
+  }
 }

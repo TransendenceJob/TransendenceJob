@@ -22,7 +22,7 @@ export class PlayerStatsController {
     const updated = this.service.update(id, updatePlayerDto);
     return updated;
   }
-  
+
   @Get()
   getAll() {
     return this.service.getAll();
@@ -31,5 +31,11 @@ export class PlayerStatsController {
   @Get(':id')
   getStatsById(@Param('id') id: UUID) {
     return this.service.getStatsById(id);
+  }
+
+  /* get match history of a user by id */
+  @Get(':id/matches')
+  getMatchHistory(@Param('id') id: UUID) {
+    return this.service.getMatchHistory(id);
   }
 }

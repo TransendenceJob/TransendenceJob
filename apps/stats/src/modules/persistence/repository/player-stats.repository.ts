@@ -29,6 +29,37 @@ export class PlayerStatsRepository {
     });
   }
 
+  /* get match history */
+  async getMatchHistory(userId: UUID) {
+    const userIdStr = userId as string;
+    const matchParticipants = await this.prisma.matchParticipant.findMany({
+      where: { userId: userIdStr },
+      select: {
+        match: {
+          select: {
+            id: true,
+            status: true,
+            duration: true,
+            createdAt: true,
+            matchParticipants: {
+              where: { userId: { not: userIdStr } },
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        match: {
+          createdAt: 'desc',
+        },
+      },
+    });
+
+    return matchParticipants.map((mp) => mp.match);
+  }
+
   /* create stats for the new user*/
   async createStats(dto: CreateStatsDto) {
     return this.prisma.playerStats.create({

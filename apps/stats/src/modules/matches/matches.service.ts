@@ -21,6 +21,14 @@ export class MatchesService {
       throw new BadRequestException('One or more participants do not exist');
     }
 
+    // Check for duplicate match with same participants
+    const duplicateMatch = await this.repo.findDuplicateMatch(userIds);
+    if (duplicateMatch) {
+      throw new BadRequestException(
+        `A match with these participants already exists (ID: ${duplicateMatch.id})`,
+      );
+    }
+
     return this.repo.createMatch(dto.participants, dto.status, dto.duration);
   }
 

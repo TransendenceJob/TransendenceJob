@@ -37,6 +37,32 @@ export class MatchStatsRepository {
       },
     });
   }
+  /* Check if a match with the same participants already exists */
+  async findDuplicateMatch(userIds: string[]) {
+    const matches = await this.prisma.match.findMany({
+      include: {
+        matchParticipants: true,
+      },
+    });
+
+    // Filter matches that have the same participant count
+    const matchingByCount = matches.filter(
+      (match) => match.matchParticipants.length === userIds.length,
+    );
+
+    // Check if any match has the exact same set of participants
+    for (const match of matchingByCount) {
+      const matchUserIds = match.matchParticipants.map((p) => p.userId).sort();
+      const inputUserIds = userIds.sort();
+
+      if (JSON.stringify(matchUserIds) === JSON.stringify(inputUserIds)) {
+        return match;
+      }
+    }
+
+    return null;
+  }
+
   /* find a user by id=> upload user first time to profile */
   async findPlayers(userIds: string[]) {
     return this.prisma.playerStats.findMany({
