@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Scene, FreeCamera, Vector3, HemisphericLight, Engine } from "@babylonjs/core";
+import { Scene, FreeCamera, Vector3, HemisphericLight, Engine, ActionManager } from "@babylonjs/core";
 // @ts-ignore
 import { Socket } from 'socket.io-client';
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
@@ -12,6 +12,7 @@ import { Ground } from "./Ground";
 import { spawnWorms } from "./Worm";
 import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
+import { GameNotifications } from "./notifications/GameNotifications";
 
 export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: msgToServerType, DEBUG: boolean) {
 	var scene = new Scene(engine);
@@ -28,11 +29,14 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
 
+	scene.actionManager = new ActionManager(scene);
+
 	const gui = createGui(scene, canvas, msgToServer);
+	const notifications = new GameNotifications(gui, canvas.height, scene)
 	const ground = new Ground(scene, points);
 
 	spawnWorms(scene, generateSpawnAreas(), numPlayers, colors);
-	const cleanupSocket = setupSocket(socket, gui, DEBUG);
+	const cleanupSocket = setupSocket(socket, gui, notifications, DEBUG);
 
 	return { scene, cleanupSocket };
 };
