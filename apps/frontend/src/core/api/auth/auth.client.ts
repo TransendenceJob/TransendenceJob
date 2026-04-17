@@ -44,13 +44,13 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const safeData =
         typeof data === 'object' && data !== null ? data : {};
 
-    // prioritise the bff message
+    // prioritize the bff message
     const message =
         safeData?.details?.error?.message ||
         safeData?.message ||
         'An unexpected error occurred.';
 
-    // For errors (401, 404, 500, etc.), we return the server's data
+    // For errors (401, 404, 500, etc.), ormalize error response into a consistent ApiError shape
     // but overwrite the generic 'message' with the specific reason
     return {
         ok: false,
