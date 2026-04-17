@@ -5,6 +5,24 @@ import {useState} from "react";
 import {authClient} from "@/src/core/api/auth/auth.client";
 import {useAuth} from "@/components/Providers";
 
+const validateForm = (
+    formData: FormData,
+    type: "Login" | "Register"
+): string | null => {
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    if (type === "Register") {
+        const confirmEmail = formData.get("confirmEmail") as string;
+        const confirmPassword = formData.get("confirmPassword") as string;
+        // pre validation browser side
+        if (email !== confirmEmail) return "Emails do not match!";
+        if (password !== confirmPassword) return "Passwords do not match!";
+    }
+
+    return null;
+};
+
 export default function AuthModal({
                                       isOpen,
                                       onClose,
@@ -25,27 +43,20 @@ export default function AuthModal({
 
     const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
+
+        if (isSubmitting) return; // prevent double submit second guard
+
         setErrorMessage(null);
 
         const formData = new FormData(e.currentTarget);
+        const error = validateForm(formData, type);
+        if (error){
+            setErrorMessage(error);
+            return;
+        }
+
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
-
-        // pre validation browser side
-        if (type === 'Register') {
-            const confirmEmail = formData.get("confirmEmail") as string;
-            const confirmPassword = formData.get("confirmPassword") as string;
-
-            if (email !== confirmEmail) {
-                setErrorMessage("Emails do not match!");
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                setErrorMessage("Passwords do not match!");
-                return;
-            }
-        }
 
         setIsSubmitting(true);
         try {
@@ -53,30 +64,24 @@ export default function AuthModal({
                 ? authClient.login({ email, password })
                 : authClient.register({ email, password }));
 
-            if (result.ok) {
-                setUser(result.data.user);
-                onClose();
-                router.push("/homepage");
-            } else {
+            if (!result.ok) {
                 setErrorMessage(result.error.message);
-                setIsSubmitting(false);
+                return;
             }
-        } catch (error) {
+
+            setUser(result.data.user);
+            onClose();
+            router.push("/homepage");
+        } catch {
             setErrorMessage("Connection failed. Please check your internet.");
+        } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleGoogleLogin = async () => {
-        try {
-            setGoogleLoading(true);
-            authClient.startGoogleOAuth();
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Google authentication failed";
-            alert(message);
-        } finally {
-            setGoogleLoading(false);
-        }
+        setGoogleLoading(true);
+        authClient.startGoogleOAuth();
     };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
