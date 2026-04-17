@@ -4,6 +4,7 @@ import { Socket } from 'socket.io-client';
 import { AdvancedDynamicTexture } from '@babylonjs/gui'
 
 import { log } from "./log";
+import { GameNotifications } from './notifications/GameNotifications';
 
 /**
  * Sets up the listeners for socket events
@@ -15,6 +16,7 @@ import { log } from "./log";
 export default function setupSocket(
 	socket: Socket, 
 	gui: AdvancedDynamicTexture, 
+	notifications: GameNotifications,
 	DEBUG: boolean) {
 	const socket_status = gui.getControlByName("socket_status") as any;
 	const receiveButton = gui.getControlByName("receive") as any;
@@ -35,6 +37,7 @@ export default function setupSocket(
 		log(DEBUG, "Connected to Backend");
 		socket_status.text = "Connection Status: Connected";
 		socket_status.color = "green";
+		if (DEBUG) notifications.add("Connected to Backend");
 	};
 	socket.on("connect", onConnect);
 	
@@ -42,6 +45,7 @@ export default function setupSocket(
 		log(DEBUG, `Message from server ${data}`);
 		const dataObj = JSON.parse(data);
 		receiveButton.textBlock.text = "Received: [" + JSON.stringify(dataObj) + "]";
+		if (DEBUG) notifications.add(`Message from server ${data}`);
 	}
 	socket.on("msgToClient", msgToClient);
 	
@@ -49,6 +53,7 @@ export default function setupSocket(
 		log(DEBUG, `Error with websocket: ${error.message}`);
 		socket_status.text = "Connection Status: Errror";
 		socket_status.color = "red";
+		if (DEBUG) notifications.add(`Error with websocket: ${error.message}`);
 	};
 	socket.on("connect_error", onError);
 	
@@ -56,6 +61,7 @@ export default function setupSocket(
 		log(DEBUG, "Connection closed");
 		socket_status.text = "Connection Status: Disconnected";
 		socket_status.color = "red";
+		if (DEBUG) notifications.add("Connection closed");
 	}
 	socket.on("disconnect", onDisconnect);
 
