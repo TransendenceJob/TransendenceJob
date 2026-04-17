@@ -8,32 +8,38 @@ import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress } from "../../shared
 import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';
 import { stateUi } from './stateMachine/stateUi';
+import { GameNotifications } from "./notifications/GameNotifications";
 
 export default function createGui(
 	scene: Scene, 
 	canvas: HTMLCanvasElement,
 	msgToServer: msgToServerType
-): AdvancedDynamicTexture {
+): {
+		textGui: AdvancedDynamicTexture, 
+		buttonGui: AdvancedDynamicTexture,
+		notifications: GameNotifications
+} {
 	let count = 0;
-	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
-		"GUI",
+	// Text hitboxes may overlap with buttons and take over control
+	const textGui = AdvancedDynamicTexture.CreateFullscreenUI(
+		"TextGUI",
+		true,
+		scene,
+	);
+	const buttonGui = AdvancedDynamicTexture.CreateFullscreenUI(
+		"ButtonGUI",
 		true,
 		scene,
 	);
 
-	const socket_status = new TextBlock("socket_status", "Connection Status: Disconnected");
-	const fontSizeValue = 24;
+	const socket_status = new TextBlock("socket_status", "Disconnected");
+	const fontSizeValue = 18;
 	socket_status.fontSize = fontSizeValue;
 	socket_status.color = "red";
 	const size = fontSizeValue;
+	socket_status.left =  (canvas.width / 2) - textGui.getContext().measureText(socket_status.text).width;
 	socket_status.top =  -1 * ((canvas.height - size) / 2);
-	gui.addControl(socket_status);
-
-	const receiveButton = Button.CreateSimpleButton("receive", "No Messages received");
-	setButtonSize(receiveButton, canvas, 0.8, 0.2);
-	setButtonPos(receiveButton, canvas, 1, 1);
-	receiveButton.color = "#FFF";
-	gui.addControl(receiveButton);
+	textGui.addControl(socket_status);
 
 	// only exists for development, and moving through states by force
 	const endGameButton = Button.CreateSimpleButton("endGame", "End Game");
@@ -43,7 +49,7 @@ export default function createGui(
 	endGameButton.onPointerUpObservable.add(() => {
 		msgToServer<CS_DEV_StartEndscreen>(CS_Type.CS_DEV_StartEndscreen, {});
 	});
-	gui.addControl(endGameButton);
+	buttonGui.addControl(endGameButton);
 
 	const button = Button.CreateSimpleButton("send", "SEND");
 	setButtonSize(button, canvas, 0.2, 0.2);
@@ -56,9 +62,10 @@ export default function createGui(
 			message: `User pressed button for the ${count} time`,
 		});
 	});
-	gui.addControl(button);
+	buttonGui.addControl(button);
 
-	stateUi(gui, canvas, msgToServer);
+	stateUi(textGui, buttonGui, canvas, msgToServer);
+	const notifications = new GameNotifications(textGui, canvas.height, scene);
 
-	return (gui)
+	return ({textGui, buttonGui, notifications})
 }

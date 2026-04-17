@@ -42,9 +42,11 @@ export default function SubPages({
     return <LoadingPage msgToServer={msgToServer}/>
   }
   else if (state === 'GAME') {
-    return <BabylonCanvas msgToServer={msgToServer}
+    return <div style={{ width: "100%", height: "100%" }}>
+    <BabylonCanvas msgToServer={msgToServer}
                           socket={socket}
                           DEBUG={DEBUG}/>
+    </div>
   }
   else if (state === 'ENDSCREEN') {
     return <EndPage msgToServer={msgToServer}/>

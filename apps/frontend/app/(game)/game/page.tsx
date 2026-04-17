@@ -98,7 +98,7 @@ export default function LobbyPage() {
 
   // JSX element for displaying page
   return (
-    <main className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
+    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
                 msgToServer={msgToServer} 
@@ -106,6 +106,6 @@ export default function LobbyPage() {
                 isConnected={isConnected}
                 DEBUG={DEBUG}
                 />
-    </main>
+    </div>
   )
 }

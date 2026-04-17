@@ -15,13 +15,15 @@ import { GameNotifications } from './notifications/GameNotifications';
  */
 export default function setupSocket(
 	socket: Socket, 
-	gui: AdvancedDynamicTexture, 
-	notifications: GameNotifications,
+	gui: {
+		textGui: AdvancedDynamicTexture, 
+		buttonGui: AdvancedDynamicTexture,
+		notifications: GameNotifications
+	}, 
 	DEBUG: boolean) {
-	const socket_status = gui.getControlByName("socket_status") as any;
-	const receiveButton = gui.getControlByName("receive") as any;
+	const socket_status = gui.textGui.getControlByName("socket_status") as any;
 
-	if (!socket_status || !receiveButton) {
+	if (!socket_status) {
 		log(DEBUG, "GUI Controls not found");
 		return;
 	}
@@ -29,39 +31,38 @@ export default function setupSocket(
 	if (socket && socket.connected)
 	{
 		log(DEBUG, "Connection established");
-		socket_status.text = "Connection Status: Connected";
+		socket_status.text = "Connected";
 		socket_status.color = "green";
 	}
 
 	const onConnect = () => {
 		log(DEBUG, "Connected to Backend");
-		socket_status.text = "Connection Status: Connected";
+		socket_status.text = "Connected";
 		socket_status.color = "green";
-		if (DEBUG) notifications.add("Connected to Backend");
+		if (DEBUG) gui.notifications.add("Connected to Backend");
 	};
 	socket.on("connect", onConnect);
 	
 	const msgToClient = (data: string) => {
 		log(DEBUG, `Message from server ${data}`);
 		const dataObj = JSON.parse(data);
-		receiveButton.textBlock.text = "Received: [" + JSON.stringify(dataObj) + "]";
-		if (DEBUG) notifications.add(`Message from server ${data}`);
+		if (DEBUG) gui.notifications.add(`Message from server ${data}`);
 	}
 	socket.on("msgToClient", msgToClient);
 	
 	const onError = (error: Error) => {
 		log(DEBUG, `Error with websocket: ${error.message}`);
-		socket_status.text = "Connection Status: Errror";
+		socket_status.text = "Errror";
 		socket_status.color = "red";
-		if (DEBUG) notifications.add(`Error with websocket: ${error.message}`);
+		if (DEBUG) gui.notifications.add(`Error with websocket: ${error.message}`);
 	};
 	socket.on("connect_error", onError);
 	
 	const onDisconnect = () => {
 		log(DEBUG, "Connection closed");
-		socket_status.text = "Connection Status: Disconnected";
+		socket_status.text = "Disconnected";
 		socket_status.color = "red";
-		if (DEBUG) notifications.add("Connection closed");
+		if (DEBUG) gui.notifications.add("Connection closed");
 	}
 	socket.on("disconnect", onDisconnect);
 

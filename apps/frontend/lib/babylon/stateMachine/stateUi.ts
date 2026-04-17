@@ -5,10 +5,11 @@ import { setStateButtons } from "./setStateButtons";
 import { setStateText } from "./setStateText";
 
 export function stateUi(
-	gui: AdvancedDynamicTexture,
+	textGui: AdvancedDynamicTexture,
+	buttonGui: AdvancedDynamicTexture,
 	canvas: HTMLCanvasElement,
 	msgToServer: msgToServerType,
 ) {
-	setStateText(gui, canvas);
-	setStateButtons(gui, canvas, msgToServer);
+	setStateText(textGui, canvas);
+	setStateButtons(buttonGui, canvas, msgToServer);
 }

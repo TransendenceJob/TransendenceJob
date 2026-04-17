@@ -31,12 +31,11 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 
 	scene.actionManager = new ActionManager(scene);
 
-	const gui = createGui(scene, canvas, msgToServer);
-	const notifications = new GameNotifications(gui, canvas.height, scene)
+	const guiHelper = createGui(scene, canvas, msgToServer);
 	const ground = new Ground(scene, points);
 
 	spawnWorms(scene, generateSpawnAreas(), numPlayers, colors);
-	const cleanupSocket = setupSocket(socket, gui, notifications, DEBUG);
+	const cleanupSocket = setupSocket(socket, guiHelper, DEBUG);
 
 	return { scene, cleanupSocket };
 };
