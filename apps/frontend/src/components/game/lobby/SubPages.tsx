@@ -38,39 +38,25 @@ export default function SubPages({
   slots,
   currentUserId
 }: Params) {
-
-  // Define which states should have the Header/Footer
-  const showFullLayout = ['LOBBY', 'ENDSCREEN'].includes(state);
-
-  // helper function to prevent immediately render
-  const renderContent = () => {
-    if (state === 'CONNECTING') {
-      return <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>
-    }
-    if (state === 'LOBBY') {
-      return <LobbyPage msgToServer={msgToServer} players={slots} currentUserId={currentUserId}/>
-    }
-    if (state === 'LOADING') {
-      return <LoadingPage msgToServer={msgToServer}/>
-    }
-    if (state === 'GAME') {
-      return <BabylonCanvas msgToServer={msgToServer} socket={socket} DEBUG={DEBUG}/>
-    }
-    if (state === 'ENDSCREEN') {
-      return <EndPage msgToServer={msgToServer}/>
-    }
-    return <ErrorPage />;
-  };
-
-  return (
-      <div className="flex flex-col min-h-screen">
-        {showFullLayout && <Header />}
-
-        <div className="flex-grow">
-          {renderContent()}
-        </div>
-
-        {showFullLayout && <Footer />}
-      </div>
-  );
+  if (state == 'CONNECTING') {
+    return <ConnectingPage  msgToServer={msgToServer}
+                            isConnected={isConnected}/>
+  }
+  else if (state === 'LOBBY') {
+    return <LobbyPage msgToServer={msgToServer}/>
+  }
+  else if (state === 'LOADING') {
+    return <LoadingPage msgToServer={msgToServer}/>
+  }
+  else if (state === 'GAME') {
+    return <div style={{ width: "100%", height: "100%" }}>
+    <BabylonCanvas msgToServer={msgToServer}
+                          socket={socket}
+                          DEBUG={DEBUG}/>
+    </div>
+  }
+  else if (state === 'ENDSCREEN') {
+    return <EndPage msgToServer={msgToServer}/>
+  }
+  else return <ErrorPage />;
 }

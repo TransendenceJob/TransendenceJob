@@ -239,17 +239,14 @@ export default function LobbyPageController() {
   // }
 
   return (
-      <main className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center">
-        <SocketStatus isConnected={isConnected} />
-        <SubPages
-            state={state}
-            msgToServer={msgToServer}
-            socket={socket}
-            isConnected={isConnected}
-            DEBUG={DEBUG}
-            slots={slots}
-            currentUserId={user?.id || ""}
-        />
-      </main>
-  );
+    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
+      <SocketStatus isConnected={isConnected}/>
+      <SubPages state={state} 
+                msgToServer={msgToServer} 
+                socket={socket}
+                isConnected={isConnected}
+                DEBUG={DEBUG}
+                />
+    </div>
+  )
 }
