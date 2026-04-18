@@ -35,11 +35,11 @@ export default function AuthModal({
     setType: (type: 'Login' | 'Register') => void;
 }) {
     const router = useRouter();
-    const {setUser} = useAuth();
+    const {setUser, isAuthenticated} = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
-    if (!isOpen) return null;
+    if (!isOpen || isAuthenticated) return null;
 
     const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
