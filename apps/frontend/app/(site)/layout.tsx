@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers"; // Session Provider
@@ -20,20 +20,18 @@ export const metadata: Metadata = {
   description: "A 42 project in collaboration of four 42 Wolfsburg students",
 };
 
-export default function RootLayout({
+export default function SiteLayout({
                                      children,
                                    }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
-      <Providers>
+        <Header />
         <main className="flex-grow">
           {children}
         </main>
-      </Providers>
+        <Footer />
       </body>
-      </html>
   );
 }
