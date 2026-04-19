@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// audit tabel for tracing what is heppening inside the audit
+model AuditLog {
+  id         String   @id @default(uuid())
+  timestamp  DateTime @default(now())
+  requestId  String?
+  actorId    String? // user id or service id
+  action     String // e.g. "update_player_stats"
+  entityType String // e.g. "Player", "Match"
+  entityId   String? // e.g. "player:123"
+  before     Json?
+  after      Json?
+  source     String // "stats_service"
+}
+
+model Achievement {
+  id        String      @id @default(uuid())
+  userId    String
+  user      PlayerStats @relation(fields: [userId], references: [userId])
+  type      String
+  achivedAt DateTime    @default(now())
+}
+
+model WeaponUsage {
+  id         String      @id @default(uuid())
+  userId     String
+  user       PlayerStats @relation(fields: [userId], references: [userId])
+  weapon     String
+  shotsFired Int         @default(0)
+  hits       Int         @default(0)
+  kills      Int         @default(0)
+  damage     Int         @default(0) // min 
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum ParticipantStatus {
+  JOINED
+  PLAYING
+  LEFT
+  FINISHED
+}
+
+model PlayerStats {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  achievements Achievement[]
+  weapons      WeaponUsage[]
+
+  xp          Int @default(0)
+  level       Int @default(1)
+  wins        Int @default(0)
+  losses      Int @default(0)
+  kills       Int @default(0)
+  deaths      Int @default(0)
+  damageDealt Int @default(0)
+  damageTaken Int @default(0)
+
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  matchHistory MatchParticipant[]
+}
+
+model Match {
+  id                String             @id @default(uuid())
+  status            MatchStatus        @default(PENDING)
+  duration          Int?
+  createdAt         DateTime           @default(now())
+  matchParticipants MatchParticipant[]
+  playerStatsId     String?
+}
+
+model MatchParticipant {
+  id       String  @id @default(uuid())
+  matchId  String
+  userId   String
+  isWinner Boolean @default(false)
+  kills    Int     @default(0)
+  deaths   Int     @default(0)
+
+  match  Match       @relation(fields: [matchId], references: [id])
+  player PlayerStats @relation(fields: [userId], references: [userId])
+
+  @@unique([matchId, userId])
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  FINISHED
+}
+
+// enum LobbyStatus {
+//   OPEN
+//   LOCKED
+//   IN_GAME
+//   CLOSED
+// }
+
+// model Lobby {
+//   id          String             @id @default(uuid())
+//   code        String             @unique
+//   hostUserId  String
+//   status      LobbyStatus        @default(OPEN)
+//   maxPlayers  Int                @default(4)
+//   createdAt   DateTime           @default(now())
+//   updatedAt   DateTime           @updatedAt
+
+//   host        PlayerStats        @relation("LobbyHost", fields: [hostUserId], references: [userId])
+//   participants LobbyParticipant[]
+//   matches     Match[]
+// }
+
+// model LobbyParticipant {
+//   id        String      @id @default(uuid())
+//   lobbyId   String
+//   userId    String
+//   isReady   Boolean     @default(false)
+//   joinedAt  DateTime    @default(now())
+//   leftAt    DateTime?
+
+//   lobby     Lobby       @relation(fields: [lobbyId], references: [id])
+//   player    PlayerStats @relation(fields: [userId], references: [userId])
+
+//   @@unique([lobbyId, userId])
+// }

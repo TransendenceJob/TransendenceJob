@@ -1,0 +1,132 @@
+
+@userId = {{$guid}}
+--------------------------------- PLYAER -----------------------------
+### send post request
+POST http://localhost:3004/internal/stats/user
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "xp": 50,
+  "level": 2,
+  "wins": 1,
+  "losses": 0,
+  "kills": 10,
+  "deaths": 2
+}
+
+
+### update the stats for player
+PUT http://localhost:3004/internal/stats/user/842e1132-2258-4b04-b2a2-dee603638c93
+Content-Type: application/json
+
+{
+  "xp": 50,
+  "level": 4,
+  "wins": 1,
+  "losses": 0,
+  "kills": 10,
+  "deaths": 2
+}
+
+
+### get all
+GET http://localhost:3004/internal/stats/user
+
+### get by id=> full player profile view/Admin dashboard	
+GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb
+
+### GET    /internal/stats/user/:userId/matches (match history)
+GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb/matches
+
+
+
+------------------------------------ HEALTH ------------------------------------------------------------
+### Health 
+GET http://localhost:3004/internal/stats/health
+
+
+------------------------------------MATCH --------------------------------------------------------------
+### create match request; prevented duplicated match
+POST http://localhost:3004/internal/stats/match
+Content-Type: application/json
+
+{
+  "status" : "PENDING",
+  "duration": 2,
+  "participants": [
+    {
+      "userId"  :"d200724c-2856-4319-aefa-b41a73a0a0eb",
+      "isWinner" : true,
+      "kills"    : 2,
+      "deaths"   :3
+    },
+    {
+      "userId"  :"3a6d6c5a-d4f6-4776-9932-477e7ef53dcb",
+      "isWinner" : true,
+      "kills"    : 2,
+      "deaths"   :3 
+    }
+      
+  ]
+
+}
+
+### Get all the match from table /matches
+GET  http://localhost:3004/internal/stats/match
+
+### Get match by Id /match/matchId
+GET    http://localhost:3004/internal/stats/match/5fc6115f-38a1-4aec-a510-11fb5da6a575
+
+### Get all particicpnats of a match/matchId/{participants : true}
+GET http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/members
+
+### Update match status and duration match/matchId
+PATCH http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS",
+  "duration": 1800
+}
+
+
+### Delete a match by id:
+DELETE http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
+
+
+### Delete all match
+DELETE  http://localhost:3004/internal/stats/match
+
+
+### Add participant to match
+POST http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+Content-Type: application/json
+
+{
+  "kills": 0,
+  "deaths": 0,
+  "isWinner": false
+}
+
+### Update participant stats in match
+PATCH http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+Content-Type: application/json
+
+{
+  "kills": 7,
+  "deaths": 2,
+  "isWinner": true
+}
+
+### Remove participant from match
+DELETE http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+
+
+
+##----------------------------achivements------------------------------
+### create achivement
+POST 
+### get achivement/userID
+### update achivement
+### delelte achivement

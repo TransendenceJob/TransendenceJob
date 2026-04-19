@@ -207,12 +207,14 @@ services:
     environment:
       NODE_ENV: development
       PORT: ${STATS_INTERNAL_PORT:-3000}
+      # PORT: asdasd
       DB_HOST: postgres_stats
       DB_PORT: 5432
       DB_USER: ${STATS_DB_USER}
       DB_PASSWORD: ${STATS_DB_PASSWORD}
       DB_NAME: ${STATS_DB_NAME}
       RABBITMQ_HOST: rabbitmq
+      DATABASE_URL: postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?schema=public
       RABBITMQ_PORT: ${RABBITMQ_INTERNAL_PORT:-5672}
     volumes:
       - ../apps/stats:/app
@@ -227,6 +229,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    volumes:
+      - ../apps/stats/src:/app/src
+      - ../apps/stats/prisma:/app/prisma
+    #   - /app/node_modules
     networks: [backend]
     logging:
       driver: "json-file"
