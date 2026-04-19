@@ -213,41 +213,25 @@ paths:
       summary: Start Google OAuth flow
       operationId: startGoogleOauthViaBff
       responses:
-        "200":
-          description: OAuth start parameters
-          content:
-            application/json:
+        "302":
+          description: Redirect to Google OAuth consent URL
+          headers:
+            Location:
               schema:
-                $ref: "#/components/schemas/OAuthStartResponse"
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+                type: string
+                format: uri
+              description: Google OAuth consent URL
       security: []
   /auth/google/callback:
     get:
       tags:
         - Auth
-      summary: Exchange Google callback data for session
+      summary: Handle Google callback and redirect to frontend callback URL
       operationId: exchangeGoogleCallbackViaBff
       parameters:
         - name: code
           in: query
-          required: true
+          required: false
           schema:
             type: string
         - name: state
@@ -255,13 +239,25 @@ paths:
           required: false
           schema:
             type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
-        "200":
-          description: OAuth exchange succeeded
-          content:
-            application/json:
+        "302":
+          description: Redirect to frontend callback URL with success or error parameters
+          headers:
+            Location:
               schema:
-                $ref: "#/components/schemas/AuthSuccessResponse"
+                type: string
+                format: uri
+              description: Frontend callback URL containing tokens (fragment) or OAuth error details
         "400":
           description: Bad Request
           content:

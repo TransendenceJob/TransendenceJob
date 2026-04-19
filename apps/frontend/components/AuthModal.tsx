@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation"; //used for placeholder
-import { useState } from "react";
+import {useState} from "react";
+import {authClient} from "@/src/core/api/auth/auth.client";
 
 export default function AuthModal({
                                       isOpen,
@@ -16,7 +17,6 @@ export default function AuthModal({
 }) {
     const router = useRouter(); // for placeholder
     const [googleLoading, setGoogleLoading] = useState(false);
-
     if (!isOpen) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +31,7 @@ export default function AuthModal({
     const handleGoogleLogin = async () => {
         try {
             setGoogleLoading(true);
-            window.location.assign("/api/auth/google/start");
+            authClient.startGoogleOAuth();
         } catch (error) {
             const message = error instanceof Error ? error.message : "Google authentication failed";
             alert(message);
