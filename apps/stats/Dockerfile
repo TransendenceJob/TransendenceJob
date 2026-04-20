@@ -17,6 +17,10 @@ ENV PORT=3000
 EXPOSE 3000
 EXPOSE 9229
 
+
+# This is pointless, because the bind mount overwrites the copied file at the start of runtime
+# I added this copy command, so the chmod actually works, but this approach to permissions is naive
+COPY ./scripts /app/scripts
 RUN chmod +x /app/scripts/prismarun.sh
 
 ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
