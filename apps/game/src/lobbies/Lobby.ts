@@ -240,6 +240,7 @@ export class Lobby {
         const response = this.createBasePacket<SC_DEV_GameState>(
           SC_Type.SC_DEV_GameState,
           {
+            gameState: this.game.get(),
             msg: `State was reached: ${this.game.get()}`,
           },
         );

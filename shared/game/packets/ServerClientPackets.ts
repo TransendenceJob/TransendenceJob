@@ -235,7 +235,8 @@ export interface SC_DEV_Periodic extends SC_Base {
  */
 export interface SC_DEV_GameState extends SC_Base {
 	type: SC_Type.SC_DEV_GameState,
-	msg: string
+	msg: string,
+	gameState: number,
 }
 
 // ENDSCREEN ==================================================================

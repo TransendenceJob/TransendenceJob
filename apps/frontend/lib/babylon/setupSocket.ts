@@ -5,6 +5,8 @@ import { AdvancedDynamicTexture } from '@babylonjs/gui'
 
 import { log } from "./log";
 import { GameNotifications } from './notifications/GameNotifications';
+import { handlePacket } from './handlePacket';
+
 
 /**
  * Sets up the listeners for socket events
@@ -46,6 +48,7 @@ export default function setupSocket(
 	const msgToClient = (data: string) => {
 		log(DEBUG, `Message from server ${data}`);
 		const dataObj = JSON.parse(data);
+		handlePacket(dataObj, gui.textGui);
 		if (DEBUG) gui.notifications.add(`Message from server ${data}`);
 	}
 	socket.on("msgToClient", msgToClient);
