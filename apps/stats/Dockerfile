@@ -17,6 +17,9 @@ ENV PORT=3000
 EXPOSE 3000
 EXPOSE 9229
 
+
+# Please keep in mind, that the Bind Mount will overwrite this file with its old permissions at the start of runtime
+COPY ./scripts /app/scripts
 RUN chmod +x /app/scripts/prismarun.sh
 
 ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
