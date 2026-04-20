@@ -18,8 +18,7 @@ EXPOSE 3000
 EXPOSE 9229
 
 
-# This is pointless, because the bind mount overwrites the copied file at the start of runtime
-# I added this copy command, so the chmod actually works, but this approach to permissions is naive
+# Please keep in mind, that the Bind Mount will overwrite this file with its old permissions at the start of runtime
 COPY ./scripts /app/scripts
 RUN chmod +x /app/scripts/prismarun.sh
 
