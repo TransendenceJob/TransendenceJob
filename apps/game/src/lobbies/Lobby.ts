@@ -71,7 +71,7 @@ export class Lobby {
    * to register repeating events like rendernig, timeouts etc.
    * @param id unique number identifier for this lobby
    */
-  constructor(id: number, emitData: (msg: string) => void) {
+  constructor(id: number, emitData: (msg: string) => void, ) {
     this.state = LobbyStateEnum.OpenLobby;
     this.msgToClient = emitData;
     this.id = id;
@@ -185,7 +185,7 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Loading
       case CS_Type.CS_DEV_StartLoading: {
-        this.game = new Game(this.engine, this.scene);
+        this.game = new Game(this.engine, this.scene, this.seqHandler, this.msgToClient, this.createBasePacket);
         const response = this.createBasePacket<SC_StartLoading>(
           SC_Type.SC_StartLoading,
           {},
@@ -197,7 +197,7 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Game
       case CS_Type.CS_DEV_StartGame: {
-        if (!this.game) this.game = new Game(this.engine, this.scene);
+        if (!this.game) this.game = new Game(this.engine, this.scene, this.seqHandler, this.msgToClient, this.createBasePacket);
         this.game.setState(1);
         const response = this.createBasePacket<SC_StartGame>(
           SC_Type.SC_StartGame,

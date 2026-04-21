@@ -1,18 +1,35 @@
 import { NullEngine, Scene } from 'babylonjs';
 
 import { GameState } from '@/shared/state/GameState';
+import { SC_Base, SC_Type, SC_DEV_GameState } from '@/shared/packets/ServerClientPackets';
+import { SeqHandler } from './SeqHandler';
 
 export class Game {
   // Member properties
   state: GameState;
   engine: NullEngine;
   scene: Scene;
+  private seqHandler: SeqHandler;
+  private msgToClient: (string) => void;
+  private createBasePacket: <T extends SC_Base & { type: SC_Type }>(type: T['type'], data: Omit<T, keyof SC_Base | 'type'>) => T
 
   // Connstructor
-  constructor(engine: NullEngine, scene: Scene) {
-    this.state = GameState.GAME_PENDING;
+  constructor(
+    engine: NullEngine, 
+    scene: Scene, 
+    seqHandler: SeqHandler,
+    msgToClient: (string) => void,
+    createBasePacket: <T extends SC_Base & { type: SC_Type }>(
+      type: T['type'],
+      data: Omit<T, keyof SC_Base | 'type'>,
+    ) => T
+  ) {
     this.engine = engine;
     this.scene = scene;
+    this.seqHandler = seqHandler;
+    this.msgToClient = msgToClient;
+    this.state = GameState.GAME_PENDING;
+    this.createBasePacket = createBasePacket;
   }
 
   // Setter
@@ -24,6 +41,17 @@ export class Game {
   // Getter
   get() {
     return this.state;
+  }
+
+  sendState() {
+    const response = this.createBasePacket<SC_DEV_GameState>(
+      SC_Type.SC_DEV_GameState,
+      {
+        gameState: this.state,
+        msg: `State was reached: ${this.state}`,
+      },
+    );
+    this.msgToClient(JSON.stringify(response));
   }
 
   /**
@@ -83,16 +111,19 @@ export class Game {
   tick_game_start() {
     console.log('Game starts');
     this.state++;
+    this.sendState();    
   }
 
   tick_round_start() {
     console.log('Round starts');
     this.state++;
+    this.sendState();
   }
 
   tick_turn_start() {
     console.log('Turn starts');
     this.state++;
+    this.sendState();
   }
 
   tick_pick_worm() {}
@@ -105,5 +136,6 @@ export class Game {
 
   tick_game_end() {
     this.state = GameState.GAME_START;
+    this.sendState();
   }
 }
