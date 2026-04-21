@@ -83,34 +83,51 @@ export class Game {
     }
   }
 
-  tick_game_start() {
+  init_game_start() {
     console.log('Game starts');
-    this.state++;
+    this.state = GameState.ROUND_START;
     this.sendState();
   }
 
-  tick_round_start() {
+  tick_game_start() {}
+
+  init_round_start() {
     console.log('Round starts');
-    this.state++;
+    this.state = GameState.TURN_START;
     this.sendState();
   }
 
-  tick_turn_start() {
+  tick_round_start() {}
+
+  init_turn_start() {
     console.log('Turn starts');
-    this.state++;
+    this.state = GameState.PICK_WORM;
     this.sendState();
   }
+
+  tick_turn_start() {}
+
+  init_pick_worm() {}
 
   tick_pick_worm() {}
 
+  init_movement() {}
+
   tick_movement() {}
+
+  init_aiming() {}
 
   tick_aiming() {}
 
+  init_turn_end() {}
+
   tick_turn_end() {}
 
-  tick_game_end() {
+  init_game_end() {
+    console.log('Game Ends');
     this.state = GameState.GAME_START;
     this.sendState();
   }
+
+  tick_game_end() {}
 }
