@@ -1,4 +1,6 @@
+// @ts-ignore
 import { TextBlock, AdvancedDynamicTexture } from "@babylonjs/gui"
+// @ts-ignore
 import { Scene, ExecuteCodeAction, ActionManager} from '@babylonjs/core'
 
 interface GameNotificationEntry {
@@ -36,7 +38,7 @@ export class GameNotifications {
     public color: string = "#63a6d0";
     public scrollSpeed: number = 1;
     public minNotifs: number = 2;
-    public maxNotifs: number = 25;
+    public maxNotifs: number = 50;
     public maxNotifLength = 120;
 
     constructor(gui: AdvancedDynamicTexture, canvas_height: number, scene: Scene) {
