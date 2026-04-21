@@ -22,6 +22,7 @@ export enum CS_Type {
 	CS_ReadyChange =			"CS_ReadyChange",
 	CS_FinishedLoading =		"CS_FinishedLoading",
 	CS_FailedLoading =			"CS_FailedLoading",
+	CS_GetGameState =			"CS_GetGameState",
 	CS_DEV_SetGameState =		"CS_DEV_SetGameState",
 }
 
@@ -112,7 +113,16 @@ export interface CS_DEV_StartGame extends CS_Base {
 }
 
 /**
- * DELETE ME IM ONLY HERE DOR DEBUGGIN
+ * Sends Request to Server about which state the game is in
+ * Sent when a Client initially loads the Babylon Canvas, when ui is being set up
+ * @param state: number representing the curent state
+ */
+export interface CS_GetGameState extends CS_Base {
+	type: CS_Type.CS_GetGameState,
+}
+
+/**
+ * DELETE ME IM ONLY HERE FOR DEBUGGIN
  */
 export interface CS_DEV_SetGameState extends CS_Base {
 	type: CS_Type.CS_DEV_SetGameState,
@@ -132,5 +142,5 @@ export type CS_GenericPacket =
 			CS_ConnectAttempt | CS_ReadyChange | CS_DEV_StartLobby |
 			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
 			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen |
-			CS_DEV_SetGameState
+			CS_GetGameState | CS_DEV_SetGameState
 			;

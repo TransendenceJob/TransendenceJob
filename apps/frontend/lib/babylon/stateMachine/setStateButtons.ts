@@ -21,7 +21,6 @@ export function setStateButtons(
         button.color = "#63a6d0";
         button.onPointerUpObservable.add(() => {
 		    msgToServer<CS_DEV_SetGameState>(CS_Type.CS_DEV_SetGameState, {state: 10 - i - 1});
-			console.log(`Pressed button ${i}`)
         })
         gui.addControl(button);
     }

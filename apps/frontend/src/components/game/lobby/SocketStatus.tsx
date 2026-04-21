@@ -10,7 +10,7 @@ export default function SocketStatus({
   isConnected
 }: Params) {
   let status: string = 'Disonnected';
-  const generalFormat: string = "fixed top-5 right-5 "
+  const generalFormat: string = "fixed top-0 right-0 "
   let statusFormat: string = "text-red-500"
 
   if (isConnected) {
@@ -19,7 +19,7 @@ export default function SocketStatus({
   }
 
   return (<div>
-            <h1 className="fixed top-5 right-28.5 text-neutral-950">Websocket:</h1>
+            <h1 className="fixed top right-27.5 text-neutral-950">Websocket:</h1>
             <h1 className={generalFormat + statusFormat}>{status}</h1>
           </div>
   );

@@ -2,8 +2,7 @@
 import { AdvancedDynamicTexture, TextBlock, Button} from "@babylonjs/gui";
 // @ts-ignore
 import { Scene } from "@babylonjs/core";
-// @ts-ignore
-import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress } from "../../shared/packets/ClientServerPackets"
+import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress, CS_GetGameState } from "../../shared/packets/ClientServerPackets"
 
 import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';
@@ -37,8 +36,8 @@ export default function createGui(
 	socket_status.fontSize = fontSizeValue;
 	socket_status.color = "red";
 	const size = fontSizeValue;
-	socket_status.left =  (canvas.width / 2) - textGui.getContext().measureText(socket_status.text).width;
-	socket_status.top =  -1 * ((canvas.height - size) / 2);
+	socket_status.left =  (canvas.width / 2) - textGui.getContext().measureText(socket_status.text).width - 25;
+	socket_status.top =  -1 * ((canvas.height) * 0.345);
 	textGui.addControl(socket_status);
 
 	// only exists for development, and moving through states by force
@@ -66,6 +65,7 @@ export default function createGui(
 
 	stateUi(textGui, buttonGui, canvas, msgToServer);
 	const notifications = new GameNotifications(textGui, canvas.height, scene);
+	msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
 
 	return ({textGui, buttonGui, notifications})
 }

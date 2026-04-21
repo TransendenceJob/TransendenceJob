@@ -71,7 +71,7 @@ export class Lobby {
    * to register repeating events like rendernig, timeouts etc.
    * @param id unique number identifier for this lobby
    */
-  constructor(id: number, emitData: (msg: string) => void, ) {
+  constructor(id: number, emitData: (msg: string) => void) {
     this.state = LobbyStateEnum.OpenLobby;
     this.msgToClient = emitData;
     this.id = id;
@@ -117,7 +117,6 @@ export class Lobby {
   }
 
   private sendPeridoicPacket() {
-    /*
     const response = this.createBasePacket<SC_DEV_Periodic>(
       SC_Type.SC_DEV_Periodic,
       {
@@ -126,7 +125,16 @@ export class Lobby {
     );
     this.msgToClient(JSON.stringify(response));
     this.lastTimestamp = Date.now() + 5000;
-    */
+  }
+
+  public sendStatePacket() {
+    const response = this.createBasePacket<SC_DEV_GameState>(
+      SC_Type.SC_DEV_GameState,
+      {
+        gameState: this.game ? this.game.get() : 0,
+      },
+    );
+    this.msgToClient(JSON.stringify(response));
   }
 
   /**
@@ -185,7 +193,9 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Loading
       case CS_Type.CS_DEV_StartLoading: {
-        this.game = new Game(this.engine, this.scene, this.seqHandler, this.msgToClient, this.createBasePacket);
+        this.game = new Game(this.engine, this.scene, () => {
+          this.sendStatePacket();
+        });
         const response = this.createBasePacket<SC_StartLoading>(
           SC_Type.SC_StartLoading,
           {},
@@ -197,7 +207,10 @@ export class Lobby {
 
       // DEV mode, should be removed late, Client commands state to be set to Game
       case CS_Type.CS_DEV_StartGame: {
-        if (!this.game) this.game = new Game(this.engine, this.scene, this.seqHandler, this.msgToClient, this.createBasePacket);
+        if (!this.game)
+          this.game = new Game(this.engine, this.scene, () => {
+            this.sendStatePacket();
+          });
         this.game.setState(1);
         const response = this.createBasePacket<SC_StartGame>(
           SC_Type.SC_StartGame,
@@ -237,14 +250,13 @@ export class Lobby {
       case CS_Type.CS_DEV_SetGameState: {
         if (!this.game) return;
         this.game.setState(data.state);
-        const response = this.createBasePacket<SC_DEV_GameState>(
-          SC_Type.SC_DEV_GameState,
-          {
-            gameState: this.game.get(),
-            msg: `State was reached: ${this.game.get()}`,
-          },
-        );
-        this.msgToClient(JSON.stringify(response));
+        this.sendStatePacket();
+        break;
+      }
+
+      // For getting game state
+      case CS_Type.CS_GetGameState: {
+        this.sendStatePacket();
         break;
       }
 
