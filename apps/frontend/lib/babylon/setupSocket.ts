@@ -6,6 +6,7 @@ import { AdvancedDynamicTexture } from '@babylonjs/gui'
 import { log } from "./log";
 import { GameNotifications } from './notifications/GameNotifications';
 import { handlePacket } from './handlePacket';
+import { StateMachine } from './state/StateMachine';
 
 
 /**
@@ -22,6 +23,7 @@ export default function setupSocket(
 		buttonGui: AdvancedDynamicTexture,
 		notifications: GameNotifications
 	}, 
+	state: StateMachine,
 	DEBUG: boolean) {
 	const socket_status = gui.textGui.getControlByName("socket_status") as any;
 
@@ -48,7 +50,7 @@ export default function setupSocket(
 	const msgToClient = (data: string) => {
 		log(DEBUG, `Message from server ${data}`);
 		const dataObj = JSON.parse(data);
-		handlePacket(dataObj, gui.textGui);
+		handlePacket(dataObj, gui.textGui, state);
 		if (DEBUG) gui.notifications.add(`Message from server ${data}`);
 	}
 	socket.on("msgToClient", msgToClient);
