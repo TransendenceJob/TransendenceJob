@@ -6,14 +6,12 @@ import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress, CS_GetGameState } f
 
 import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';
-import { stateUi } from './stateMachine/stateUi';
+import { stateUi } from './state/stateUi';
 import { GameNotifications } from "./notifications/GameNotifications";
-import { FadeAnimation } from "./FadeInAnimation";
 
 export default function createGui(
 	scene: Scene, 
 	canvas: HTMLCanvasElement,
-	animation: FadeAnimation,
 	msgToServer: msgToServerType,
 ): {
 		textGui: AdvancedDynamicTexture, 
@@ -58,7 +56,6 @@ export default function createGui(
 	button.color = "#FFF";
 	button.onPointerUpObservable.add(() => {
 		count++;
-		animation.start();
 		msgToServer<CS_DEV_ButtonPress>(CS_Type.CS_DEV_ButtonPress, {
 			timestamp: Date.now(),
 			message: `User pressed button for the ${count} time`,
