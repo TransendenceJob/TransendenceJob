@@ -17,7 +17,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 type ApiResult<T> =
     | { ok: true; data: T; status: number }
-    | { ok: false; error: ApiError | unknown; status: number };
+    | { ok: false; error: ApiError; status: number };
 
 async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const status = response.status;
@@ -26,13 +26,6 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     if (status === 204){
         return { ok: true, data: {} as T, status };
     }
-
-    // predefined message in case if the bff / server can't reply
-    const fallbackError: ApiError = {
-        code: 'UNKNOWN_ERROR',
-        message: 'An unexpected error occurred.',
-        details: null
-    };
 
     const contentType = response.headers?.get?.('content-type') ?? '';
     const shouldParseJson =
@@ -46,8 +39,28 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     if (response.ok) {
         return { ok: true, data, status };
     }
-    // other errors (401, 404, 500) Return the server's error data if available otherwise use fallback
-    return { ok: false, error: data ?? fallbackError, status };
+
+    // Ensure safe object for spreading
+    const safeData =
+        typeof data === 'object' && data !== null ? data : {};
+
+    // prioritize the bff message
+    const message =
+        safeData?.details?.error?.message ||
+        safeData?.message ||
+        'An unexpected error occurred.';
+
+    // For errors (401, 404, 500, etc.), ormalize error response into a consistent ApiError shape
+    // but overwrite the generic 'message' with the specific reason
+    return {
+        ok: false,
+        status,
+        error: {
+            code: safeData.code || 'UNKNOWN_ERROR',
+            ...safeData,
+            message
+        }
+    };
 }
 
 export const authClient = {
