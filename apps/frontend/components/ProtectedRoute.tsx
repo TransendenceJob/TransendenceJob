@@ -12,7 +12,9 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            const timer = setTimeout(() => router.push("/"), 10000);
+            const timer = setTimeout(() => {
+                router.push("/?showLogin=true");
+            }, 10000);
             return () => clearTimeout(timer);
         }
 // Check for when url changes if user is authenticated

@@ -1,4 +1,22 @@
-export default function ProjectHero() {
+"use client";
+
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import AuthModal from "@/components/AuthModal";
+
+export default function LandingPage() {
+    const searchParams = useSearchParams();
+    const showLogin = searchParams.get("showLogin");
+
+    const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+    const [authType, setAuthType] = useState<'Login' | 'Register'>('Login');
+
+    useEffect(() => {
+        if (showLogin === "true") {
+            setAuthType('Login');
+            setAuthModalOpen(true);
+        }
+    }, [showLogin]);
     return (
         <div className="flex flex-col gap-16 py-12 max-w-5xl mx-auto px-6">
 
@@ -71,7 +89,12 @@ export default function ProjectHero() {
                         trajectories, wind resistance, and gravity-defying maneuvers.</p>
                 </div>
             </section>
-
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setAuthModalOpen(false)}
+                type={authType}
+                setType={setAuthType}
+            />
         </div>
     );
 }
