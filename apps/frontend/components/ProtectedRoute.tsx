@@ -1,19 +1,32 @@
 
 "use client";
 import { useAuth } from "@/components/Providers";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { authClient} from "@/src/core/api/auth/auth.client";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             const timer = setTimeout(() => router.push("/"), 10000);
             return () => clearTimeout(timer);
         }
-    }, [isLoading, isAuthenticated, router]);
+// Check for when url changes if user is authenticated
+        const verifyOnNavigate = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (token && isAuthenticated) {
+                await authClient.getMe(token);
+            }
+        };
+
+        if (!isLoading && isAuthenticated) {
+            void verifyOnNavigate();
+        }
+    }, [isLoading, isAuthenticated, router, pathname]);
 
     if (isLoading) {
         return (

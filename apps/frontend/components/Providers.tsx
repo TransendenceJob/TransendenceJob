@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { UserAuthView} from "@/src/core/api/auth/auth.types";
 import {authClient} from "@/src/core/api/auth/auth.client";
 
@@ -18,6 +18,25 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserAuthView | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // useCallBack prevents rerun every react render
+    const logout = useCallback(async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        try {
+            if (accessToken && refreshToken) {
+                await authClient.logout({ refreshToken }, accessToken);
+            }
+        } catch (error) {
+            console.error("Server-side logout failed", error);
+        } finally {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            setUser(null);
+        }
+    }, []);
+
+    // run once on startup
     useEffect(() => {
         const bootstrapSession = async () => {
             const token = localStorage.getItem('accessToken');
@@ -44,22 +63,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         bootstrapSession();
     }, []);
 
-    const logout = async () => {
-        const accessToken = localStorage.getItem("accessToken");
-        const refreshToken = localStorage.getItem("refreshToken");
+    // auto cleanup when cookies expire
+    useEffect(() => {
+        const handleUnauthorized = () => {
+            console.warn("Session expired or unauthorized. Performing cleanup...");
+            logout();
+        };
 
-        try {
-            if (accessToken && refreshToken) {
-                await authClient.logout({ refreshToken }, accessToken);
-            }
-        } catch (error) {
-            console.error("Server-side logout failed", error);
-        } finally {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            setUser(null);
-        }
-    };
+        window.addEventListener("auth-unauthorized", handleUnauthorized);
+        return () => window.removeEventListener("auth-unauthorized", handleUnauthorized);
+    }, [logout]);
+
     const isAuthenticated = !!user;
     // Provides global auth state (user, setter, and auth status) to all child components
     return (

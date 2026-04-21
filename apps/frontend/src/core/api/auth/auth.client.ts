@@ -27,6 +27,13 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         return { ok: true, data: {} as T, status };
     }
 
+    if (response.status === 401) {
+        // Dispatch a global event that the Providers can listen for
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new Event("auth-unauthorized"));
+        }
+    }
+
     const contentType = response.headers?.get?.('content-type') ?? '';
     const shouldParseJson =
         contentType.includes('application/json') ||
