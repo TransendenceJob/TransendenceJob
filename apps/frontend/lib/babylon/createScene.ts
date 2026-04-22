@@ -14,6 +14,7 @@ import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
 import { GameNotifications } from "./notifications/GameNotifications";
 import { StateMachine } from './state/StateMachine';
+import { createPlayers, Player } from "./Player";
 
 export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: msgToServerType, DEBUG: boolean) {
 	var scene = new Scene(engine);
@@ -36,7 +37,6 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 	const guiHelper = createGui(scene, canvas, msgToServer);
 	const ground = new Ground(scene, points);
 
-	spawnWorms(scene, generateSpawnAreas(), numPlayers, colors);
 	const cleanupSocket = setupSocket(socket, guiHelper, states, DEBUG);
 	
 	return { scene, cleanupSocket };

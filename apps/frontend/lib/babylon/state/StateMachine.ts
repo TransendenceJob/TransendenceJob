@@ -1,15 +1,21 @@
 import { GameState } from '../../../shared/state/GameState';
 import { ExecuteCodeAction, IAction, Scene } from '@babylonjs/core';
 import { fadeAnimation } from '../fadeAnimation';
+import { spawnWorms } from '../worms/spawnWorms';
+import { createPlayers, Player } from '../Player';
+import { generateSpawnAreas } from '../data/vectorData';
+import { colors } from '../data/gameData';
 
 export class StateMachine {
 	public state: GameState;
 	private lastAction: Array<IAction>;
 	private scene: Scene;
+	private players: Array<Player>
 	constructor(scene: Scene) {
 		this.state = GameState.GAME_PENDING;
 		this.scene = scene;
 		this.lastAction = [];
+		this.players = [];
 		this.init_game_pending();
 	}
 
@@ -18,7 +24,9 @@ export class StateMachine {
 			this.scene.unregisterAction(this.lastAction.pop());
 		}
 		while (actions.length > 0) {
-			this.scene.registerAction(actions.pop());
+			this.scene.registerAction(actions[actions.length - 1]);
+			this.lastAction.push(actions[actions.length - 1]);
+			actions.pop();
 		}
 	}
 
@@ -72,6 +80,8 @@ export class StateMachine {
 
 	init_game_pending() {
 		console.log('Game pending');
+		this.players = createPlayers();
+		spawnWorms(this.scene, generateSpawnAreas(), this.players, colors);
 		this.registerNewActions([])
 	}
 
@@ -105,5 +115,9 @@ export class StateMachine {
 
 	init_game_end() {
 		console.log('BABYLON: State: Game Ends');
+		for (let i = 0; i < this.players.length; i++)
+			if (this.players[i])
+				this.players[i].dispose();
+		this.players = [];
 	}
 }
