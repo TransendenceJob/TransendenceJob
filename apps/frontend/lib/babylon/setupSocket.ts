@@ -18,16 +18,13 @@ import { StateMachine } from './state/StateMachine';
  */
 export default function setupSocket(
 	socket: Socket, 
-	gui: {
-		textGui: AdvancedDynamicTexture, 
-		buttonGui: AdvancedDynamicTexture,
-		notifications: GameNotifications
-	}, 
 	state: StateMachine,
 	DEBUG: boolean) {
-	const socket_status = gui.textGui.getControlByName("socket_status") as any;
+	const socket_status = state.guiHelper?.textGui.getControlByName("socket_status") as any;
+	const notifications = state.guiHelper?.notifications;
+	const textGui = state.guiHelper?.textGui;
 
-	if (!socket_status) {
+	if (!socket_status || !notifications || !textGui) {
 		log(DEBUG, "GUI Controls not found");
 		return;
 	}
@@ -43,15 +40,15 @@ export default function setupSocket(
 		log(DEBUG, "Connected to Backend");
 		socket_status.text = "Connected";
 		socket_status.color = "green";
-		if (DEBUG) gui.notifications.add("Connected to Backend");
+		if (DEBUG && notifications) notifications.add("Connected to Backend");
 	};
 	socket.on("connect", onConnect);
 	
 	const msgToClient = (data: string) => {
 		log(DEBUG, `Message from server ${data}`);
 		const dataObj = JSON.parse(data);
-		handlePacket(dataObj, gui.textGui, state);
-		if (DEBUG) gui.notifications.add(`Message from server ${data}`);
+		handlePacket(dataObj, textGui, state);
+		if (DEBUG && notifications) notifications.add(`Message from server ${data}`);
 	}
 	socket.on("msgToClient", msgToClient);
 	
@@ -59,7 +56,7 @@ export default function setupSocket(
 		log(DEBUG, `Error with websocket: ${error.message}`);
 		socket_status.text = "Errror";
 		socket_status.color = "red";
-		if (DEBUG) gui.notifications.add(`Error with websocket: ${error.message}`);
+		if (DEBUG && notifications) notifications.add(`Error with websocket: ${error.message}`);
 	};
 	socket.on("connect_error", onError);
 	
@@ -67,7 +64,7 @@ export default function setupSocket(
 		log(DEBUG, "Connection closed");
 		socket_status.text = "Disconnected";
 		socket_status.color = "red";
-		if (DEBUG) gui.notifications.add("Connection closed");
+		if (DEBUG && notifications) notifications.add("Connection closed");
 	}
 	socket.on("disconnect", onDisconnect);
 

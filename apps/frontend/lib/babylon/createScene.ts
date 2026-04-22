@@ -18,6 +18,7 @@ import { createPlayers, Player } from "./Player";
 
 export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: msgToServerType, DEBUG: boolean) {
 	var scene = new Scene(engine);
+	scene.actionManager = new ActionManager(scene);
 	var camera = createCamera(scene, canvas, 0, 0, 62);
 	var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;
@@ -31,13 +32,9 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
 	
-	scene.actionManager = new ActionManager(scene);
-	const states = new StateMachine(scene);
+	const states = new StateMachine(canvas, scene, msgToServer);
 
-	const guiHelper = createGui(scene, canvas, msgToServer);
-	const ground = new Ground(scene, points);
-
-	const cleanupSocket = setupSocket(socket, guiHelper, states, DEBUG);
+	const cleanupSocket = setupSocket(socket, states, DEBUG);
 	
 	return { scene, cleanupSocket };
 };

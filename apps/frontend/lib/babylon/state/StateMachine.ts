@@ -1,33 +1,46 @@
+import { ExecuteCodeAction, IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '../../../shared/state/GameState';
-import { ExecuteCodeAction, IAction, Scene } from '@babylonjs/core';
 import { fadeAnimation } from '../fadeAnimation';
 import { spawnWorms } from '../worms/spawnWorms';
 import { createPlayers, Player } from '../Player';
-import { generateSpawnAreas } from '../data/vectorData';
+import { points } from '../data/vectorData';
 import { colors } from '../data/gameData';
+import { guiHelperType } from '../guiHelperType';
+import createGui from '../createGui';
+import { msgToServerType } from '@/lib/packets/msgToServerType';
+import { Ground } from '../Ground';
+import { GuiHelper } from '../GuiHelper';
 
 export class StateMachine {
+	private scene: Scene;
+	private canvas: HTMLCanvasElement;
+	private msgToServer: msgToServerType;
 	public state: GameState;
 	private lastAction: Array<IAction>;
-	private scene: Scene;
 	private players: Array<Player>
-	constructor(scene: Scene) {
-		this.state = GameState.GAME_PENDING;
+	public guiHelper: GuiHelper | undefined;
+	private ground: Ground | undefined;
+	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType) {
+		this.canvas = canvas;
 		this.scene = scene;
+		this.msgToServer = msgToServer;
+		this.state = GameState.GAME_PENDING;
 		this.lastAction = [];
 		this.players = [];
+		this.guiHelper = undefined;
+		this.ground = undefined;
 		this.init_game_pending();
 	}
 
 	registerNewActions(actions: Array<ExecuteCodeAction>) {
-		while (this.lastAction.length > 0 ) {
-			this.scene.unregisterAction(this.lastAction.pop());
+		// Clear old actions
+		if (!this.scene.actionManager) {
+			this.scene.actionManager = new ActionManager(this.scene);
 		}
-		while (actions.length > 0) {
-			this.scene.registerAction(actions[actions.length - 1]);
-			this.lastAction.push(actions[actions.length - 1]);
-			actions.pop();
-		}
+		this.scene.actionManager.actions = [];
+
+		// Register new ones
+		actions.forEach(action => this.scene.actionManager.registerAction(action));
 	}
 
 	setState(newState: number) {
@@ -79,9 +92,12 @@ export class StateMachine {
 	}
 
 	init_game_pending() {
+		this.reset();
 		console.log('Game pending');
 		this.players = createPlayers();
-		spawnWorms(this.scene, generateSpawnAreas(), this.players, colors);
+		spawnWorms(this.scene, this.players, colors);
+		this.guiHelper = createGui(this.scene, this.canvas, this.msgToServer);
+		this.ground = new Ground(this.scene, points);
 		this.registerNewActions([])
 	}
 
@@ -115,9 +131,17 @@ export class StateMachine {
 
 	init_game_end() {
 		console.log('BABYLON: State: Game Ends');
+		this.reset();
+	}
+
+	reset() {
+		// Clean Players and their worms
 		for (let i = 0; i < this.players.length; i++)
 			if (this.players[i])
 				this.players[i].dispose();
 		this.players = [];
+		this.guiHelper?.dispose()
+		this.guiHelper = undefined;
+		this.ground = undefined;
 	}
 }
