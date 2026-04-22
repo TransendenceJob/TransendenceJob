@@ -12,6 +12,7 @@ interface Params {
   msgToServer: msgToServerType,
   socket: Socket,
   isConnected: boolean,
+  lobbyId: number,
   DEBUG: boolean,
 }
 
@@ -29,6 +30,7 @@ export default function SubPages({
   msgToServer,
   socket,
   isConnected,
+  lobbyId,
   DEBUG,
 }: Params) {
   if (state == 'CONNECTING') {
@@ -45,6 +47,7 @@ export default function SubPages({
     return <div style={{ width: "100%", height: "100%" }}>
     <BabylonCanvas msgToServer={msgToServer}
                           socket={socket}
+                          lobbyId={lobbyId}
                           DEBUG={DEBUG}/>
     </div>
   }

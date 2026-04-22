@@ -104,6 +104,7 @@ export default function LobbyPage() {
                 msgToServer={msgToServer} 
                 socket={socket}
                 isConnected={isConnected}
+                lobbyId={0}
                 DEBUG={DEBUG}
                 />
     </div>

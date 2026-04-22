@@ -1,14 +1,16 @@
-import { IState } from './IState'
-import { StateMachine } from './StateMachine';
-import { GameState } from '../../../shared/state/GameState';
+import { IState } from '../IState'
+import { StateMachine } from '../StateMachine';
+// @ts-ignore
+import { GameState } from '../../../../shared/state/GameState';
+// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 
-export class AimingState implements IState {
+export class PickWormState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Aiming');
+		console.log('BABYLON: State: Pick Worm');
 
 		// Setup
 
@@ -26,13 +28,13 @@ export class AimingState implements IState {
 	tick() {
 		if (this.next) {
 			console.log("Moving to next state");
-			this.machine.setState(GameState.TURN_END);
+			this.machine.setState(GameState.MOVEMENT);
 			return ;
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Aiming");
+		console.log("BABYLON: State: Exiting Pick Worm");
 		this.next = false;
 	}
 }

@@ -1,18 +1,18 @@
-import { IState } from './IState'
-import { StateMachine } from './StateMachine';
-import { GameState } from '../../../shared/state/GameState';
+import { IState } from '../IState'
+import { StateMachine } from '../StateMachine';
+// @ts-ignore
+import { GameState } from '../../../../shared/state/GameState';
+// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { fadeAnimation } from '../fadeAnimation';
 
-export class GameStartState implements IState {
+export class MovementState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Game Start');
+		console.log('BABYLON: State: Movement');
 
 		// Setup
-		fadeAnimation(this.machine.scene, true);
 
 		// Actions
 		const action: Array<IAction> = [];
@@ -28,13 +28,13 @@ export class GameStartState implements IState {
 	tick() {
 		if (this.next) {
 			console.log("Moving to next state");
-			this.machine.setState(GameState.ROUND_START);
+			this.machine.setState(GameState.AIMING);
 			return ;
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Game Start");
+		console.log("BABYLON: State: Exiting Movement");
 		this.next = false;
 	}
 }

@@ -7,6 +7,7 @@ import { log } from "./log";
 import { GameNotifications } from './notifications/GameNotifications';
 import { handlePacket } from './handlePacket';
 import { StateMachine } from './state/StateMachine';
+import { MessageQueue } from './MessageQueue';
 
 
 /**
@@ -19,7 +20,9 @@ import { StateMachine } from './state/StateMachine';
 export default function setupSocket(
 	socket: Socket, 
 	state: StateMachine,
-	DEBUG: boolean) {
+	queue: MessageQueue,
+	DEBUG: boolean
+) {
 	const socket_status = state.guiHelper?.textGui.getControlByName("socket_status") as any;
 	const notifications = state.guiHelper?.notifications;
 	const textGui = state.guiHelper?.textGui;
@@ -46,9 +49,8 @@ export default function setupSocket(
 	
 	const msgToClient = (data: string) => {
 		log(DEBUG, `Message from server ${data}`);
-		const dataObj = JSON.parse(data);
-		handlePacket(dataObj, textGui, state);
 		if (DEBUG && notifications) notifications.add(`Message from server ${data}`);
+		queue.write(data);
 	}
 	socket.on("msgToClient", msgToClient);
 	

@@ -1,13 +1,15 @@
-import { IState } from './IState'
-import { StateMachine } from './StateMachine';
-import { GameState } from '../../../shared/state/GameState';
+import { IState } from '../IState'
+import { StateMachine } from '../StateMachine';
+// @ts-ignore
+import { GameState } from '../../../../shared/state/GameState';
+// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { createPlayers, Player } from '../Player';
-import { points } from '../data/vectorData';
-import { colors } from '../data/gameData';
-import { spawnWorms } from '../worms/spawnWorms';
-import createGui from '../createGui';
-import { Ground } from '../Ground';
+import { createPlayers, Player } from '../../Player';
+import { points } from '../../data/vectorData';
+import { colors } from '../../data/gameData';
+import { spawnWorms } from '../../worms/spawnWorms';
+import createGui from '../../createGui';
+import { Ground } from '../../Ground';
 
 export class GamePendingState implements IState {
 	private next: boolean = false;
@@ -17,10 +19,7 @@ export class GamePendingState implements IState {
 		console.log("BABYLON: State: Game Pending");
 
 		// Setup
-		this.machine.players = createPlayers();
-		spawnWorms(this.machine.scene, this.machine.players, colors);
-		this.machine.guiHelper = createGui(this.machine.scene, this.machine.canvas, this.machine.msgToServer);
-		this.machine.ground = new Ground(this.machine.scene, points);
+		this.machine.setupGame()
 
 		// Actions
 		const action: Array<IAction> = [];

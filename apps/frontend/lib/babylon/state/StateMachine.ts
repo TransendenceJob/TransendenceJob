@@ -5,26 +5,28 @@ import { spawnWorms } from '../worms/spawnWorms';
 import { createPlayers, Player } from '../Player';
 import { points } from '../data/vectorData';
 import { colors } from '../data/gameData';
-import { guiHelperType } from '../guiHelperType';
 import createGui from '../createGui';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
 import { GuiHelper } from '../GuiHelper';
 import { IState } from './IState';
-import { GameStartState } from './GameStartState';
-import { RoundStartState } from './RoundStartState';
-import { TurnStartState } from './TurnStartState';
-import { PickWormState } from './PickWormState';
-import { MovementState } from './MovementState';
-import { AimingState } from './AimingState';
-import { TurnEndState } from './TurnEndState';
-import { GameEndState } from './GameEndState';
-import { GamePendingState } from './GamePendingState';
+import { GamePendingState }		from './gamestate/0GamePendingState';
+import { GameStartState }		from './gamestate/1GameStartState';
+import { RoundStartState }		from './gamestate/2RoundStartState';
+import { TurnStartState }		from './gamestate/3TurnStartState';
+import { PickWormState }		from './gamestate/4PickWormState';
+import { MovementState }		from './gamestate/5MovementState';
+import { AimingState }			from './gamestate/6AimingState';
+import { TurnEndState }			from './gamestate/7TurnEndState';
+import { GameEndState }			from './gamestate/8GameEndState';
+import { MessageQueue } from '../MessageQueue';
+import { handlePacket } from '../handlePacket';
 
 export class StateMachine {
 	public scene: Scene;
 	public canvas: HTMLCanvasElement;
 	public msgToServer: msgToServerType;
+	public queue: MessageQueue;
 	public state: GameState;
 	public currentState: IState | null = null;
 	public states: Map<GameState, IState> = new Map();
@@ -32,10 +34,12 @@ export class StateMachine {
 	public players: Array<Player>
 	public guiHelper: GuiHelper | undefined;
 	public ground: Ground | undefined;
-	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType) {
+
+	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, queue: MessageQueue) {
 		this.canvas = canvas;
 		this.scene = scene;
 		this.msgToServer = msgToServer;
+		this.queue = queue;
 		this.state = GameState.GAME_PENDING;
 		this.states.set(GameState.GAME_PENDING, new GamePendingState(this));
 		this.states.set(GameState.GAME_START, new GameStartState(this));
@@ -47,13 +51,14 @@ export class StateMachine {
 		this.states.set(GameState.TURN_END, new TurnEndState(this));
 		this.states.set(GameState.GameEndState, new GameEndState(this));
 		this.scene.onBeforeRenderObservable.add(() => {
+			this.handlePackets();
 			this.currentState?.tick?.();
 		})
 		this.lastAction = [];
 		this.players = [];
 		this.guiHelper = undefined;
 		this.ground = undefined;
-		this.init_game_pending();
+
 	}
 
 	registerNewActions(actions: Array<IAction>) {
@@ -79,9 +84,8 @@ export class StateMachine {
 		this.currentState?.enter();
 	}
 
-	init_game_pending() {
+	setupGame() {
 		this.reset();
-		console.log('Game pending');
 		this.players = createPlayers();
 		spawnWorms(this.scene, this.players, colors);
 		this.guiHelper = createGui(this.scene, this.canvas, this.msgToServer);
@@ -89,37 +93,14 @@ export class StateMachine {
 		this.registerNewActions([])
 	}
 
-	init_game_start() {
-		fadeAnimation(this.scene, true);
-		console.log('BABYLON: State: Game starts');
-	}
-
-	init_round_start() {
-		console.log('BABYLON: State: Round starts');
-	}
-	init_turn_start() {
-		console.log('BABYLON: State: Turn starts');
-	}
-
-	init_pick_worm() {
-		console.log('BABYLON: State: Picking Worm');
-	}
-
-	init_movement() {
-		console.log('BABYLON: State: Moving Worm');
-	}
-
-	init_aiming() {
-		console.log('BABYLON: State: Aiming Weapon');
-	}
-
-	init_turn_end() {
-		console.log('BABYLON: State: Turn ends');
-	}
-
-	init_game_end() {
-		console.log('BABYLON: State: Game Ends');
-		this.reset();
+	handlePackets() {
+		const packets = this.queue.read();
+		if (packets.length == 0)
+			return ;
+		console.log("Read packets from queue: ", packets);
+		packets.forEach((packet) => {
+			handlePacket(packet, this);
+		})
 	}
 
 	reset() {

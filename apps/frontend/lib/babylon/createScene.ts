@@ -15,8 +15,16 @@ import { msgToServerType } from "../packets/msgToServerType";
 import { GameNotifications } from "./notifications/GameNotifications";
 import { StateMachine } from './state/StateMachine';
 import { createPlayers, Player } from "./Player";
+import { MessageQueue } from './MessageQueue';
 
-export async function createScene(canvas: HTMLCanvasElement, engine: Engine, socket: Socket, msgToServer: msgToServerType, DEBUG: boolean) {
+export async function createScene(
+	canvas: HTMLCanvasElement, 
+	engine: Engine, 
+	socket: Socket, 
+	msgToServer: msgToServerType, 
+	lobbyId: number,
+	DEBUG: boolean, 
+) {
 	var scene = new Scene(engine);
 	scene.actionManager = new ActionManager(scene);
 	var camera = createCamera(scene, canvas, 0, 0, 62);
@@ -32,9 +40,11 @@ export async function createScene(canvas: HTMLCanvasElement, engine: Engine, soc
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
 	
-	const states = new StateMachine(canvas, scene, msgToServer);
+	const queue = new MessageQueue(lobbyId);
 
-	const cleanupSocket = setupSocket(socket, states, DEBUG);
+	const states = new StateMachine(canvas, scene, msgToServer, queue);
+
+	const cleanupSocket = setupSocket(socket, states, queue, DEBUG);
 	
 	return { scene, cleanupSocket };
 };
