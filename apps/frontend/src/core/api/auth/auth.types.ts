@@ -105,6 +105,18 @@ export interface AuthMeResponse {
     };
 }
 
+/** * --- Internal Client Types ---
+ * Used for token refresh deduplication and request retries.
+ */
+export interface PendingRequest {
+    resolve: (token: string | null) => void;
+    reject: (error: any) => void;
+}
+
+export interface InternalRequestInit extends RequestInit {
+    _retry?: boolean;
+}
+
 /** * --- Errors ---
  */
 export interface ApiError {

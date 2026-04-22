@@ -10,14 +10,34 @@ import type
     RefreshResponse,
     VerifyResponse,
     GoogleExchangeRequest,
+    PendingRequest,
+    InternalRequestInit,
     ApiError
 } from "@/src/core/api/auth/auth.types";
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 type ApiResult<T> =
     | { ok: true; data: T; status: number }
     | { ok: false; error: ApiError; status: number };
+
+let isRefreshing = false;
+
+let failedQueue: PendingRequest[] = [];
+
+//Processes all requests that failed while token was being refreshed.
+const processQueue = (error: Error | null, token: string | null = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+
+    failedQueue = [];
+};
 
 async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const status = response.status;
@@ -69,26 +89,98 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         }
     };
 }
+/**
+ * Helper for making API requests
+ * - adds JSON headers
+ * - adds auth token if available
+ * - handles responses in one place
+ * - prepares for handling 401 errors (login expired)
+ */
+async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Promise<ApiResult<T>> {
+    const token = localStorage.getItem("accessToken");
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers, // Allows the caller to override or add headers
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401 && !url.includes('/auth/refresh')) {
+
+        // Prevent the same request to retry twice
+        if (options._retry) {
+            return handleApiResponse<T>(response);
+        }
+        // Scenario A : Currently refreshing
+        if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+                failedQueue.push({
+                    resolve: (newToken) => {
+                        options._retry = true;
+                        resolve(apiFetch<T>(url, options));
+                    },
+                    reject: (err) => reject(err),
+                });
+            });
+        }
+
+        // Scenario B: First request which gets code 401
+        isRefreshing = true;
+        options._retry = true;
+
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        try {
+            if (!refreshToken) throw new Error("No refresh token available");
+
+            const refreshResult = await authClient.refresh({ refreshToken });
+
+            if (refreshResult.ok) {
+                const { accessToken, refreshToken: newRefreshToken } = refreshResult.data.tokens;
+
+                localStorage.setItem("accessToken", accessToken);
+                localStorage.setItem("refreshToken", newRefreshToken);
+
+                processQueue(null, accessToken);
+
+                return apiFetch<T>(url, options);
+            } else {
+                throw new Error("Refresh failed");
+            }
+        } catch (error) {
+            // Scenario C: Refresh fails and can't recover for some reason
+            processQueue(error as Error, null);
+
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new Event("auth-unauthorized"));
+            }
+            return handleApiResponse<T>(response);
+        } finally {
+            isRefreshing = false;
+        }
+    }
+
+    return handleApiResponse<T>(response);
+}
 
 export const authClient = {
 
     // --- Registration & Login ---
     async register(data: RegisterRequest): Promise<ApiResult<AuthSuccessResponse>> {
-        const response = await fetch(`${BASE_URL}/auth/register`, {
+        return apiFetch<AuthSuccessResponse>(`${BASE_URL}/auth/register`, {
             method: "POST",
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
-        })
-        return handleApiResponse<AuthSuccessResponse>(response);
+        });
     },
 
     async login(data: LoginRequest): Promise<ApiResult<AuthSuccessResponse>> {
-        const response = await fetch(`${BASE_URL}/auth/login`, {
+        return apiFetch<AuthSuccessResponse>(`${BASE_URL}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
-        return handleApiResponse<AuthSuccessResponse>(response);
     },
 
     // --- Session Management ---
@@ -116,16 +208,8 @@ export const authClient = {
     /**
      * getMe: Fetches the current user profile directly from the BFF.
      */
-    async getMe(accessToken: string): Promise<ApiResult<AuthMeResponse>> {
-        const response = await fetch(`${BASE_URL}/auth/me`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        return handleApiResponse<AuthMeResponse>(response);
+    async getMe(): Promise<ApiResult<AuthMeResponse>> {
+        return apiFetch<AuthMeResponse>(`${BASE_URL}/auth/me`);
     },
 
     /**
