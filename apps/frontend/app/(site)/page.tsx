@@ -2,9 +2,13 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/components/Providers";
 import AuthModal from "@/components/AuthModal";
+import BattleArena from "@/components/BattleArena";
+
 
 function LandingPageContent() {
+    const { isAuthenticated} = useAuth();
     const searchParams = useSearchParams();
     const showLogin = searchParams.get("showLogin");
 
@@ -12,14 +16,20 @@ function LandingPageContent() {
     const [authType, setAuthType] = useState<'Login' | 'Register'>('Login');
 
     useEffect(() => {
-        if (showLogin === "true") {
+        if (showLogin === "true" && !isAuthenticated) {
             setAuthType('Login');
             setAuthModalOpen(true);
         }
-    }, [showLogin]);
+    }, [showLogin, isAuthenticated]);
     return (
         <div className="flex flex-col gap-16 py-12 max-w-5xl mx-auto px-6">
 
+            {isAuthenticated && (
+                <section className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800">
+                    <h2 className="text-2xl font-bold">Welcome back, {'Soldier'}!</h2>
+                    <p className="text-zinc-600 dark:text-zinc-400">Ready for another round of tactical mayhem?</p>
+                </section>
+            )}
             <section className="text-center sm:text-left space-y-6">
                 <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
                     Tactical Mayhem, <br/>
@@ -49,7 +59,40 @@ function LandingPageContent() {
                 </div>
             </section>
 
-            {/* 2. Video Placeholder Section */}
+            {isAuthenticated ? (
+                <section className="flex flex-col flex-grow overflow-hidden bg-white dark:bg-zinc-900 rounded-3xl border border-foreground/10 shadow-sm">
+
+                    {/* Header */}
+                    <div className="p-4 border-b border-foreground/5 bg-zinc-50 dark:bg-zinc-800/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                            <h3 className="text-xl font-bold tracking-wide italic">
+                                BATTLE ARENA
+                            </h3>
+                        </div>
+
+                        <span className="text-[10px] font-mono opacity-50">
+                READY
+            </span>
+                    </div>
+                    <div className="flex-1 flex flex-col items-center justify-center p-6">
+                        <div className="text-center space-y-3 mb-6 max-w-md">
+                            <h2 className="text-2xl font-bold">
+                                Enter the Battle Arena
+                            </h2>
+                            <p className="text-sm opacity-60">
+                                Click launch to enter a real-time match and compete against other players.
+                            </p>
+                        </div>
+
+                        <div className="w-full max-w-md">
+                            <BattleArena border={false} dashed={false}/>
+                        </div>
+                    </div>
+
+                </section>
+                ) : (
+            /* 2. Video Placeholder Section */
             <section className="w-full">
                 <div
                     className="relative aspect-video w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center group hover:border-blue-500 transition-colors">
@@ -76,7 +119,7 @@ function LandingPageContent() {
           */}
                 </div>
             </section>
-
+)}
             <section className="grid sm:grid-cols-2 gap-8">
                 <div className="space-y-2">
                     <h3 className="font-bold text-lg">Real-Time Multiplayer</h3>

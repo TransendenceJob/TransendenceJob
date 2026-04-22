@@ -20,7 +20,7 @@ export default function HomePage() {
 
             {/* Main Content , big game button*/}
             <div className="flex flex-col lg:flex-row gap-6 flex-grow overflow-hidden">
-                <BattleArena />
+                <BattleArena className="bg-zinc-100 dark:bg-zinc-900" border={true} dashed={true}/>
 
                 {/* Chat Window Component*/}
                 <div
