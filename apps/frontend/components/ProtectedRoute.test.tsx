@@ -46,6 +46,24 @@ describe("ProtectedRoute Behavior", () => {
 
         expect(screen.queryByText("Secret Content")).not.toBeInTheDocument();
     });
+
+    it("redirects to login after 10 seconds when unauthorized", () => {
+        vi.useFakeTimers();
+
+        (useAuth as any).mockReturnValue({
+            isLoading: false,
+            isAuthenticated: false
+        });
+
+        render(<ProtectedRoute>Secret Content</ProtectedRoute>);
+
+        vi.advanceTimersByTime(10000);
+
+        expect(mockPush).toHaveBeenCalledWith("/?showLogin=true");
+
+        vi.useRealTimers();
+    });
+
     it("allows access when authenticated", () => {
         (useAuth as any).mockReturnValue({ isLoading: false, isAuthenticated: true });
         render(<ProtectedRoute>Secret Content</ProtectedRoute>);
@@ -61,6 +79,20 @@ describe("ProtectedRoute Behavior", () => {
 
         await waitFor(() => {
             expect(authClient.getMe).toHaveBeenCalled();
+        });
+    });
+    it("calls getMe when authenticated and token exists", async () => {
+        (useAuth as any).mockReturnValue({
+            isLoading: false,
+            isAuthenticated: true
+        });
+
+        localStorage.setItem("accessToken", "test-token");
+
+        render(<ProtectedRoute>Secret Content</ProtectedRoute>);
+
+        await waitFor(() => {
+            expect(authClient.getMe).toHaveBeenCalledWith("test-token");
         });
     });
 });
