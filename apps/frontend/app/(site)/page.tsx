@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthModal from "@/components/AuthModal";
 
-export default function LandingPage() {
+function LandingPageContent() {
     const searchParams = useSearchParams();
     const showLogin = searchParams.get("showLogin");
 
@@ -96,5 +96,13 @@ export default function LandingPage() {
                 setType={setAuthType}
             />
         </div>
+    );
+}
+
+export default function LandingPage() {
+    return (
+        <Suspense fallback={null}>
+            <LandingPageContent />
+        </Suspense>
     );
 }
