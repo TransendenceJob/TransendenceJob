@@ -10,6 +10,13 @@ vi.mock("@/src/core/api/auth/auth.client", () => ({
     },
 }));
 
+const mockPush = vi.fn();
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: mockPush,
+    }),
+}));
+
 // Helper component to call useAuth
 const TestConsumer = () => {
     const { user, isAuthenticated, isLoading } = useAuth();
@@ -67,6 +74,7 @@ describe("Providers - Auth State Transitions", () => {
         await waitFor(() => {
             expect(getByText("Out")).toBeInTheDocument();
             expect(localStorage.getItem("accessToken")).toBeNull();
+            expect(mockPush).toHaveBeenCalledWith("/");
         });
     });
 });

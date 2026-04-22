@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { UserAuthView} from "@/src/core/api/auth/auth.types";
 import {authClient} from "@/src/core/api/auth/auth.client";
+import {useRouter} from "next/navigation";
 
 interface AuthContextType {
     user: UserAuthView | null;
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export default function Providers({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserAuthView | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
 
     // useCallBack prevents rerun every react render
     const logout = useCallback(async () => {
@@ -33,8 +35,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             localStorage.removeItem("accessToken");
             localStorage.removeItem("refreshToken");
             setUser(null);
+
+            router.push("/");
         }
-    }, []);
+    }, [router]);
 
     // run once on startup
     useEffect(() => {
