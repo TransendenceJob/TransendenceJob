@@ -13,7 +13,7 @@ export function setStateButtons(
 	const scale = 0.05;
     const heightOffset = scale;
     for (let i = 1; i < 10; i++) {
-        const button = Button.CreateSimpleButton("receive", `${10 - i - 1}`);
+        const button = Button.CreateSimpleButton("receive", `${9 - i}`);
         setButtonSize(button, canvas, scale / 2, scale / 2);
         const d_x = 1 - scale * (i % 3.00001);
         const d_y = -1 + heightOffset + scale * (1 + (Math.floor((9 - i) / 3)));
