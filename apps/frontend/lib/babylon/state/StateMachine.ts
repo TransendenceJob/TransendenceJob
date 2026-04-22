@@ -10,21 +10,45 @@ import createGui from '../createGui';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
 import { GuiHelper } from '../GuiHelper';
+import { IState } from './IState';
+import { GameStartState } from './GameStartState';
+import { RoundStartState } from './RoundStartState';
+import { TurnStartState } from './TurnStartState';
+import { PickWormState } from './PickWormState';
+import { MovementState } from './MovementState';
+import { AimingState } from './AimingState';
+import { TurnEndState } from './TurnEndState';
+import { GameEndState } from './GameEndState';
+import { GamePendingState } from './GamePendingState';
 
 export class StateMachine {
-	private scene: Scene;
-	private canvas: HTMLCanvasElement;
-	private msgToServer: msgToServerType;
+	public scene: Scene;
+	public canvas: HTMLCanvasElement;
+	public msgToServer: msgToServerType;
 	public state: GameState;
+	public currentState: IState | null = null;
+	public states: Map<GameState, IState> = new Map();
 	private lastAction: Array<IAction>;
-	private players: Array<Player>
+	public players: Array<Player>
 	public guiHelper: GuiHelper | undefined;
-	private ground: Ground | undefined;
+	public ground: Ground | undefined;
 	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType) {
 		this.canvas = canvas;
 		this.scene = scene;
 		this.msgToServer = msgToServer;
 		this.state = GameState.GAME_PENDING;
+		this.states.set(GameState.GAME_PENDING, new GamePendingState(this));
+		this.states.set(GameState.GAME_START, new GameStartState(this));
+		this.states.set(GameState.ROUND_START, new RoundStartState(this));
+		this.states.set(GameState.TURN_START, new TurnStartState(this));
+		this.states.set(GameState.PICK_WORM, new PickWormState(this));
+		this.states.set(GameState.MOVEMENT, new MovementState(this));
+		this.states.set(GameState.AIMING, new AimingState(this));
+		this.states.set(GameState.TURN_END, new TurnEndState(this));
+		this.states.set(GameState.GameEndState, new GameEndState(this));
+		this.scene.onBeforeRenderObservable.add(() => {
+			this.currentState?.tick?.();
+		})
 		this.lastAction = [];
 		this.players = [];
 		this.guiHelper = undefined;
@@ -32,7 +56,7 @@ export class StateMachine {
 		this.init_game_pending();
 	}
 
-	registerNewActions(actions: Array<ExecuteCodeAction>) {
+	registerNewActions(actions: Array<IAction>) {
 		// Clear old actions
 		if (!this.scene.actionManager) {
 			this.scene.actionManager = new ActionManager(this.scene);
@@ -43,52 +67,16 @@ export class StateMachine {
 		actions.forEach(action => this.scene.actionManager.registerAction(action));
 	}
 
-	setState(newState: number) {
-		const state: GameState = newState as GameState;
+	setState(state: GameState) {
 		console.log(`Old state: ${this.state} New State: ${state}`);
 		if (this.state == state) {
 			console.log("Setting to same state, no effects triggered");
 			return ;
 		}
-		switch (state) {
-			case GameState.GAME_PENDING: {
-				this.init_game_pending();
-				break ;
-			}
-			case GameState.GAME_START: {
-				this.init_game_start();
-				break ;
-			}
-			case GameState.ROUND_START: {
-				this.init_round_start();
-				break ;
-			}
-			case GameState.TURN_START: {
-				this.init_turn_start();
-				break ;
-			}
-			case GameState.PICK_WORM: {
-				this.init_pick_worm();
-				break ;
-			}
-			case GameState.MOVEMENT: {
-				this.init_movement();
-				break ;
-			}
-			case GameState.AIMING: {
-				this.init_aiming();
-				break ;
-			}
-			case GameState.TURN_END: {
-				this.init_turn_end();
-				break ;
-			}
-			case GameState.GAME_END: {
-				this.init_game_end();
-				break ;
-			}
-		}
+		this.currentState?.exit();
 		this.state = state;
+		this.currentState = this.states.get(state) || null;
+		this.currentState?.enter();
 	}
 
 	init_game_pending() {
