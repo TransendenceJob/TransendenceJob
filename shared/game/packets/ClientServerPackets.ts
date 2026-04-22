@@ -18,7 +18,7 @@ export enum CS_Type {
 	CS_DEV_StartGame =			"CS_DEV_StartGame",
 	CS_DEV_StartEndscreen =		"CS_DEV_StartEndscreen",
 	CS_DEV_ButtonPress =		"CS_DEV_ButtonPress",
-	CS_ConnectAttempt =			"CS_ConnectionAttempt",
+	CS_ConnectAttempt =			"CS_ConnectAttempt",
 	CS_ReadyChange =			"CS_ReadyChange",
 	CS_FinishedLoading =		"CS_FinishedLoading",
 	CS_FailedLoading =			"CS_FailedLoading",

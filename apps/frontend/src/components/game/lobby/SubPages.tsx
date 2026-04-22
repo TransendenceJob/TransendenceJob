@@ -16,6 +16,7 @@ interface Params {
   slots: PlayerSlot[];
   socket: Socket,
   isConnected: boolean,
+  lobbyId: number,
   DEBUG: boolean,
   currentUserId: string
 }
@@ -34,6 +35,7 @@ export default function SubPages({
   msgToServer,
   socket,
   isConnected,
+  lobbyId,
   DEBUG,
   slots,
   currentUserId
@@ -52,6 +54,7 @@ export default function SubPages({
     return <div style={{ width: "100%", height: "100%" }}>
     <BabylonCanvas msgToServer={msgToServer}
                           socket={socket}
+                          lobbyId={lobbyId}
                           DEBUG={DEBUG}/>
     </div>
   }

@@ -245,6 +245,7 @@ export default function LobbyPageController() {
                 msgToServer={msgToServer} 
                 socket={socket}
                 isConnected={isConnected}
+                lobbyId={0}
                 DEBUG={DEBUG}
                 />
     </div>

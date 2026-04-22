@@ -12,12 +12,14 @@ import type { msgToServerType } from '@/lib/packets/msgToServerType';
 interface Params {
   msgToServer: msgToServerType,
   socket: Socket,
+  lobbyId: number,
   DEBUG: boolean,
 }
 
 export default function BabylonCanvas({
   msgToServer, 
   socket, 
+  lobbyId,
   DEBUG,
 }: Params) {
 
@@ -52,7 +54,7 @@ export default function BabylonCanvas({
     window.addEventListener("resize", resize);
     
 
-    createScene(canvas, engine, socket, msgRef.current, DEBUG).then(({scene, cleanupSocket}) => {
+    createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, cleanupSocket}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanupSocket?.();
