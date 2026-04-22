@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial } from "@babylonjs/core";
+import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 
 /**
  * Function to create the mesh of a worm

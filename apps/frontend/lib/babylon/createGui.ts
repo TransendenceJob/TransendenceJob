@@ -8,16 +8,13 @@ import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';
 import { stateUi } from './state/stateUi';
 import { GameNotifications } from "./notifications/GameNotifications";
+import { GuiHelper } from "./GuiHelper";
 
 export default function createGui(
 	scene: Scene, 
 	canvas: HTMLCanvasElement,
 	msgToServer: msgToServerType,
-): {
-		textGui: AdvancedDynamicTexture, 
-		buttonGui: AdvancedDynamicTexture,
-		notifications: GameNotifications
-} {
+): GuiHelper {
 	let count = 0;
 	// Text hitboxes may overlap with buttons and take over control
 	const textGui = AdvancedDynamicTexture.CreateFullscreenUI(
@@ -67,5 +64,5 @@ export default function createGui(
 	const notifications = new GameNotifications(textGui, canvas.height, scene);
 	msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
 
-	return ({textGui, buttonGui, notifications})
+	return (new GuiHelper({textGui, buttonGui, notifications}))
 }

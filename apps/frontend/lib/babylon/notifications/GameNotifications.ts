@@ -12,6 +12,7 @@ interface GameNotificationEntry {
  * @param canvas_height the height property of the Babylon Canvas (canvas.height)
  * @param scene Scene to use for animating texts to move
  * 
+ * @property scene reference to scene
  * @property texts Array of each notifications GUI text object and its height
  * @property gui Reference to the GUI element this is displayed on
  * @property canvas reference to the canvas of this page, needed for some values
@@ -24,10 +25,12 @@ interface GameNotificationEntry {
  * @property scrollSpeed multiplier for how fast notifications move
  * @property minNotifs amount of notifications that should be left on screen
  * @property maxNotifs amount of messages that may be handled, before adding gets ignored
+ * @property action reference to action that controls the animation and needs to be stored so it can be unregistered later
  *  
  * @function add() Used to add a new notification
  */
 export class GameNotifications {
+    private scene: Scene;
     private texts: Array<GameNotificationEntry>;
     private gui: AdvancedDynamicTexture;
     public spread: number;
@@ -40,8 +43,10 @@ export class GameNotifications {
     public minNotifs: number = 2;
     public maxNotifs: number = 50;
     public maxNotifLength = 120;
+    private action: ExecuteCodeAction;
 
     constructor(gui: AdvancedDynamicTexture, canvas_height: number, scene: Scene) {
+        this.scene = scene;
         this.texts = [];
         this.gui = gui;
         this.spread = 1.25 * this.fontSize;
@@ -50,7 +55,7 @@ export class GameNotifications {
         this.endFadePosition = -canvas_height / 2 + this.fontSize * 1;
 
         // Animation of texts fading
-        scene.actionManager.registerAction(new ExecuteCodeAction({
+        this.action = new ExecuteCodeAction({
             trigger: ActionManager.OnEveryFrameTrigger,
         },
         () => {
@@ -78,7 +83,8 @@ export class GameNotifications {
                     i--;
                 }
             }
-        }));
+        })
+        scene.actionManager.registerAction(this.action);
     }
 
     /**
@@ -89,7 +95,7 @@ export class GameNotifications {
      */
     add(text: string) {
         // Limitting input, messages may be swallowed
-        if (this.texts.length >= this.maxNotifs) {
+        if (this.texts.length >= this.maxNotifs || !this.gui) {
             return ;
         }
         // Cut off messages, maximum has to at least allow 3 characters
@@ -107,5 +113,10 @@ export class GameNotifications {
         newest.top = position;
         this.texts.push({text: newest, pos: position});
         this.gui.addControl(newest);
+    }
+
+    dispose() {
+        console.log("Notification tried to delete, scene:", this.scene);
+        this.scene.actionManager.unregisterAction(this.action);
     }
 }
