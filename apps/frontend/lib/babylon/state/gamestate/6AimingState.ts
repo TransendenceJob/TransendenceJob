@@ -10,14 +10,16 @@ export class AimingState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Aiming');
+		this.machine.guiHelper?.notifications.add(`Player ${this.machine.players[0].name} is aiming`)
 
 		// Setup
 
 		// Actions
 		const action: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -27,14 +29,10 @@ export class AimingState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.TURN_END);
-			return ;
+			this.machine.sendStatePacket(GameState.TURN_END);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Aiming");
-		this.next = false;
 	}
 }

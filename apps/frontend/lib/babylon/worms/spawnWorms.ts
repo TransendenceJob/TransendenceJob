@@ -5,10 +5,15 @@ import { Worm } from './Worm';
 import { Player } from '../Player';
 import { generateSpawnAreas } from '../data/vectorData';
 
+/**
+ * Generates a position from the avaliable areas and returns it
+ * @warning Spawning behaviour likely changed as the logic changed, undo this!
+ * @param spawnAreas 
+ * @returns 
+ */
 function generatePosition(spawnAreas: Vector3[][]): Vector3 | undefined {
     // Check if no valid positions left for spawning
     let position: Vector3 | undefined = undefined;
-    let working: true;
 
     // Choose random spawning area
     while (spawnAreas.length > 0) {
@@ -21,8 +26,8 @@ function generatePosition(spawnAreas: Vector3[][]): Vector3 | undefined {
         // Generate position in area
         let pos = Math.floor(Scalar.RandomRange(0, spawnAreas[num].length));
         position = spawnAreas[num][pos];
-        // Remove position from subarea, and subarea f rom areas if neccesary
 
+        // Remove position from subarea, and subarea f rom areas if neccesary
         spawnAreas[num].splice(pos, 1);
         if (spawnAreas[num].length <= 0)
             spawnAreas.splice(num, 1);
@@ -31,11 +36,17 @@ function generatePosition(spawnAreas: Vector3[][]): Vector3 | undefined {
     return (position);
 }
 
+/**
+ * Spawns worms in random positions for each Player
+ * @param scene Scene to spawn worms in
+ * @param players Array of players for which to generate worms
+ * @param colors Array of colors for each player (repeats colors if there arent enough)
+ * @returns boolean wether spawning succeeded or had error
+ */
 export function spawnWorms(scene: Scene, players: Array<Player>, colors: Color3[])
 {
 	const SPAWN_AMOUNT = 5;
     const spawnAreas = generateSpawnAreas();
-    console.log(`Spawn areas ${spawnAreas.length} ${spawnAreas}`);
 
 	let wormId = 0;
     // For each player
@@ -49,8 +60,7 @@ export function spawnWorms(scene: Scene, players: Array<Player>, colors: Color3[
             const point: Vector3 | undefined = generatePosition(spawnAreas);
             if (!point)
                 return (false);
-            console.log(`For player ${p}s ${i}th worm generated ${point} for color ${colors[p]}`);
-            players[p].addWorm(new Worm(scene, point, wormId, colors[p]))
+            players[p].addWorm(new Worm(scene, point, wormId, colors[p % players.length]))
             wormId++;
             i++;
         }

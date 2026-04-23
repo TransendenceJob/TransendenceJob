@@ -10,14 +10,16 @@ export class RoundStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log("BABYLON: State: Entered Round Start");
+		this.machine.guiHelper?.notifications.add("A new Round has started")
 
 		// Setup
 
 		// Actions
 		const action: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -27,14 +29,10 @@ export class RoundStartState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.TURN_START);
-			return ;
+			this.machine.sendStatePacket(GameState.TURN_START);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Round Start");
-		this.next = false;
 	}
 }

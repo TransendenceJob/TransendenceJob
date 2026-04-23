@@ -43,7 +43,7 @@ export class GameNotifications {
     public minNotifs: number = 2;
     public maxNotifs: number = 50;
     public maxNotifLength = 120;
-    private action: ExecuteCodeAction;
+    public action: ExecuteCodeAction;
 
     constructor(gui: AdvancedDynamicTexture, canvas_height: number, scene: Scene) {
         this.scene = scene;
@@ -116,7 +116,6 @@ export class GameNotifications {
     }
 
     dispose() {
-        console.log("Notification tried to delete, scene:", this.scene);
         this.scene.actionManager.unregisterAction(this.action);
     }
 }

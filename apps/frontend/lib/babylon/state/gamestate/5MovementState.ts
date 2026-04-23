@@ -10,14 +10,16 @@ export class MovementState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Movement');
+		this.machine.guiHelper?.notifications.add(`Player ${this.machine.players[0].name} is worming around`)
 
 		// Setup
 
 		// Actions
 		const action: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -27,14 +29,10 @@ export class MovementState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.AIMING);
-			return ;
+			this.machine.sendStatePacket(GameState.AIMING);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Movement");
-		this.next = false;
 	}
 }

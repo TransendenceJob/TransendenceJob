@@ -4,17 +4,9 @@ import { Scene, FreeCamera, Vector3, HemisphericLight, Engine, ActionManager } f
 import { Socket } from 'socket.io-client';
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 
-import createGui from "./createGui";
-import setupSocket from "./setupSocket";
-import { numPlayers, colors } from "./data/gameData";
-import { points, generateSpawnAreas } from "./data/vectorData";
-import { Ground } from "./Ground";
-import { spawnWorms } from "./Worm";
 import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
-import { GameNotifications } from "./notifications/GameNotifications";
 import { StateMachine } from './state/StateMachine';
-import { createPlayers, Player } from "./Player";
 import { MessageQueue } from './MessageQueue';
 
 export async function createScene(
@@ -39,12 +31,26 @@ export async function createScene(
 	} catch (error) {
 		console.warn("Babylon physics plugin failed to initialize. Physics features will be disabled.", error);
 	}
-	
-	const queue = new MessageQueue(lobbyId);
 
-	const states = new StateMachine(canvas, scene, msgToServer, queue);
-
-	const cleanupSocket = setupSocket(socket, states, queue, DEBUG);
+	let log = (data: string) => {};
+	if (DEBUG) 
+		log = (data: string) => {
+			console.log(`BABYLON: ${data}`)
+		};
 	
-	return { scene, cleanupSocket };
+	// Need to set up empty StateMachine so MessageQueue has something to reference
+	const state = new StateMachine(canvas, scene, msgToServer, log);
+
+	// Set up queue and socket before Game starts
+	const queue = new MessageQueue(lobbyId, socket, state, log);
+
+	// Then properly initialize and start the Game
+	state.init(queue)
+
+	const cleanup = () => {
+		state.dispose();
+		queue.dispose();
+	}
+
+	return { scene, cleanup };
 };

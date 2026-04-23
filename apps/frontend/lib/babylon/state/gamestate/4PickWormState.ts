@@ -10,14 +10,16 @@ export class PickWormState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Pick Worm');
+		this.machine.guiHelper?.notifications.add(`${this.machine.players[0].name} is picking a worm`)
 
 		// Setup
 
 		// Actions
 		const action: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -27,14 +29,10 @@ export class PickWormState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.MOVEMENT);
-			return ;
+			this.machine.sendStatePacket(GameState.MOVEMENT);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Pick Worm");
-		this.next = false;
 	}
 }

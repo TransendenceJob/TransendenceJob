@@ -18,7 +18,7 @@ export class Ground
 		this.name = "ground";
 		if (this.points.length > 0) {
 			this.groundMesh = MeshBuilder.ExtrudePolygon(
-                this.name,
+				this.name,
                 {
                     shape: this.points,
                     depth: this.depth,
@@ -36,5 +36,9 @@ export class Ground
 		}
 		else
 			this.groundMesh = null;
+	}
+	dispose() {
+		this.physicsAggregate?.dispose();
+		this.groundMesh?.dispose();
 	}
 }

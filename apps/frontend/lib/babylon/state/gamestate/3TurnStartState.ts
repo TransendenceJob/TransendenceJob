@@ -10,14 +10,16 @@ export class TurnStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Turn Start');
+		this.machine.guiHelper?.notifications.add("A new Turn has started")
 
 		// Setup
 
 		// Actions
 		const action: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -27,14 +29,10 @@ export class TurnStartState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.PICK_WORM);
-			return ;
+			this.machine.sendStatePacket(GameState.PICK_WORM);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Turn Start");
-		this.next = false;
 	}
 }
