@@ -27,7 +27,7 @@ export default function BabylonCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<Engine | null>(null);
   const isInitRef = useRef<boolean>(false);
-  const socketCleanupRef = useRef<() => void | undefined>(undefined)
+  const cleanupRef = useRef<() => void | undefined>(undefined)
 
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
@@ -54,14 +54,14 @@ export default function BabylonCanvas({
     window.addEventListener("resize", resize);
     
 
-    createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, cleanupSocket}) => {
+    createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
-        cleanupSocket?.();
+        cleanup?.();
         scene.dispose();
         return;
       }
-      socketCleanupRef.current = cleanupSocket;
+      cleanupRef.current = cleanup;
 
       engine.runRenderLoop(() => {
         scene.render();
@@ -71,7 +71,7 @@ export default function BabylonCanvas({
     // React uses this on termination of element for memory cleanup
     return () => {
       window.removeEventListener("resize", resize);
-      socketCleanupRef.current?.();
+      cleanupRef.current?.();
       if (engineRef.current) {
         engineRef.current.dispose();
         engineRef.current = null;

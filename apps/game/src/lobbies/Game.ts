@@ -8,12 +8,14 @@ export class Game {
   state: GameState;
   engine: NullEngine;
   scene: Scene;
+  timer: number;
   private sendState: () => void;
 
   // Connstructor
   constructor(engine: NullEngine, scene: Scene, sendStatePacket: () => void) {
     this.engine = engine;
     this.scene = scene;
+    this.timer = 0;
     this.sendState = sendStatePacket;
     this.state = GameState.GAME_PENDING;
   }
@@ -21,43 +23,43 @@ export class Game {
   // Setter
   setState(newState: number) {
     switch (newState as GameState) {
-        case GameState.GAME_PENDING: {
-          this.init_game_pending() ;
-          break;
-        }
-        case GameState.GAME_START: {
-          this.init_game_start() ;
-          break;
-        }
-        case GameState.ROUND_START: {
-          this.init_round_start();
-          break;
-        }
-        case GameState.TURN_START: {
-          this.init_turn_start();
-          break;
-        }
-        case GameState.PICK_WORM: {
-          this.init_pick_worm();
-          break;
-        }
-        case GameState.MOVEMENT: {
-          this.init_movement();
-          break;
-        }
-        case GameState.AIMING: {
-          this.init_aiming();
-          break;
-        }
-        case GameState.TURN_END: {
-          this.init_turn_end();
-          break;
-        }
-        case GameState.GAME_END: {
-          this.init_game_end();
-          break;
-        }
+      case GameState.GAME_PENDING: {
+        this.init_game_pending();
+        break;
       }
+      case GameState.GAME_START: {
+        this.init_game_start();
+        break;
+      }
+      case GameState.ROUND_START: {
+        this.init_round_start();
+        break;
+      }
+      case GameState.TURN_START: {
+        this.init_turn_start();
+        break;
+      }
+      case GameState.PICK_WORM: {
+        this.init_pick_worm();
+        break;
+      }
+      case GameState.MOVEMENT: {
+        this.init_movement();
+        break;
+      }
+      case GameState.AIMING: {
+        this.init_aiming();
+        break;
+      }
+      case GameState.TURN_END: {
+        this.init_turn_end();
+        break;
+      }
+      case GameState.GAME_END: {
+        this.init_game_end();
+        break;
+      }
+    }
     if (this.state > GameState.GAME_END) this.state = GameState.GAME_START;
   }
 
@@ -130,10 +132,13 @@ export class Game {
     console.log('Game starts');
     this.state = GameState.GAME_START;
     this.sendState();
-    this.init_round_start();
+    this.timer = Date.now();
   }
 
-  tick_game_start() {}
+  tick_game_start() {
+    if (this.timer + 3000 <= Date.now()) this.init_round_start();
+    else console.log('Waiting');
+  }
 
   init_round_start() {
     console.log('Round starts');
@@ -178,7 +183,7 @@ export class Game {
   tick_aiming() {}
 
   init_turn_end() {
-    console.log('Turn starts');
+    console.log('Turn ends');
     this.state = GameState.TURN_END;
     this.sendState();
   }

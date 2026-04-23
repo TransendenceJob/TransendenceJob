@@ -10,39 +10,16 @@ export class GameEndState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log('BABYLON: State: Game End');
+		this.machine.guiHelper?.notifications.add("Game Over");
 
 		// Setup
-		// Clean Players and their worms
-		for (let i = 0; i < this.machine.players.length; i++)
-			if (this.machine.players[i])
-				this.machine.players[i].dispose();
-		this.machine.players = [];
-		this.machine.guiHelper?.dispose()
-		this.machine.guiHelper = undefined;
-		this.machine.ground = undefined;
+		this.machine.registerNewActions([]);
 
-		// Actions
-		const action: Array<IAction> = [];
-		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
-			parameter: " "
-		}, () => {
-			this.next = true;
-		}));
-		this.machine.registerNewActions(action);
 	}
 
 	tick() {
-		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.GAME_PENDING);
-			return ;
-		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Game End");
-		this.next = false;
 	}
 }

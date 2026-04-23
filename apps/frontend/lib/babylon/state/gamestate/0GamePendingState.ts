@@ -4,27 +4,20 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '../../../../shared/state/GameState';
 // @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { createPlayers, Player } from '../../Player';
-import { points } from '../../data/vectorData';
-import { colors } from '../../data/gameData';
-import { spawnWorms } from '../../worms/spawnWorms';
-import createGui from '../../createGui';
-import { Ground } from '../../Ground';
 
 export class GamePendingState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		console.log("BABYLON: State: Game Pending");
-
 		// Setup
 		this.machine.setupGame()
+		this.machine.guiHelper?.notifications.add("Finished loading")
 
 		// Actions
 		const action: Array<IAction> = [];
 		action.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyDownTrigger,
+			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
@@ -34,14 +27,10 @@ export class GamePendingState implements IState {
 
 	tick() {
 		if (this.next) {
-			console.log("Moving to next state");
-			this.machine.setState(GameState.GAME_START);
-			return ;
+			this.machine.sendStatePacket(GameState.GAME_START);
 		}
 	}
 
 	exit() {
-		console.log("BABYLON: State: Exiting Game Pending");
-		this.next = false;
 	}
 }

@@ -3,7 +3,7 @@ import { Scene, Animation } from '@babylonjs/core';
 // @ts-ignore
 import { AdvancedDynamicTexture, Image } from '@babylonjs/gui';
 
-export function fadeAnimation(scene: Scene, fadeIn: boolean) {
+export function fadeAnimation(scene: Scene, fadeIn: boolean,) {
 	const gui = AdvancedDynamicTexture.CreateFullscreenUI(
 		"TextureGUI",
 		true,
@@ -19,11 +19,12 @@ export function fadeAnimation(scene: Scene, fadeIn: boolean) {
 		Animation.ANIMATIONLOOPMODE_CONSTANT,
 	);
 	animation.setKeys([
-		{ frame: 0,   value: fadeIn ? 1 : 0 },   // start: fully visible
-		{ frame: 120, value: fadeIn ? 0 : 1 },   // end at frame 120 (2 seconds at 60fps)
+		{ frame: 0,   value: fadeIn ? 1 : 0 },   // start: invisible
+		{ frame: 60,   value: fadeIn ? 1 : 0 },   // wait:  invisible
+		{ frame: 180, value: fadeIn ? 0 : 1 },   // end at frame 120 (2 seconds at 60fps)
 	]);
 	image.animations = [animation];
-	scene.beginAnimation(image, 0, 120, false, 1, () => {
+	scene.beginAnimation(image, 0, 180, false, 1, () => {
 		image.dispose();
 		gui.dispose();
 	});

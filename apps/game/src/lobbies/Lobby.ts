@@ -252,7 +252,6 @@ export class Lobby {
       case CS_Type.CS_DEV_SetGameState: {
         if (!this.game) return;
         this.game.setState(data.state);
-        this.sendStatePacket();
         break;
       }
 

@@ -1,11 +1,10 @@
-import { ExecuteCodeAction, IAction, Scene, ActionManager } from '@babylonjs/core';
+import { IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '../../../shared/state/GameState';
-import { fadeAnimation } from '../fadeAnimation';
+import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '../../../shared/packets/ClientServerPackets';
 import { spawnWorms } from '../worms/spawnWorms';
 import { createPlayers, Player } from '../Player';
 import { points } from '../data/vectorData';
 import { colors } from '../data/gameData';
-import createGui from '../createGui';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
 import { GuiHelper } from '../GuiHelper';
@@ -26,21 +25,22 @@ export class StateMachine {
 	public scene: Scene;
 	public canvas: HTMLCanvasElement;
 	public msgToServer: msgToServerType;
-	public queue: MessageQueue;
-	public state: GameState;
-	public currentState: IState | null = null;
+	public log: (data: string) => void;
 	public states: Map<GameState, IState> = new Map();
-	private lastAction: Array<IAction>;
-	public players: Array<Player>
+	
+	public queue: MessageQueue | undefined;
 	public guiHelper: GuiHelper | undefined;
 	public ground: Ground | undefined;
+	public state: GameState | undefined;
+	public currentState: IState | undefined;
+	public players: Array<Player>;
 
-	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, queue: MessageQueue) {
-		this.canvas = canvas;
+	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, log: (data: string) => void) {
+		// Created once, on Object creation, persist until the end of the scene
 		this.scene = scene;
+		this.canvas = canvas;
 		this.msgToServer = msgToServer;
-		this.queue = queue;
-		this.state = GameState.GAME_PENDING;
+		this.log = log;
 		this.states.set(GameState.GAME_PENDING, new GamePendingState(this));
 		this.states.set(GameState.GAME_START, new GameStartState(this));
 		this.states.set(GameState.ROUND_START, new RoundStartState(this));
@@ -49,68 +49,118 @@ export class StateMachine {
 		this.states.set(GameState.MOVEMENT, new MovementState(this));
 		this.states.set(GameState.AIMING, new AimingState(this));
 		this.states.set(GameState.TURN_END, new TurnEndState(this));
-		this.states.set(GameState.GameEndState, new GameEndState(this));
+		this.states.set(GameState.GAME_END, new GameEndState(this));
+		
+		// Set when game starts proper
+		this.state = undefined;
+		this.players = [];
+		this.currentState = undefined;
+		this.guiHelper = undefined;
+		this.ground = undefined;
+	}
+
+	// Only called ONCE! on Game Creation
+	init(queue: MessageQueue) {
+		this.queue = queue;
+		this.setState(GameState.GAME_PENDING);
 		this.scene.onBeforeRenderObservable.add(() => {
 			this.handlePackets();
 			this.currentState?.tick?.();
 		})
-		this.lastAction = [];
-		this.players = [];
-		this.guiHelper = undefined;
-		this.ground = undefined;
-
 	}
 
+	/**
+	 * Called to move the Games state to a different one
+	 * If state is same as current one, does nothing
+	 * @param state new state to set it to 
+	 */
+	setState(state: GameState) {
+		this.log(`Old state: ${this.state} New State: ${state}`);
+		if (this.state == state) {
+			this.log("Setting to same state, no effects triggered");
+			return ;
+		}
+		this.currentState?.exit();
+		this.state = state;
+		let newState: IState | undefined = this.states.get(state)
+		if (newState)
+			this.currentState = newState;
+		else
+			newState = new GamePendingState(this);
+		this.currentState?.enter();
+	}
+	
+	/**
+	 * Restart a new Game
+	 */
+	setupGame() {
+		// Clear up remnants of old game
+		this.clearGame();
+		this.log("Setting up new Game");
+
+		// Set up a fresh Game
+		this.players = createPlayers();
+		spawnWorms(this.scene, this.players, colors);
+		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
+		// Need to prompt socket to update the UI if its connected
+		this.queue?.updateSocketUi();
+		this.ground = new Ground(this.scene, points);
+		this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
+	}
+
+	/**
+	 * Resets the actions that a scene has
+	 * @param actions state-specific list of Actions to add to scene
+	 */
 	registerNewActions(actions: Array<IAction>) {
 		// Clear old actions
 		if (!this.scene.actionManager) {
 			this.scene.actionManager = new ActionManager(this.scene);
 		}
 		this.scene.actionManager.actions = [];
+		
+		// Add actions that always need to exist
+		this.scene.actionManager.registerAction(this.guiHelper?.notifications.action)
 
 		// Register new ones
+		if (!actions)
+			return ;
 		actions.forEach(action => this.scene.actionManager.registerAction(action));
 	}
 
-	setState(state: GameState) {
-		console.log(`Old state: ${this.state} New State: ${state}`);
-		if (this.state == state) {
-			console.log("Setting to same state, no effects triggered");
-			return ;
-		}
-		this.currentState?.exit();
-		this.state = state;
-		this.currentState = this.states.get(state) || null;
-		this.currentState?.enter();
-	}
-
-	setupGame() {
-		this.reset();
-		this.players = createPlayers();
-		spawnWorms(this.scene, this.players, colors);
-		this.guiHelper = createGui(this.scene, this.canvas, this.msgToServer);
-		this.ground = new Ground(this.scene, points);
-		this.registerNewActions([])
-	}
-
+	/**
+	 * Gets packets from queue and handles them in order, before tick is executed
+	 */
 	handlePackets() {
+		if (!this.queue)
+			return 
 		const packets = this.queue.read();
 		if (packets.length == 0)
 			return ;
-		console.log("Read packets from queue: ", packets);
 		packets.forEach((packet) => {
 			handlePacket(packet, this);
 		})
 	}
 
-	reset() {
+	/**
+	 * Deletes game-specific properties, keeps stuff that survives games
+	 */
+	clearGame() {
+		this.log("Clearing old Game")
 		// Clean Players and their worms
-		for (let i = 0; i < this.players.length; i++)
-			if (this.players[i])
-				this.players[i].dispose();
+		this.players.forEach(p => p.dispose());
 		this.players = [];
 		this.guiHelper?.dispose()
 		this.guiHelper = undefined;
+		this.ground?.dispose();
 		this.ground = undefined;
+	}
+
+	sendStatePacket(state: GameState) {
+		this.msgToServer<CS_DEV_SetGameState>(CS_Type.CS_DEV_SetGameState, {state: state});
+	}
+
+	dispose() {
+		this.clearGame();
 	}
 }
