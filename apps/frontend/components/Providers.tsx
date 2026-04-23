@@ -27,7 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
         try {
             if (accessToken && refreshToken) {
-                await authClient.logout({ refreshToken }, accessToken);
+                await authClient.logout({ refreshToken });
             }
         } catch (error) {
             console.error("Server-side logout failed", error);
@@ -51,7 +51,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             }
 
             try {
-                const result = await authClient.getMe(token);
+                const result = await authClient.getMe();
                 if (result.ok) {
                     setUser(result.data.user);
                 } else {

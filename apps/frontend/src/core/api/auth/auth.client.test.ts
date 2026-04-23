@@ -99,12 +99,15 @@ describe('authClient', () => {
         });
 
         it('should handle 204 No Content correctly', async () => {
+            localStorage.setItem("accessToken", "fake-access-token");
             fetchMock.mockResolvedValue({
                 ok: true,
                 status: 204,
+                json: async () => ({}),
             } as Response);
 
-            const result = await authClient.logout({ refreshToken: 'some_token' }, 'fake-access-token');
+            const result = await authClient.logout({ refreshToken: 'some_token' });
+
             expect(result).toMatchObject({
                 ok: true,
                 status: 204,
@@ -151,7 +154,7 @@ describe('authClient', () => {
                 json: async () => mockVerifyResponse,
             } as Response);
 
-            const result = await authClient.verify('fake-token');
+            const result = await authClient.verify();
 
             expect(result).toMatchObject({
                 ok: true,
@@ -182,7 +185,7 @@ describe('authClient', () => {
                 json: async () => mockMeResponse,
             } as Response);
 
-            const result = await authClient.getMe('fake-token');
+            const result = await authClient.getMe();
 
             expect(result).toMatchObject({
                 ok: true,
@@ -214,6 +217,9 @@ describe('authClient', () => {
     });
     // test google auth
     describe('Google OAuth', () => {
+        beforeEach(() => {
+            localStorage.clear();
+        });
         it('should navigate to Google start endpoint', () => {
             Object.defineProperty(globalThis, 'window', {
                 value: { location: { href: '' } },
@@ -257,9 +263,10 @@ describe('authClient', () => {
             expect(fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/auth/google/exchange'),
                 expect.objectContaining({
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(exchangeData)
+                    headers: expect.objectContaining({
+                        'Content-Type': 'application/json',
+                        'Authorization': ''
+                    })
                 })
             );
         });

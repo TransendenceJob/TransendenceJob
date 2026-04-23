@@ -184,11 +184,12 @@ export const authClient = {
     },
 
     // --- Session Management ---
-    async logout(data: LogoutRequest, accessToken: string): Promise<ApiResult<LogoutResponse>> {
+    async logout(data: LogoutRequest): Promise<ApiResult<LogoutResponse>> {
+        const token = localStorage.getItem("accessToken");
         const response = await fetch(`${BASE_URL}/auth/logout`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
         });
@@ -215,15 +216,8 @@ export const authClient = {
     /**
      * verify: Returns the full token validation data (claims, session info)
      */
-    async verify(accessToken: string): Promise<ApiResult<VerifyResponse>> {
-        const response = await fetch(`${BASE_URL}/auth/verify`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
-            },
-        });
-        return handleApiResponse<VerifyResponse>(response);
+    async verify(): Promise<ApiResult<VerifyResponse>> {
+        return apiFetch<VerifyResponse>(`${BASE_URL}/auth/verify`);
     },
 
     // --- Social Auth ---
@@ -232,12 +226,11 @@ export const authClient = {
     },
 
     async exchangeGoogleCallback(data: GoogleExchangeRequest): Promise<ApiResult<AuthSuccessResponse>> {
-        const response = await fetch(`${BASE_URL}/auth/google/exchange`, {
+        return apiFetch<AuthSuccessResponse>(`${BASE_URL}/auth/google/exchange`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
-        });
-        return handleApiResponse<AuthSuccessResponse>(response);
+            headers: { Authorization: '' }
+        })
     },
 
 }
