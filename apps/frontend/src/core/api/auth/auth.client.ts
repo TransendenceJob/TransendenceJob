@@ -97,7 +97,7 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
  * - prepares for handling 401 errors (login expired)
  */
 async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Promise<ApiResult<T>> {
-    const token = localStorage.getItem("accessToken");
+    const token = sessionStorage.getItem("auth.accessToken");
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers, // Allows the caller to override or add headers

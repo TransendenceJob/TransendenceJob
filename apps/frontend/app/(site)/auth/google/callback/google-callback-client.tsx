@@ -51,7 +51,7 @@ export default function GoogleCallbackClient() {
     sessionStorage.setItem("auth.expiresIn", expiresIn);
     sessionStorage.setItem("auth.tokenType", tokenType || "Bearer");
 
-    router.replace("/homepage");
+    window.location.href = "/homepage" // force full page refresh
   }, [oauthError, router]);
 
   return (

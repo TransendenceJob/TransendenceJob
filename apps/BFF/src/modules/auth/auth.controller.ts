@@ -67,7 +67,7 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  @Redirect()
+  @Redirect('http://localhost:8080/error', 302)
   async googleCallback(
     @Query('code') code?: string,
     @Query('state') state?: string,
