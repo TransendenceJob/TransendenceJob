@@ -68,8 +68,8 @@ export default function AuthModal({
                 setErrorMessage(result.error.message);
                 return;
             }
-            localStorage.setItem('accessToken', result.data.tokens.accessToken);
-            localStorage.setItem('refreshToken', result.data.tokens.refreshToken);
+            sessionStorage.setItem("auth.accessToken", result.data.tokens.accessToken);
+            sessionStorage.setItem("auth.refreshToken", result.data.tokens.refreshToken);
             setUser(result.data.user);
             onClose();
             router.push("/homepage");

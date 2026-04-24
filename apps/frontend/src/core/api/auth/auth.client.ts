@@ -116,7 +116,7 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
         if (isRefreshing) {
             return new Promise((resolve, reject) => {
                 failedQueue.push({
-                    resolve: (newToken) => {
+                    resolve: (_) => {
                         options._retry = true;
                         resolve(apiFetch<T>(url, options));
                     },
@@ -129,7 +129,7 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
         isRefreshing = true;
         options._retry = true;
 
-        const refreshToken = localStorage.getItem("refreshToken");
+        const refreshToken = sessionStorage.getItem("auth.refreshToken");
 
         try {
             if (!refreshToken) throw new Error("No refresh token available");
@@ -139,8 +139,8 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
             if (refreshResult.ok) {
                 const { accessToken, refreshToken: newRefreshToken } = refreshResult.data.tokens;
 
-                localStorage.setItem("accessToken", accessToken);
-                localStorage.setItem("refreshToken", newRefreshToken);
+                sessionStorage.setItem("auth.accessToken", accessToken);
+                sessionStorage.setItem("auth.refreshToken", newRefreshToken);
 
                 processQueue(null, accessToken);
 
@@ -152,8 +152,8 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
             // Scenario C: Refresh fails and can't recover for some reason
             processQueue(error as Error, null);
 
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
+            sessionStorage.removeItem("auth.accessToken");
+            sessionStorage.removeItem("auth.refreshToken");
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new Event("auth-unauthorized"));
             }
@@ -185,7 +185,7 @@ export const authClient = {
 
     // --- Session Management ---
     async logout(data: LogoutRequest): Promise<ApiResult<LogoutResponse>> {
-        const token = localStorage.getItem("accessToken");
+        const token = sessionStorage.getItem("auth.accessToken");
         const response = await fetch(`${BASE_URL}/auth/logout`, {
             method: 'POST',
             headers: {

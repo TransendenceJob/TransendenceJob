@@ -19,7 +19,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
         }
 // Check for when url changes if user is authenticated
         const verifyOnNavigate = async () => {
-            const token = localStorage.getItem('accessToken');
+            const token = sessionStorage.getItem('auth.accessToken');
             if (token && isAuthenticated) {
                 await authClient.getMe();
             }
