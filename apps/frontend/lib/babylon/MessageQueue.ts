@@ -19,11 +19,13 @@ export class MessageQueue {
 	private lastSeq: number | undefined;
 	public dispose: () => void;
 	public updateSocketUi: () => void;
-	constructor(lobbyId: number, socket: Socket, state: StateMachine, DEBUG: boolean) {
+	public log: (data: string) => void;
+	constructor(lobbyId: number, socket: Socket, state: StateMachine, DEBUG: boolean, log: (data: string) => void) {
 		this.queue = new Array();
 		this.buffer = new Array();
 		this.lobbyId = lobbyId;
 		this.lastSeq = undefined;
+		this.log = log;
 
 		const setSocketConnected = (connected: boolean) => {
 			state.guiHelper?.socketStatus?.set(connected);

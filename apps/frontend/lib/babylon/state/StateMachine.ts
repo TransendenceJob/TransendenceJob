@@ -20,6 +20,7 @@ import { TurnEndState }			from './gamestate/7TurnEndState';
 import { GameEndState }			from './gamestate/8GameEndState';
 import { MessageQueue } from '../MessageQueue';
 import { handlePacket } from '../handlePacket';
+import { Turn } from './Turn';
 
 export class StateMachine {
 	public scene: Scene;
@@ -34,9 +35,11 @@ export class StateMachine {
 	public state: GameState | undefined;
 	public currentState: IState | undefined;
 	public players: Array<Player>;
+	public turn: Turn | undefined;
+	private initialized: boolean = false;
 
 	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, log: (data: string) => void) {
-		// Created once, on Object creation, persist until the end of the scene
+		// Created once, on Object creation, persist until the end of the canvas
 		this.scene = scene;
 		this.canvas = canvas;
 		this.msgToServer = msgToServer;
@@ -50,17 +53,20 @@ export class StateMachine {
 		this.states.set(GameState.AIMING, new AimingState(this));
 		this.states.set(GameState.TURN_END, new TurnEndState(this));
 		this.states.set(GameState.GAME_END, new GameEndState(this));
-		
 		// Set when game starts proper
 		this.state = undefined;
 		this.players = [];
 		this.currentState = undefined;
 		this.guiHelper = undefined;
 		this.ground = undefined;
+		this.turn = undefined;
 	}
 
-	// Only called ONCE! on Game Creation
+	// Called only once per canvas, when sockets have been set up
 	init(queue: MessageQueue) {
+		if (this.initialized)
+			return;
+		this.initialized = true;
 		this.queue = queue;
 		this.setState(GameState.GAME_PENDING);
 		this.scene.onBeforeRenderObservable.add(() => {
@@ -87,7 +93,9 @@ export class StateMachine {
 			this.currentState = newState;
 		else
 			newState = new GamePendingState(this);
-		this.currentState?.enter();
+		const actions = this.currentState?.enter();
+		if (actions)
+			this.registerNewActions(actions);
 	}
 	
 	/**
@@ -96,11 +104,13 @@ export class StateMachine {
 	setupGame() {
 		// Clear up remnants of old game
 		this.clearGame();
-		this.log("Setting up new Game");
-
+		
 		// Set up a fresh Game
+		this.log("Setting up new Game");
 		this.players = createPlayers();
-		spawnWorms(this.scene, this.players, colors);
+		this.turn = new Turn(this.players[0]);
+		if (!spawnWorms(this.scene, this.players, colors))
+			console.warn("Babylon: Error during Worm spawning");
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
@@ -150,6 +160,8 @@ export class StateMachine {
 		// Clean Players and their worms
 		this.players.forEach(p => p.dispose());
 		this.players = [];
+		this.turn?.dispose()
+		this.turn = undefined;
 		this.guiHelper?.dispose()
 		this.guiHelper = undefined;
 		this.ground?.dispose();

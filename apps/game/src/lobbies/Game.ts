@@ -137,7 +137,6 @@ export class Game {
 
   tick_game_start() {
     if (this.timer + 3000 <= Date.now()) this.init_round_start();
-    else console.log('Waiting');
   }
 
   init_round_start() {

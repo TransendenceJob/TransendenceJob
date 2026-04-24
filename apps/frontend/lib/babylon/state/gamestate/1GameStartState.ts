@@ -1,4 +1,4 @@
-import { IState } from '../IState'
+import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
 // @ts-ignore
 import { GameState } from '../../../../shared/state/GameState';
@@ -9,18 +9,25 @@ import { fadeAnimation } from '../../fadeAnimation';
 export class GameStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
-	enter() {
-		this.machine.guiHelper?.notifications.add("A new game has begun")
+	enter() : Array<IAction> {
+		this.reset()
 
 		// Setup
+		this.machine.guiHelper?.notifications.add("A new game has begun")
 		fadeAnimation(this.machine.scene, true);
 
-		this.machine.registerNewActions([]);
+		// Actions
+
+		return([]);
 	}
 
 	tick() {
 	}
 
 	exit() {
+		this.reset()
+	}
+
+	reset(): void {
 	}
 }

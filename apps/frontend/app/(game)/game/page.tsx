@@ -28,7 +28,7 @@ export default function LobbyPage() {
   useEffect(() => {
 
     const msgToClient = (data: string) => {
-      if (DEBUG) console.log("NEXT: Client received packet: ", data);
+      //if (DEBUG) console.log("NEXT: Client received packet: ", data);
       const dataObj: SC_GenericPacket = JSON.parse(data);
 
       // If trying to connect with an invalid ID, dont handle packet
@@ -52,7 +52,7 @@ export default function LobbyPage() {
       else if (dataObj.type == SC_Type.SC_DEV_StartConnecting)
         setState("CONNECTING");
       else {
-        if (DEBUG) console.log("NEXT: Received unhandled package type: ");
+        //if (DEBUG) console.log("NEXT: Received unhandled package type: ");
       }
 
     }
