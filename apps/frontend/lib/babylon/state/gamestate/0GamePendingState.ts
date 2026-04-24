@@ -1,4 +1,4 @@
-import { IState } from '../IState'
+import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
 // @ts-ignore
 import { GameState } from '../../../../shared/state/GameState';
@@ -9,20 +9,23 @@ export class GamePendingState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
-	enter() {
+	enter() : Array<IAction> {
+		this.reset()
+
 		// Setup
 		this.machine.setupGame()
 		this.machine.guiHelper?.notifications.add("Finished loading")
 
 		// Actions
-		const action: Array<IAction> = [];
-		action.push(new ExecuteCodeAction({
+		const actions: Array<IAction> = [];
+		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
-		this.machine.registerNewActions(action);
+
+		return (actions);
 	}
 
 	tick() {
@@ -32,5 +35,10 @@ export class GamePendingState implements IState {
 	}
 
 	exit() {
+		this.reset()
+	}
+
+	reset(): void {
+		this.next = false;
 	}
 }

@@ -8,14 +8,14 @@ import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial, Ac
  * @param color Color for material of worm
  */
 function createWorm(scene: Scene, position: Vector3, color: Color3) {
-	const sphere = MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
-	sphere.position = position;
+	const player = MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
+	player.position = position;
 
 	var material = new StandardMaterial("material", scene);
 	material.emissiveColor = color;
 
-	sphere.material = material;
-    return (sphere);
+	player.material = material;
+    return (player);
 }
 
 /**

@@ -168,44 +168,44 @@ export default function LobbyPageController() {
     };
 
     const msgToClient = (data: string) => {
-      const packet: SC_GenericPacket = JSON.parse(data);
+      //if (DEBUG) console.log("NEXT: Client received packet: ", data);
+      const dataObj: SC_GenericPacket = JSON.parse(data);
 
-      if (!packet || !('type' in packet)) {
-        if (DEBUG) console.error("Frontend received malformed packet:", packet);
-        return;
+      // If trying to connect with an invalid ID, dont handle packet
+      if (lobbyId != dataObj.lobbyId)
+        return ;
+
+      // Need this because our discriminated union may not always have type field
+      if (!(dataObj && 'type' in dataObj)) {
+        console.log("ERROR, frontend received packet with missing type")
+        return ;
       }
 
-      if (DEBUG) if (DEBUG) console.log("NEXT: Client received packet: ", packet);
-
-      if (DEBUG) console.log(`[Packet Arrival] Type: ${packet.type} | Current UI State: ${state}`);
-      if (lobbyId !== packet.lobbyId) return;
-
-
-      // Handle State Transitions
-      switch (packet.type) {
-        case SC_Type.SC_StartLobby:       setState("LOBBY"); break;
-        case SC_Type.SC_StartLoading:     setState("LOADING"); break;
-        case SC_Type.SC_StartGame:        setState("GAME"); break;
-        case SC_Type.SC_GameFinished:     setState("ENDSCREEN"); break;
-        case SC_Type.SC_DEV_StartConnecting: setState("CONNECTING"); break;
+      if (dataObj.type == SC_Type.SC_StartLobby)
+        setState("LOBBY");
+      else if (dataObj.type == SC_Type.SC_StartLoading)
+        setState("LOADING");
+      else if (dataObj.type == SC_Type.SC_StartGame)
+        setState("GAME");
+      else if (dataObj.type == SC_Type.SC_GameFinished)
+        setState("ENDSCREEN");
+      else if (dataObj.type == SC_Type.SC_DEV_StartConnecting)
+        setState("CONNECTING");
+      else {
+        //if (DEBUG) console.log("NEXT: Received unhandled package type: ");
       }
 
-      // Determine if this packet carries Lobby Data
-      const isLobbyDataPacket = [
-        SC_Type.SC_LobbyData, // contains the full list of players
-        SC_Type.SC_ReadyChange,
-        SC_Type.SC_ClientJoin,
-        SC_Type.SC_ClientDisconnect
-      ].includes(packet.type);
+    }
 
-      // We process if we are ALREADY in the lobby,
-      // Or if we just received a packet that tells us we are NOW in the lobby
-      if (state === "LOBBY" || packet.type === SC_Type.SC_StartLobby || isLobbyDataPacket) {
-        handleLobbyUpdates(packet);
-      } else {
-        if (DEBUG) console.warn(`[Guard Blocked] Ignored ${packet.type} in state ${state}`);
-      }
-    };
+    // Create fixed setter functions for binding to evens
+    const onConnect = () => {setIsConnected(true)};
+    const onDisconnect = () => {setIsConnected(false)};
+
+    // Check for socket already being connected
+    if (socket.connected) {
+      onConnect();
+    }
+
     // Bind functions to events
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -239,6 +239,7 @@ export default function LobbyPageController() {
   // }
 
   return (
+    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
     <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
