@@ -99,7 +99,7 @@ describe('authClient', () => {
         });
 
         it('should handle 204 No Content correctly', async () => {
-            localStorage.setItem("accessToken", "fake-access-token");
+            sessionStorage.setItem("auth.accessToken", "fake-access-token");
             fetchMock.mockResolvedValue({
                 ok: true,
                 status: 204,
@@ -218,7 +218,7 @@ describe('authClient', () => {
     // test google auth
     describe('Google OAuth', () => {
         beforeEach(() => {
-            localStorage.clear();
+            sessionStorage.clear();
         });
         it('should navigate to Google start endpoint', () => {
             Object.defineProperty(globalThis, 'window', {
