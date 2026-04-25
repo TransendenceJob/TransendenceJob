@@ -23,7 +23,6 @@ type ApiResult<T> =
     | { ok: false; error: ApiError; status: number };
 
 let isRefreshing = false;
-
 let failedQueue: PendingRequest[] = [];
 
 //Processes all requests that failed while token was being refreshed.
@@ -39,12 +38,25 @@ const processQueue = (error: Error | null, token: string | null = null) => {
     failedQueue = [];
 };
 
+async function handleRefreshFailure<T>(originalResponse: Response) {
+    processQueue(new Error("Refresh failed"), null);
+    sessionStorage.removeItem("auth.accessToken");
+    sessionStorage.removeItem("auth.refreshToken");
+
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event("auth-unauthorized"));
+    }
+
+    isRefreshing = false;
+    return handleApiResponse<T>(originalResponse);
+}
+
 async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
     const status = response.status;
 
     // If status is 204 (No Content), return empty object cast as T, relevant for logout, delete, update...
-    if (status === 204){
-        return { ok: true, data: {} as T, status };
+    if (status === 204) {
+        return {ok: true, data: {} as T, status};
     }
 
     if (response.status === 401) {
@@ -64,7 +76,7 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         : await response.text().catch(() => null);
 
     if (response.ok) {
-        return { ok: true, data, status };
+        return {ok: true, data, status};
     }
 
     // Ensure safe object for spreading
@@ -89,6 +101,8 @@ async function handleApiResponse<T>(response: Response): Promise<ApiResult<T>> {
         }
     };
 }
+
+
 /**
  * Helper for making API requests
  * - adds JSON headers
@@ -101,10 +115,10 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers, // Allows the caller to override or add headers
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(token ? {Authorization: `Bearer ${token}`} : {}),
     };
 
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, {...options, headers});
 
     if (response.status === 401 && !url.includes('/auth/refresh')) {
 
@@ -114,13 +128,15 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
         }
         // Scenario A : Currently refreshing
         if (isRefreshing) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 failedQueue.push({
-                    resolve: (_) => {
+                    resolve: async (_) => {
                         options._retry = true;
-                        resolve(apiFetch<T>(url, options));
+                        resolve(await apiFetch<T>(url, options));
                     },
-                    reject: (err) => reject(err),
+                    reject: (err) => {
+                        resolve(handleApiResponse<T>(response));
+                    },
                 });
             });
         }
@@ -130,39 +146,28 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
         options._retry = true;
 
         const refreshToken = sessionStorage.getItem("auth.refreshToken");
-
-        try {
-            if (!refreshToken) throw new Error("No refresh token available");
-
-            const refreshResult = await authClient.refresh({ refreshToken });
-
-            if (refreshResult.ok) {
-                const { accessToken, refreshToken: newRefreshToken } = refreshResult.data.tokens;
-
-                sessionStorage.setItem("auth.accessToken", accessToken);
-                sessionStorage.setItem("auth.refreshToken", newRefreshToken);
-
-                processQueue(null, accessToken);
-
-                return apiFetch<T>(url, options);
-            } else {
-                throw new Error("Refresh failed");
-            }
-        } catch (error) {
-            // Scenario C: Refresh fails and can't recover for some reason
-            processQueue(error as Error, null);
-
-            sessionStorage.removeItem("auth.accessToken");
-            sessionStorage.removeItem("auth.refreshToken");
-            if (typeof window !== 'undefined') {
-                window.dispatchEvent(new Event("auth-unauthorized"));
-            }
-            return handleApiResponse<T>(response);
-        } finally {
-            isRefreshing = false;
+        // Scenario C: No credentials available to attempt recovery
+        if (!refreshToken) {
+            return handleRefreshFailure(response);
         }
-    }
 
+        // Scenario D : Recovery attempt failed
+        const refreshResult = await authClient.refresh({refreshToken});
+
+        if (!refreshResult.ok) {
+            return handleRefreshFailure(response);
+        }
+
+        // Success Path
+        const {accessToken, refreshToken: newRefreshToken} = refreshResult.data.tokens;
+        sessionStorage.setItem("auth.accessToken", accessToken);
+        sessionStorage.setItem("auth.refreshToken", newRefreshToken);
+
+        processQueue(null, accessToken);
+        isRefreshing = false;
+        return apiFetch<T>(url, options);
+    }
+    // This return handles all non-401 cases
     return handleApiResponse<T>(response);
 }
 
@@ -190,7 +195,8 @@ export const authClient = {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json' },
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(data),
         });
         return handleApiResponse<LogoutResponse>(response);
@@ -199,7 +205,7 @@ export const authClient = {
     async refresh(data: RefreshRequest): Promise<ApiResult<RefreshResponse>> {
         const response = await fetch(`${BASE_URL}/auth/refresh`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data),
         });
         return handleApiResponse<RefreshResponse>(response);
@@ -229,8 +235,7 @@ export const authClient = {
         return apiFetch<AuthSuccessResponse>(`${BASE_URL}/auth/google/exchange`, {
             method: 'POST',
             body: JSON.stringify(data),
-            headers: { Authorization: '' }
+            headers: {Authorization: ''}
         })
     },
-
 }

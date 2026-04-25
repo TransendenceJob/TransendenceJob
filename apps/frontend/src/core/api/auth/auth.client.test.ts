@@ -1,26 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authClient } from './auth.client';
+import {describe, it, expect, vi, beforeEach} from 'vitest';
 import {GoogleExchangeRequest} from "@/src/core/api/auth/auth.types";
 
-// mock all fetch commands
-global.fetch = vi.fn();
-const fetchMock = vi.mocked(global.fetch);
+let authClient: any;
 
 // authClient and its related function are the test targets
 describe('authClient', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        // Option B: Reset module state to clear 'isRefreshing' and 'failedQueue'
+        vi.resetModules();
+
+        // Re-import the client fresh for every test
+        const module = await import('./auth.client');
+        authClient = module.authClient;
+
         vi.clearAllMocks();
+        global.fetch = vi.fn();
+        sessionStorage.clear();
     });
+
+    const fetchMock = () => vi.mocked(global.fetch);
 
     describe('register', () => {
         it('should return AuthSuccessResponse on successful register', async () => {
             const mockResponse = {
-                user: { id: '2', email: 'new@test.com', status: 'ACTIVE', roles: ['USER'] },
-                tokens: { accessToken: 'access', refreshToken: 'refresh', expiresIn: 3600, tokenType: 'Bearer' },
-                session: { id: 'sess_2', expiresAt: 'tomorrow' }
+                user: {id: '2', email: 'new@test.com', status: 'ACTIVE', roles: ['USER']},
+                tokens: {accessToken: 'access', refreshToken: 'refresh', expiresIn: 3600, tokenType: 'Bearer'},
+                session: {id: 'sess_2', expiresAt: 'tomorrow'}
             };
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 201,
                 json: async () => mockResponse,
@@ -40,15 +48,15 @@ describe('authClient', () => {
         });
 
         it('should return register validation error payload on 400', async () => {
-            const mockError = { code: 'bad_request', message: 'Invalid register payload' };
+            const mockError = {code: 'bad_request', message: 'Invalid register payload'};
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: false,
                 status: 400,
                 json: async () => mockError,
             } as Response);
 
-            const result = await authClient.register({ email: 'bad', password: '123' });
+            const result = await authClient.register({email: 'bad', password: '123'});
 
             expect(result).toMatchObject({
                 ok: false,
@@ -61,18 +69,23 @@ describe('authClient', () => {
     describe('login', () => {
         it('should return AuthSuccessResponse on successful login (Happy Path)', async () => {
             const mockResponse = {
-                user: { id: '1', email: 'test@test.com', status: 'active', roles: ['user'] },
-                tokens: { accessToken: 'accestokenstring', refreshToken: 'refreshtokenstring', expiresIn: 3600, tokenType: 'Bearer' },
-                session: { id: 'sess_1', expiresAt: 'tomorrow' }
+                user: {id: '1', email: 'test@test.com', status: 'active', roles: ['user']},
+                tokens: {
+                    accessToken: 'accestokenstring',
+                    refreshToken: 'refreshtokenstring',
+                    expiresIn: 3600,
+                    tokenType: 'Bearer'
+                },
+                session: {id: 'sess_1', expiresAt: 'tomorrow'}
             };
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 200,
                 json: async () => mockResponse,
             } as Response);
 
-            const result = await authClient.login({ email: 'test@test.com', password: 'password123' });
+            const result = await authClient.login({email: 'test@test.com', password: 'password123'});
 
             expect(result).toMatchObject({
                 ok: true,
@@ -82,15 +95,15 @@ describe('authClient', () => {
         });
 
         it('should throw an ApiError when the server returns 401 (Error Path)', async () => {
-            const mockError = { code: 'UNAUTHORIZED', message: 'Invalid credentials' };
+            const mockError = {code: 'UNAUTHORIZED', message: 'Invalid credentials'};
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: false,
                 status: 401,
                 json: async () => mockError,
             } as Response);
 
-            const result = await authClient.login({ email: 'wrong@test.com', password: 'wrong' });
+            const result = await authClient.login({email: 'wrong@test.com', password: 'wrong'});
             expect(result).toMatchObject({
                 ok: false,
                 status: 401,
@@ -100,13 +113,13 @@ describe('authClient', () => {
 
         it('should handle 204 No Content correctly', async () => {
             sessionStorage.setItem("auth.accessToken", "fake-access-token");
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 204,
                 json: async () => ({}),
             } as Response);
 
-            const result = await authClient.logout({ refreshToken: 'some_token' });
+            const result = await authClient.logout({refreshToken: 'some_token'});
 
             expect(result).toMatchObject({
                 ok: true,
@@ -126,15 +139,15 @@ describe('authClient', () => {
         });
 
         it('should throw a specific error when the server returns 429 (Rate Limit)', async () => {
-            const mockRateLimitError = { message: 'Too many login attempts' };
+            const mockRateLimitError = {message: 'Too many login attempts'};
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: false,
                 status: 429,
                 json: async () => mockRateLimitError,
             } as Response);
 
-            const result = await authClient.login({ email: 'test@test.com', password: '123' });
+            const result = await authClient.login({email: 'test@test.com', password: '123'});
             expect(result).toMatchObject({
                 ok: false,
                 status: 429,
@@ -146,9 +159,9 @@ describe('authClient', () => {
     // verify, getMe and refresh related test
     describe('verify', () => {
         it('should return an ApiResult containing the user identity and claims', async () => {
-            const mockVerifyResponse = { user: { id: '123' }, claims: { exp: 1 } };
+            const mockVerifyResponse = {user: {id: '123'}, claims: {exp: 1}};
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 200,
                 json: async () => mockVerifyResponse,
@@ -175,11 +188,11 @@ describe('authClient', () => {
                     status: 'ACTIVE',
                     roles: ['USER']
                 },
-                session: { id: 'sess_1', expiresAt: 'tomorrow' },
-                claims: { sub: '123', iat: 1, exp: 999, iss: 'auth-service' }
+                session: {id: 'sess_1', expiresAt: 'tomorrow'},
+                claims: {sub: '123', iat: 1, exp: 999, iss: 'auth-service'}
             };
 
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 200,
                 json: async () => mockMeResponse,
@@ -197,13 +210,13 @@ describe('authClient', () => {
 
     describe('refresh', () => {
         it('should send refreshToken in the request body', async () => {
-            fetchMock.mockResolvedValue({
+            fetchMock().mockResolvedValue({
                 ok: true,
                 status: 200,
-                json: async () => ({ accessToken: 'new-at', refreshToken: 'new-rt' }),
+                json: async () => ({accessToken: 'new-at', refreshToken: 'new-rt'}),
             } as Response);
 
-            const refreshData = { refreshToken: 'old-rt-string' };
+            const refreshData = {refreshToken: 'old-rt-string'};
             await authClient.refresh(refreshData);
 
             expect(fetch).toHaveBeenCalledWith(
@@ -215,60 +228,120 @@ describe('authClient', () => {
             );
         });
     });
-    // test google auth
-    describe('Google OAuth', () => {
-        beforeEach(() => {
-            sessionStorage.clear();
-        });
-        it('should navigate to Google start endpoint', () => {
-            Object.defineProperty(globalThis, 'window', {
-                value: { location: { href: '' } },
-                writable: true,
-                configurable: true,
-            });
 
-            authClient.startGoogleOAuth();
+    describe('apiFetchWrapper test', () => {
+        it("should dedupe refresh calls: only one refresh for multiple http 401 responses", async () => {
+            sessionStorage.setItem("auth.refreshToken", "old-refresh-token");
 
-            expect(window.location.href).toContain('/auth/google/start');
+            fetchMock()
+                .mockResolvedValueOnce({status: 401, ok: false} as Response)
+                .mockResolvedValueOnce({status: 401, ok: false} as Response)
+                .mockResolvedValue({
+                    status: 200,
+                    ok: true,
+                    headers: new Headers({'content-type': 'application/json'}),
+                    json: async () => ({success: true})
+                } as Response);
 
-            delete (globalThis as { window?: unknown }).window;
-        });
-
-        it('should exchange the authorization code for tokens', async () => {
-            const mockAuthResponse = {
-                user: { id: 'google-user-123', email: 'google@test.com' },
-                tokens: { accessToken: 'accestokenstring', refreshToken: 'refreshtokenstring' }
-            };
-
-            fetchMock.mockResolvedValue({
+            const refreshSpy = vi.spyOn(authClient, 'refresh').mockResolvedValue({
                 ok: true,
                 status: 200,
-                json: async () => mockAuthResponse,
+                data: {tokens: {accessToken: 'new-access', refreshToken: 'new-refresh'}}
+            });
+
+            const [res1, res2] = await Promise.all([
+                authClient.getMe(),
+                authClient.verify()
+            ]);
+
+            expect(refreshSpy).toHaveBeenCalledTimes(1);
+            expect(res1.ok).toBe(true);
+            expect(res2.ok).toBe(true);
+            expect(sessionStorage.getItem('auth.accessToken')).toBe('new-access');
+        });
+
+        it("should fail all queued requests and clear storage if refresh fails", async () => {
+            sessionStorage.setItem("auth.refreshToken", "old-refresh");
+            fetchMock().mockResolvedValue({
+                status: 401,
+                ok: false,
+                headers: new Headers({ 'content-type': 'application/json' }),
+                json: async () => ({ message: "Unauthorized" }),
+                text: async () => "Unauthorized"
             } as Response);
 
-            const exchangeData: GoogleExchangeRequest = {
-                authorizationCode: 'google-code-from-url',
-                provider: 'google',
-                // captures the origin of the current window otherwise default to localhost
-                redirectUri: typeof window !== 'undefined'
-                    ? `${window.location.origin}/auth/callback`
-                    : 'http://localhost:3000/auth/callback'
-            };
-
-            const result = await authClient.exchangeGoogleCallback(exchangeData);
-            expect(result).toMatchObject({
-                ok: true,
-                data: mockAuthResponse
+            vi.spyOn(authClient, 'refresh').mockResolvedValue({
+                ok: false,
+                status: 401,
+                error: { code: 'EXPIRED', message: 'Refresh failed' }
             });
-            expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/auth/google/exchange'),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'Content-Type': 'application/json',
-                        'Authorization': ''
-                    })
-                })
-            );
+
+            const [res1, res2] = await Promise.all([
+                authClient.getMe(),
+                authClient.verify()
+            ]);
+
+            expect(res1.ok).toBe(false);
+            expect(res2.ok).toBe(false);
+            expect(res1.status).toBe(401);
+            expect(sessionStorage.getItem('auth.accessToken')).toBeNull();
+            expect(sessionStorage.getItem('auth.refreshToken')).toBeNull();
         });
     });
+        // test google auth
+        describe('Google OAuth', () => {
+            beforeEach(() => {
+                sessionStorage.clear();
+            });
+            it('should navigate to Google start endpoint', () => {
+                Object.defineProperty(globalThis, 'window', {
+                    value: {location: {href: ''}},
+                    writable: true,
+                    configurable: true,
+                });
+
+                authClient.startGoogleOAuth();
+
+                expect(window.location.href).toContain('/auth/google/start');
+
+                delete (globalThis as { window?: unknown }).window;
+            });
+
+            it('should exchange the authorization code for tokens', async () => {
+                const mockAuthResponse = {
+                    user: {id: 'google-user-123', email: 'google@test.com'},
+                    tokens: {accessToken: 'accestokenstring', refreshToken: 'refreshtokenstring'}
+                };
+
+                fetchMock().mockResolvedValue({
+                    ok: true,
+                    status: 200,
+                    json: async () => mockAuthResponse,
+                } as Response);
+
+                const exchangeData: GoogleExchangeRequest = {
+                    authorizationCode: 'google-code-from-url',
+                    provider: 'google',
+                    // captures the origin of the current window otherwise default to localhost
+                    redirectUri: typeof window !== 'undefined'
+                        ? `${window.location.origin}/auth/callback`
+                        : 'http://localhost:3000/auth/callback'
+                };
+
+                const result = await authClient.exchangeGoogleCallback(exchangeData);
+                expect(result).toMatchObject({
+                    ok: true,
+                    data: mockAuthResponse
+                });
+                expect(fetch).toHaveBeenCalledWith(
+                    expect.stringContaining('/auth/google/exchange'),
+                    expect.objectContaining({
+                        headers: expect.objectContaining({
+                            'Content-Type': 'application/json',
+                            'Authorization': ''
+                        })
+                    })
+                );
+            });
+        });
 });
