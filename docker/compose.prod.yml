@@ -44,6 +44,8 @@ services:
     build:
       context: ../apps/frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
       additional_contexts:
         shared: ../shared/game
     container_name: frontend
@@ -51,6 +53,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     volumes:
       - frontend_next:/app/.next:ro
     expose:
