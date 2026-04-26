@@ -134,7 +134,7 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
                         options._retry = true;
                         resolve(await apiFetch<T>(url, options));
                     },
-                    reject: (err) => {
+                    reject: () => {
                         resolve(handleApiResponse<T>(response));
                     },
                 });
