@@ -152,20 +152,26 @@ async function apiFetch<T>(url: string, options: InternalRequestInit = {}): Prom
         }
 
         // Scenario D : Recovery attempt failed
-        const refreshResult = await authClient.refresh({refreshToken});
+        try {
+            const refreshResult = await authClient.refresh({refreshToken});
 
-        if (!refreshResult.ok) {
+            if (!refreshResult.ok) {
+                return handleRefreshFailure(response);
+            }
+
+            // Success Path
+            const {accessToken, refreshToken: newRefreshToken} = refreshResult.data.tokens;
+            sessionStorage.setItem("auth.accessToken", accessToken);
+            sessionStorage.setItem("auth.refreshToken", newRefreshToken);
+
+            processQueue(null, accessToken);
+            isRefreshing = false;
+            return apiFetch<T>(url, options);
+
+        } catch (error) {
+            console.error("Refresh attempt crashed:", error);
             return handleRefreshFailure(response);
         }
-
-        // Success Path
-        const {accessToken, refreshToken: newRefreshToken} = refreshResult.data.tokens;
-        sessionStorage.setItem("auth.accessToken", accessToken);
-        sessionStorage.setItem("auth.refreshToken", newRefreshToken);
-
-        processQueue(null, accessToken);
-        isRefreshing = false;
-        return apiFetch<T>(url, options);
     }
     // This return handles all non-401 cases
     return handleApiResponse<T>(response);
