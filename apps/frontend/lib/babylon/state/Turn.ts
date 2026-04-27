@@ -6,9 +6,9 @@ import { Worm } from "../worms/Worm";
 
 
 export class Turn {
-	private activePlayerId: number = -1;
-	private activePlayer: Player;
-	public chosenWorm: Worm | undefined = undefined;
+	public activePlayerId: number = -1;
+	public activePlayer: Player;
+	public chosenWorm: Worm;
 	public chosenWeapon: IWeapon | undefined = undefined;
 	public aimOrigin: Vector2 = new Vector2(0, 0);
 	public aimAngle: number = 0;
@@ -16,6 +16,7 @@ export class Turn {
 	constructor(player: Player) {
 		this.activePlayerId = player.id;
 		this.activePlayer = player;
+		this.chosenWorm = player.worms[0];
 	}
 
 	/**
@@ -29,7 +30,6 @@ export class Turn {
 	}
 
 	dispose() {
-		this.chosenWorm?.dispose();
 		this.chosenWeapon?.dispose();
 	}
 

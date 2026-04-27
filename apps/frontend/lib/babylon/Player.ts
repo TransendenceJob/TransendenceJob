@@ -1,4 +1,5 @@
-import { Worm } from './Worm';
+import { ExecuteCodeAction, ActionManager } from '@babylonjs/core';
+import { Worm } from './worms/Worm';
 
 /**
  * @brief Used to create the different Player objects
@@ -26,11 +27,54 @@ export function createPlayers() {
 export class Player {
 	public readonly id: number;
 	public readonly name: string;
-	public readonly worms: Array<Worm>;
+	public worms: Array<Worm>;
+	private clickableAction: ExecuteCodeAction;
 	constructor(id: number, name: string =`Generic Player ${id}`) {
 		this.id = id;
 		this.name = name;
 		this.worms = [];
+		this.clickableAction = new ExecuteCodeAction(ActionManager.OnPickUpTrigger, () => {
+
+		});
+	}
+
+	/**
+	 * Returns another worm
+	 * @param forward Wether we are movign forward or backward through array
+	 * @param oldWorm Old chosen worm, from which to choose next
+	 * @returns the next worm
+	 * @note This could be reworked to move through the worms based on their x position
+	 */
+	getNextWorm(forward: boolean, oldWorm: Worm) {
+		let index = this.worms.findIndex((worm) => worm.id == oldWorm.id);
+
+		if (index == -1)
+			return (this.worms[0]);
+		if (forward)
+			index++;
+		else
+			index--;
+
+		if (index >= this.worms.length) {
+			return (this.worms[0]);
+		}
+		if (index < 0) {
+			return (this.worms[this.worms.length - 1]);
+		}
+		return (this.worms[index]);
+	}
+
+	initPickWorm(setChosen: (chosen: Worm) => void) {
+		this.worms.forEach((worm) => {
+			worm.initClickable(setChosen);
+		})
+	}
+
+	wormsClickable(yes: boolean) {
+		if (yes)
+			this.worms.forEach((worm) => {worm.makeClickable()});
+		else
+			this.worms.forEach((worm) => {worm.removeClickable()});
 	}
 
 	/**
@@ -71,11 +115,10 @@ export class Player {
 	 * @brief Deletes all the worms associated with this player, used for cleanup
 	 */
 	dispose() {
-		while (this.worms.length > 0) {
-			const entry: Worm | undefined = this.worms.pop();
-			if (entry)
-				entry.dispose();
-		}
+		this.worms.forEach((worm) => {
+			worm.dispose();
+		})
+		this.worms = [];
 	}
 
 }
