@@ -42,7 +42,7 @@ export async function createScene(
 	const state = new StateMachine(canvas, scene, msgToServer, log);
 
 	// Set up queue and socket before Game starts
-	const queue = new MessageQueue(lobbyId, socket, state, log);
+	const queue = new MessageQueue(lobbyId, socket, state, DEBUG, log);
 
 	// Then properly initialize and start the Game
 	state.init(queue)

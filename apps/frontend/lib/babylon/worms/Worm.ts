@@ -27,9 +27,11 @@ function createWorm(scene: Scene, position: Vector3, color: Color3) {
  * @function dispose Used to clean up mesh
  */
 export class Worm {
+    private initialised: boolean = false;
 	public mesh: Mesh;
 	public id: number;
 	public name: string;
+    private action: ActionManager | undefined = undefined;
     /**
      * 
      * @param scene Scene that tracks worm mesh
@@ -40,17 +42,50 @@ export class Worm {
      */
 	constructor(scene: Scene, pos: Vector3, id: number, color: Color3, name: string = "Unnamed worm") {
 		this.mesh = createWorm(scene, pos, color);
+        this.mesh.actionManager = new ActionManager(scene);
         this.id = id;
         this.name = name;
 	}
+    
+    /**
+     * This needs to be called, after the turns have been set up
+     * Sets up the Action for setting the chosen worm, when the player clicks on the mesh
+     * @param setterFunction function that sets the chosen worm to the given parameter
+     */
+    initClickable(setterFunction: (chosen: Worm) => void) {
+        if (this.initialised)
+            return ;
+        this.initialised = true;
+        this.action = new ExecuteCodeAction(ActionManager.OnPickUpTrigger, () => {
+            setterFunction(this);
+        })
+    }
+
+    /**
+     * Tells the Worm to activate the functionality for being able to pick a worm
+     */
+    makeClickable() {
+        if (this.action && this.mesh.actionManager)
+            this.mesh.actionManager.registerAction(this.action);
+    }
+
+    removeClickable() {
+        if (this.action && this.mesh.actionManager)
+            this.mesh.actionManager.unregisterAction(this.action);
+        console.log("Calling makeClickable");
+    }
 
     /**
      * @warning Calling this wont delete the worm, so any call to dispose() 
      * should be followed by deletion or untracking of the Worm object
      */
     dispose() {
-        if (this.mesh)
+        this.initialised = false;
+        this.removeClickable();
+        if (this.mesh) {
+            this.mesh.actionManager.dispose();
             this.mesh.dispose();
+        }
     }
 }
 

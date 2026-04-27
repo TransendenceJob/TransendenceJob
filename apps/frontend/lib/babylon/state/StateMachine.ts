@@ -21,6 +21,7 @@ import { GameEndState }			from './gamestate/8GameEndState';
 import { MessageQueue } from '../MessageQueue';
 import { handlePacket } from '../handlePacket';
 import { Turn } from './Turn';
+import { Worm } from '../worms/Worm';
 
 export class StateMachine {
 	public scene: Scene;
@@ -107,10 +108,21 @@ export class StateMachine {
 		
 		// Set up a fresh Game
 		this.log("Setting up new Game");
+		
+		// First create Player object, that turn can reference
 		this.players = createPlayers();
-		this.turn = new Turn(this.players[0]);
+		// Then populate players with Worms
 		if (!spawnWorms(this.scene, this.players, colors))
 			console.warn("Babylon: Error during Worm spawning");
+		// Create turn (with first player as active player)
+		this.turn = new Turn(this.players[0]);
+		// Setup up interactions for worms
+		this.players.forEach((player) => {
+			player.initPickWorm((chosen: Worm) => {
+				if (this.turn)
+					this.turn.chosenWorm = chosen;
+			})
+		})
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
