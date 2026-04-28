@@ -1,6 +1,5 @@
 // import * from 'ServerClientPackets.ts';
 
-
 /**
  * ADDING A NEW PACKET
  * 1) Create an enum in the SC_Type table
@@ -9,8 +8,9 @@
  * 	2] Should inherit from SC_Base
  * 	3] It should have a type parameter, which will be the enum from 1)
  * 3) Add the interface name into the union type at the end
- */
+*/
 
+import { gameData } from './util';
 
 export enum SC_Type {
 	SC_DEV_StartConnecting =	"SC_DEV_StartConnecting",
@@ -27,6 +27,7 @@ export enum SC_Type {
 	SC_FailedLoading =			"SC_FailedLoading",
 	SC_LoadingProgress =		"SC_LoadingProgress",
 	SC_StartGame =				"SC_StartGame",
+	SC_GameData =				"SC_GameData",
 	SC_GameFinished =			"SC_GameFinished",
 	SC_DEV_ButtonPress =		"SC_DEV_ButtonPress",
 	SC_DEV_Periodic =			"SC_DEV_Periodic",
@@ -238,6 +239,16 @@ export interface SC_DEV_GameState extends SC_Base {
 	gameState: number,
 }
 
+
+/**
+ * Sent when game is started or loaded so Clients can display game
+ * @param data Data that is needed for game to be loaded
+ */
+export interface SC_GameData extends SC_Base {
+	type: SC_Type.SC_GameData,
+	data: gameData,
+}
+
 // ENDSCREEN ==================================================================
 
 
@@ -247,7 +258,8 @@ export type SC_GenericPacket =
 			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 
 			SC_StartLoading | SC_FinishedLoading | SC_FailedLoading | 
 			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
-			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState
+			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState |
+			SC_GameData
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |

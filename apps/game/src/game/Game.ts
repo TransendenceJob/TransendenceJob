@@ -12,6 +12,8 @@ import { MovementState } from './gamestate/5MovementState';
 import { AimingState } from './gamestate/6AimingState';
 import { TurnEndState } from './gamestate/7TurnEndState';
 import { GameEndState } from './gamestate/8GameEndState';
+import { SC_Base, SC_Type } from '@/shared/packets/ServerClientPackets';
+import { msgToClientType } from '../lobbies/msgToClientType';
 
 export class Game {
   // Member properties
@@ -24,7 +26,11 @@ export class Game {
   private currentState: IState;
 
   // Connstructor
-  constructor(engine: NullEngine, sendStatePacket: () => void) {
+  constructor(
+    engine: NullEngine,
+    sendStatePacket: () => void,
+    sendPacket: msgToClientType,
+  ) {
     this.engine = engine;
     this.scene = new Scene(this.engine);
     this.camera = new ArcRotateCamera(

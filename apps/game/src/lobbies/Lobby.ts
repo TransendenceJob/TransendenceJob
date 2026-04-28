@@ -11,7 +11,7 @@ import {
   SC_DEV_GameState,
 } from '@/shared/packets/ServerClientPackets';
 import { SeqHandler } from './SeqHandler';
-import { Game } from './Game';
+import { Game } from '../game/Game';
 import { MessageQueue } from './MessageQueue';
 
 enum LobbyStateEnum {
@@ -145,9 +145,18 @@ export class Lobby {
       this.game = undefined;
     }
     if (newState == LobbyStateEnum.Loading) {
-      this.game = new Game(this.engine, () => {
-        this.sendGameStatePacket();
-      });
+      this.game = new Game(
+        this.engine,
+        () => {
+          this.sendGameStatePacket();
+        },
+        <T extends SC_Base & { type: SC_Type }>(
+          type: T['type'],
+          data: Omit<T, keyof SC_Base | 'type'>,
+        ) => {
+          this.createBasePacket(type, data);
+        },
+      );
     }
     const response = this.createBasePacket<SC_GenericStatePacket>(
       translateLobbyState(newState),
