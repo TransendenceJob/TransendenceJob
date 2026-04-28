@@ -1,66 +1,65 @@
-import { NullEngine, Scene } from 'babylonjs';
+import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 
+// Shit happens cause the shared folder is outside of root directory
 import { GameState } from '@/shared/state/GameState';
-// import {} from '@/shared/packets/ServerClientPackets';
+import { IState } from './gamestate/IState';
+import { GamePendingState } from './gamestate/0GamePendingState';
+import { GameStartState } from './gamestate/1GameStartState';
+import { RoundStartState } from './gamestate/2RoundStartState';
+import { TurnStartState } from './gamestate/3TurnStartState';
+import { PickWormState } from './gamestate/4PickWormState';
+import { MovementState } from './gamestate/5MovementState';
+import { AimingState } from './gamestate/6AimingState';
+import { TurnEndState } from './gamestate/7TurnEndState';
+import { GameEndState } from './gamestate/8GameEndState';
 
 export class Game {
   // Member properties
-  state: GameState;
-  engine: NullEngine;
-  scene: Scene;
-  timer: number;
-  private sendState: () => void;
+  private engine: NullEngine;
+  public scene: Scene;
+  private camera: ArcRotateCamera;
+  public sendState: () => void;
+  public state: GameState;
+  private stateMap: Map<GameState, IState>;
+  private currentState: IState;
 
   // Connstructor
-  constructor(engine: NullEngine, scene: Scene, sendStatePacket: () => void) {
+  constructor(engine: NullEngine, sendStatePacket: () => void) {
     this.engine = engine;
-    this.scene = scene;
-    this.timer = 0;
+    this.scene = new Scene(this.engine);
+    this.camera = new ArcRotateCamera(
+      'Camera',
+      0,
+      0.8,
+      100,
+      Vector3.Zero(),
+      this.scene,
+    );
     this.sendState = sendStatePacket;
     this.state = GameState.GAME_PENDING;
+    this.stateMap = new Map();
+    this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));
+    this.stateMap.set(GameState.GAME_START, new GameStartState(this));
+    this.stateMap.set(GameState.ROUND_START, new RoundStartState(this));
+    this.stateMap.set(GameState.TURN_START, new TurnStartState(this));
+    this.stateMap.set(GameState.PICK_WORM, new PickWormState(this));
+    this.stateMap.set(GameState.MOVEMENT, new MovementState(this));
+    this.stateMap.set(GameState.AIMING, new AimingState(this));
+    this.stateMap.set(GameState.TURN_END, new TurnEndState(this));
+    this.stateMap.set(GameState.GAME_END, new GameEndState(this));
+    this.currentState = new GamePendingState(this);
+    this.currentState.enter();
   }
 
   // Setter
-  setState(newState: number) {
-    switch (newState as GameState) {
-      case GameState.GAME_PENDING: {
-        this.init_game_pending();
-        break;
-      }
-      case GameState.GAME_START: {
-        this.init_game_start();
-        break;
-      }
-      case GameState.ROUND_START: {
-        this.init_round_start();
-        break;
-      }
-      case GameState.TURN_START: {
-        this.init_turn_start();
-        break;
-      }
-      case GameState.PICK_WORM: {
-        this.init_pick_worm();
-        break;
-      }
-      case GameState.MOVEMENT: {
-        this.init_movement();
-        break;
-      }
-      case GameState.AIMING: {
-        this.init_aiming();
-        break;
-      }
-      case GameState.TURN_END: {
-        this.init_turn_end();
-        break;
-      }
-      case GameState.GAME_END: {
-        this.init_game_end();
-        break;
-      }
-    }
-    if (this.state > GameState.GAME_END) this.state = GameState.GAME_START;
+  setState(newState: GameState) {
+    // Get class object and its functions from Map with GameState Enum and object
+    // Call init of that one
+    this.currentState.exit();
+    this.state = newState;
+    const newStateObj = this.stateMap.get(newState);
+    this.currentState = newStateObj ? newStateObj : new GamePendingState(this);
+    this.currentState.enter();
   }
 
   // Getter
@@ -73,128 +72,17 @@ export class Game {
    * Will keep ticking as long as the state changes
    */
   tick() {
-    if (this.state == GameState.GAME_PENDING) return;
     let first: boolean = true;
     let previousState: GameState = this.state;
     while (this.state != previousState || first) {
       first = false;
       previousState = this.state;
-      switch (this.state) {
-        case GameState.GAME_START: {
-          this.tick_game_start();
-          break;
-        }
-        case GameState.ROUND_START: {
-          this.tick_round_start();
-          break;
-        }
-        case GameState.TURN_START: {
-          this.tick_turn_start();
-          break;
-        }
-        case GameState.PICK_WORM: {
-          this.tick_pick_worm();
-          break;
-        }
-        case GameState.MOVEMENT: {
-          this.tick_movement();
-          break;
-        }
-        case GameState.AIMING: {
-          this.tick_aiming();
-          break;
-        }
-        case GameState.TURN_END: {
-          this.tick_turn_end();
-          break;
-        }
-        case GameState.GAME_END: {
-          this.tick_game_end();
-          break;
-        }
-        default: {
-          console.warn(
-            'Error: A game on the server has reached an invalid state',
-          );
-          break;
-        }
-      }
+      this.currentState.tick();
     }
   }
 
-  init_game_pending() {
-    console.log('Game pending');
-    this.state = GameState.GAME_PENDING;
-    this.sendState();
+  dispose() {
+    this.camera.dispose();
+    this.scene.dispose();
   }
-
-  init_game_start() {
-    console.log('Game starts');
-    this.state = GameState.GAME_START;
-    this.sendState();
-    this.timer = Date.now();
-  }
-
-  tick_game_start() {
-    if (this.timer + 3000 <= Date.now()) this.init_round_start();
-  }
-
-  init_round_start() {
-    console.log('Round starts');
-    this.state = GameState.ROUND_START;
-    this.sendState();
-    this.init_turn_start();
-  }
-
-  tick_round_start() {}
-
-  init_turn_start() {
-    console.log('Turn starts');
-    this.state = GameState.TURN_START;
-    this.sendState();
-    this.init_pick_worm();
-  }
-
-  tick_turn_start() {}
-
-  init_pick_worm() {
-    console.log('Picking worm');
-    this.state = GameState.PICK_WORM;
-    this.sendState();
-  }
-
-  tick_pick_worm() {}
-
-  init_movement() {
-    console.log('Movement phase');
-    this.state = GameState.MOVEMENT;
-    this.sendState();
-  }
-
-  tick_movement() {}
-
-  init_aiming() {
-    console.log('Aiming phase');
-    this.state = GameState.AIMING;
-    this.sendState();
-  }
-
-  tick_aiming() {}
-
-  init_turn_end() {
-    console.log('Turn ends');
-    this.state = GameState.TURN_END;
-    this.sendState();
-  }
-
-  tick_turn_end() {}
-
-  init_game_end() {
-    console.log('Game Ends');
-    this.state = GameState.GAME_END;
-    this.sendState();
-    this.init_game_pending();
-  }
-
-  tick_game_end() {}
 }

@@ -250,4 +250,5 @@ export type SC_GenericPacket =
 			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState
 			;
 
-export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading | SC_StartGame | SC_InvalidState;
+export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |
+	SC_StartGame | SC_GameFinished | SC_InvalidState;
