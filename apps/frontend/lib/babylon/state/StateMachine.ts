@@ -168,7 +168,6 @@ export class StateMachine {
 	 * Deletes game-specific properties, keeps stuff that survives games
 	 */
 	clearGame() {
-		this.log("Clearing old Game")
 		// Clean Players and their worms
 		this.players.forEach(p => p.dispose());
 		this.players = [];
@@ -185,6 +184,7 @@ export class StateMachine {
 	}
 
 	dispose() {
+		this.log("Clearing old Game")
 		this.clearGame();
 	}
 }

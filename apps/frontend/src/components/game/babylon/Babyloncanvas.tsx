@@ -16,6 +16,7 @@ interface Params {
   DEBUG: boolean,
 }
 
+
 export default function BabylonCanvas({
   msgToServer, 
   socket, 
@@ -26,7 +27,6 @@ export default function BabylonCanvas({
   // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<Engine | null>(null);
-  const isInitRef = useRef<boolean>(false);
   const cleanupRef = useRef<() => void | undefined>(undefined)
 
   // Update our msgToServer function, once it has changed,
@@ -42,17 +42,18 @@ export default function BabylonCanvas({
   useEffect(() => {
 
     const canvas = canvasRef.current;
-    if (!canvas || isInitRef.current ) return;
-
-    isInitRef.current = true;
+    if (!canvas ) return;
 
     // Create and capture engine for better memory handling
-    const engine = new Engine(canvas, true);
+    const engine = new Engine(canvas, true, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+      adaptToDeviceRatio: true,
+    });
     engineRef.current = engine;
 
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
-    
 
     createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
@@ -76,7 +77,6 @@ export default function BabylonCanvas({
         engineRef.current.dispose();
         engineRef.current = null;
       }
-      isInitRef.current = false;
     };
   }, 
   [socket, DEBUG]);

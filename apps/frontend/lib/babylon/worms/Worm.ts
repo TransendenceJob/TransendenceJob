@@ -72,7 +72,6 @@ export class Worm {
     removeClickable() {
         if (this.action && this.mesh.actionManager)
             this.mesh.actionManager.unregisterAction(this.action);
-        console.log("Calling makeClickable");
     }
 
     /**
