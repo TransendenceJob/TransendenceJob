@@ -14,6 +14,7 @@ export class GamePendingState implements IState {
     // Tell Clients to move to next state
     // This is somewhat of a special case, that should not be sent
     this.game.sendState();
+    this.game
   }
 
   tick() {
