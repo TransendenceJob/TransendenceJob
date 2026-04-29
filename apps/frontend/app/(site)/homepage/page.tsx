@@ -1,8 +1,11 @@
 "use client";
 
 import BattleArena from "@/components/BattleArena";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function HomePage() {
     return (
+        <ProtectedRoute>
         <div className="max-w-7xl mx-auto p-4 md:p-8 h-[calc(100vh-80px)] flex flex-col gap-6">
 
             <div className="flex justify-between items-end">
@@ -17,7 +20,7 @@ export default function HomePage() {
 
             {/* Main Content , big game button*/}
             <div className="flex flex-col lg:flex-row gap-6 flex-grow overflow-hidden">
-                <BattleArena />
+                <BattleArena className="bg-zinc-100 dark:bg-zinc-900" border={true} dashed={true}/>
 
                 {/* Chat Window Component*/}
                 <div
@@ -79,5 +82,6 @@ export default function HomePage() {
                 </div>
             </div>
         </div>
+        </ProtectedRoute>
     );
 }

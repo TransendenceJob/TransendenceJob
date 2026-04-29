@@ -35,11 +35,11 @@ export default function AuthModal({
     setType: (type: 'Login' | 'Register') => void;
 }) {
     const router = useRouter();
-    const {setUser} = useAuth();
+    const {setUser, isAuthenticated} = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
-    if (!isOpen) return null;
+    if (!isOpen || isAuthenticated) return null;
 
     const handleSubmit: React.SubmitEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
@@ -68,7 +68,8 @@ export default function AuthModal({
                 setErrorMessage(result.error.message);
                 return;
             }
-
+            localStorage.setItem('accessToken', result.data.tokens.accessToken);
+            localStorage.setItem('refreshToken', result.data.tokens.refreshToken);
             setUser(result.data.user);
             onClose();
             router.push("/homepage");
@@ -84,8 +85,9 @@ export default function AuthModal({
         authClient.startGoogleOAuth();
     };
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div
+        <div onClick={onClose}
+             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div onClick={(e) => e.stopPropagation()}
                 className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-2xl w-full max-w-md relative border border-foreground/5">
                 <button onClick={onClose}
                         className="absolute top-4 right-4 text-zinc-500 hover:text-foreground transition-colors">✕

@@ -44,26 +44,56 @@ describe("AuthModal Component", () => {
         expect(screen.getByRole("button", { name: /Sign In/i })).toBeInTheDocument();
     });
 
-    it("successfully logs in and redirects the user", async () => {
-        (authClient.login as any).mockResolvedValue({
+    it("successfully registers a new user", async () => {
+        const mockRegister = vi.spyOn(authClient, 'register').mockResolvedValue({
             ok: true,
-            data: { user: { id: "1", email: "test@test.com" } }
+            data: { user: { id: "2" }, tokens: { accessToken: "abc", refreshToken: "def" } }
+        } as any);
+
+        render(<AuthModal isOpen={true} type="Register" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "Pass123!" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Password"), { target: { value: "Pass123!" } });
+
+        fireEvent.click(screen.getByRole("button", { name: /Create Account/i }));
+
+        await waitFor(() => {
+            expect(mockRegister).toHaveBeenCalled();
+            expect(mockOnClose).toHaveBeenCalled();
         });
+    });
+
+    it("successfully logs in and redirects the user", async () => {
+        const mockLogin = vi.spyOn(authClient, 'login').mockResolvedValue({
+            ok: true,
+            data: {
+                user: { id: "1", email: "test@test.com" },
+                tokens: { accessToken: "abc", refreshToken: "def" }
+            }
+        } as any);
 
         render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
 
         fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "test@test.com" } });
         fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "password123" } });
 
-        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+        const submitBtn = screen.getByRole("button", { name: /Sign In/i });
+        fireEvent.click(submitBtn);
 
         await waitFor(() => {
-            expect(authClient.login).toHaveBeenCalledWith({
+            expect(mockLogin).toHaveBeenCalledWith({
                 email: "test@test.com",
                 password: "password123"
             });
+        });
+
+        await waitFor(() => {
             expect(mockOnClose).toHaveBeenCalled();
         });
+
+        mockLogin.mockRestore();
     });
 
     it("displays error message from server on failed login", async () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import {useState} from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 type TabType = 'Info' | 'Friends' | 'Clan' | 'Invitations';
 
@@ -15,6 +16,7 @@ export default function ProfilePage() {
     ];
 
     return (
+        <ProtectedRoute>
         <div className="max-w-4xl mx-auto py-12 px-6">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                 {[
@@ -128,5 +130,6 @@ export default function ProfilePage() {
                 </div>
             </div>
         </div>
+            </ProtectedRoute>
     );
 }
