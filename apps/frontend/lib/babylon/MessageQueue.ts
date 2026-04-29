@@ -44,27 +44,27 @@ export class MessageQueue {
 
 		const onConnect = () => {
 			setSocketConnected(true);
-			//log(DEBUG, "Connected to Backend");
+			//log("Connected to Backend");
 			if (DEBUG) addNotification("Connected to Backend");
 		};
 		socket.on("connect", onConnect);
 				
 		const onError = (error: Error) => {
 			setSocketConnected(false);
-			//log(DEBUG, `Error with websocket: ${error.message}`);
+			//log(`Error with websocket: ${error.message}`);
 			if (DEBUG) addNotification(`Error with websocket: ${error.message}`);
 		};
 		socket.on("connect_error", onError);
 		
 		const onDisconnect = () => {
 			setSocketConnected(false);
-			//log(DEBUG, "Connection closed");
+			//log("Connection closed");
 			if (DEBUG) addNotification("Connection closed");
 		}
 		socket.on("disconnect", onDisconnect);
 
 		const msgToClient = (data: string) => {
-			//log(DEBUG, `Message from server ${data}`);
+			log(`Message from server ${data}`);
 			if (DEBUG) addNotification(`Message from server ${data}`);
 			this.write(data);
 		}

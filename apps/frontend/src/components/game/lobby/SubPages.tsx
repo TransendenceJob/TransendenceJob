@@ -13,6 +13,7 @@ interface Params {
   socket: Socket,
   isConnected: boolean,
   lobbyId: number,
+  game: BabylonCanvas | undefined,
   DEBUG: boolean,
 }
 
@@ -33,26 +34,20 @@ export default function SubPages({
   lobbyId,
   DEBUG,
 }: Params) {
-  if (state == 'CONNECTING') {
-    return <ConnectingPage  msgToServer={msgToServer}
-                            isConnected={isConnected}/>
-  }
-  else if (state === 'LOBBY') {
-    return <LobbyPage msgToServer={msgToServer}/>
-  }
-  else if (state === 'LOADING') {
-    return <LoadingPage msgToServer={msgToServer}/>
-  }
-  else if (state === 'GAME') {
-    return <div style={{ width: "100%", height: "100%" }}>
-    <BabylonCanvas msgToServer={msgToServer}
-                          socket={socket}
-                          lobbyId={lobbyId}
-                          DEBUG={DEBUG}/>
+  return (
+    <>
+    {/* Game always exists, but not always displayed */}
+    <div style = {{ display: state === 'GAME' ? 'block' : 'none', width: "100%", height: "100%"}}>
+      <BabylonCanvas msgToServer={msgToServer}
+                      socket={socket}
+                      lobbyId={lobbyId}
+                      DEBUG={DEBUG}/>
     </div>
-  }
-  else if (state === 'ENDSCREEN') {
-    return <EndPage msgToServer={msgToServer}/>
-  }
-  else return <ErrorPage />;
+    {state === 'CONNECTING' && <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>}
+    {state === 'LOBBY' && <LobbyPage msgToServer={msgToServer}/>}
+    {state === 'LOADING' && <LoadingPage msgToServer={msgToServer}/>}
+    {state === 'ENDSCREEN' && <EndPage msgToServer={msgToServer}/>}
+    {state === 'ERROR' && <ErrorPage/>}
+    </>
+  )
 }

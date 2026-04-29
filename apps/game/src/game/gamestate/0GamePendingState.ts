@@ -1,6 +1,10 @@
 import { IState } from './IState';
 import { Game } from '../Game';
 import { GameState } from '@/shared/state/GameState';
+import { SC_Type, SC_GameData } from '@/shared/packets/ServerClientPackets';
+import { gameData } from '@/shared/packets/util';
+import { spawnPlayers } from '../spawning/spawnPlayers';
+import { generateGameData } from '../spawning/generateGameData';
 
 export class GamePendingState implements IState {
   constructor(private game: Game) {}
@@ -14,13 +18,10 @@ export class GamePendingState implements IState {
     // Tell Clients to move to next state
     // This is somewhat of a special case, that should not be sent
     this.game.sendState();
-    this.game
+    this.game.sendPacket(SC_Type.SC_GameData, generateGameData());
   }
 
-  tick() {
-    // Automatically jump to start of game
-    this.game.setState(GameState.GAME_START);
-  }
+  tick() {}
 
   exit() {
     this.reset();

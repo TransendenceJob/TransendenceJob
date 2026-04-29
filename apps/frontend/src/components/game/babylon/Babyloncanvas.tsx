@@ -28,6 +28,7 @@ export default function BabylonCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<Engine | null>(null);
   const cleanupRef = useRef<() => void | undefined>(undefined)
+  const resizeUiRef = useRef<() => void | undefined>(undefined)
 
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
@@ -44,6 +45,16 @@ export default function BabylonCanvas({
     const canvas = canvasRef.current;
     if (!canvas ) return;
 
+    // This exists, because the game canvas starts hidden, 
+    // with 0x0 dimensions, and needs to redo the UI when it appears
+    const observer = new ResizeObserver(() => {
+      if (engineRef.current && canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+        engineRef.current.resize();
+      }
+      resizeUiRef.current?.();
+    });
+    observer.observe(canvas);
+
     // Create and capture engine for better memory handling
     const engine = new Engine(canvas, true, {
       preserveDrawingBuffer: true,
@@ -55,7 +66,7 @@ export default function BabylonCanvas({
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
 
-    createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, cleanup}) => {
+    createScene(canvas, engine, socket, msgRef.current, lobbyId, DEBUG).then(({scene, resizeUi, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanup?.();
@@ -63,6 +74,7 @@ export default function BabylonCanvas({
         return;
       }
       cleanupRef.current = cleanup;
+      resizeUiRef.current = resizeUi;
 
       engine.runRenderLoop(() => {
         scene.render();
@@ -77,6 +89,7 @@ export default function BabylonCanvas({
         engineRef.current.dispose();
         engineRef.current = null;
       }
+      observer.disconnect();
     };
   }, 
   [socket, DEBUG]);

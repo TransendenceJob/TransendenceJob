@@ -21,6 +21,7 @@ export class Game {
   public scene: Scene;
   private camera: ArcRotateCamera;
   public sendState: () => void;
+  public sendPacket: msgToClientType;
   public state: GameState;
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
@@ -42,6 +43,7 @@ export class Game {
       this.scene,
     );
     this.sendState = sendStatePacket;
+    this.sendPacket = sendPacket;
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));

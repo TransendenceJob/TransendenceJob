@@ -1,0 +1,10 @@
+Order should be:
+Server in Lobby Mode
+CS_ConnectionAttempt -> SC_StartLobby
+
+CS_ReadyChange -> SC_StartLoading
+SC_GameState -> Reset StateMachine
+SC_GameData -> Set up scene in Pending Mode
+
+CS_FinishedLoading -> SC_StartGame
+SC_StartGame -> Show Canvas and switch to mode 1

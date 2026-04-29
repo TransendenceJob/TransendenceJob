@@ -1,10 +1,10 @@
-import { SC_Base, SC_Type } from '@shared/ServerClientPackets';
+import { SC_Base, SC_Type } from '@/shared/packets/ServerClientPackets';
 
 /**
  * @note Explanation of this Syntax:
  * We are exporting a type of a function.
- * The function has to be called with a data type T that has the fields from CS_Base
- * AND a type parameter with an enum value from the enum CS_Type,
+ * The function has to be called with a data type T that has the fields from SC_Base
+ * AND a type parameter with an enum value from the enum SC_Type,
  * or it will throw a compile time error
  * The function takes 2 parameters
  * Parameter 1 is called type, whoose data type is the enum from the type field of the interface given to the template
@@ -13,13 +13,13 @@ import { SC_Base, SC_Type } from '@shared/ServerClientPackets';
  * We specify the function returns the specified interface type and return such an object
  *
  * @note You use it like:
- * msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {});
+ * msgToClient<SC_...>(SC_Type.SC_..., {});
  * where
- * CS_ConnectAttempt is the interface type
- * CS_Type.CS_ConnectAttempt is the enum entry for the type value
+ * SC_... is the interface type
+ * SC_Type.SC_... is the enum entry for the type value
  * {} is an object that can hold the non-base values your object needs set
  */
 export type msgToClientType = <T extends SC_Base & { type: SC_Type }>(
   type: T['type'],
-  data: Omit<T, 'type' | 'lobbyId'>,
+  data: Omit<T, keyof SC_Base | 'type'>,
 ) => void;

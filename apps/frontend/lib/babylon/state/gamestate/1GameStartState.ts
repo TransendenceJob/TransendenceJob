@@ -14,6 +14,7 @@ export class GameStartState implements IState {
 
 		// Setup
 		this.machine.guiHelper?.notifications.add("A new game has begun")
+		this.machine.guiHelper?.notifications.start();
 		fadeAnimation(this.machine.scene, true);
 
 		// Actions

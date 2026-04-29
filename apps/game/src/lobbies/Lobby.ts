@@ -10,9 +10,11 @@ import {
   SC_DEV_ButtonPress,
   SC_DEV_GameState,
 } from '@/shared/packets/ServerClientPackets';
+import { gameData } from '@/shared/packets/util';
 import { SeqHandler } from './SeqHandler';
 import { Game } from '../game/Game';
 import { MessageQueue } from './MessageQueue';
+import { GameState } from '@/shared/state/GameState';
 
 enum LobbyStateEnum {
   ClosedLobby = 0,
@@ -132,7 +134,15 @@ export class Lobby {
   msgToServer(data: CS_GenericPacket) {
     this.queue.write(data);
   }
-
+  /*
+  <T extends SC_Base & { type: SC_Type }>(
+    type: T['type'],
+    data: Omit<T, keyof SC_Base | 'type'>,
+  ): T {
+    const response = this.createBasePacket<T>(type, data);
+    this.msgToClient(JSON.stringify(response));
+  }
+    */
   /**
    * Change state of Lobby, automatically tells Clients to change as well
    * @param newState New State to set Lobby to
@@ -140,6 +150,14 @@ export class Lobby {
   private setState(newState: LobbyStateEnum) {
     if (this.state == newState) return;
     this.state = newState;
+    const response = this.createBasePacket<SC_GenericStatePacket>(
+      translateLobbyState(newState),
+      {},
+    );
+    this.msgToClient(JSON.stringify(response));
+    if (this.state == LobbyStateEnum.Game) {
+      this.game?.setState(GameState.GAME_START);
+    }
     if (newState != LobbyStateEnum.Game) {
       this.game?.dispose();
       this.game = undefined;
@@ -150,19 +168,16 @@ export class Lobby {
         () => {
           this.sendGameStatePacket();
         },
+        // This is passing a newly made function that can send Server->Client packets
         <T extends SC_Base & { type: SC_Type }>(
           type: T['type'],
           data: Omit<T, keyof SC_Base | 'type'>,
         ) => {
-          this.createBasePacket(type, data);
+          const response = this.createBasePacket<T>(type, data);
+          this.msgToClient(JSON.stringify(response));
         },
       );
     }
-    const response = this.createBasePacket<SC_GenericStatePacket>(
-      translateLobbyState(newState),
-      {},
-    );
-    this.msgToClient(JSON.stringify(response));
   }
 
   dispose() {

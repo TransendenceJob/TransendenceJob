@@ -9,7 +9,14 @@ export function stateUi(
 	buttonGui: AdvancedDynamicTexture,
 	canvas: HTMLCanvasElement,
 	msgToServer: msgToServerType,
-) {
-	setStateText(textGui, canvas);
-	setStateButtons(buttonGui, canvas, msgToServer);
+) : () => void {
+	const resizeFunctions: Array<() => void> = [];
+	setStateText(textGui, canvas, resizeFunctions);
+	setStateButtons(buttonGui, canvas, msgToServer, resizeFunctions);
+	const resize = () => {
+		resizeFunctions.forEach((func) => {
+			func()
+		})
+	}
+	return (resize);
 }
