@@ -7,9 +7,56 @@ interface GameNotificationEntry {
     text: TextBlock,
     pos: number;
 }
+
+function generateAnimationAction(
+    texts: Array<GameNotificationEntry>,
+    gui: AdvancedDynamicTexture,
+    spread: number,
+    fontSize: number,
+    scrollSpeed: number,
+    minNotifs: number,
+) {
+    return new ExecuteCodeAction({
+        trigger: ActionManager.OnEveryFrameTrigger,
+    },
+    () => {
+        if (texts.length == 0)
+            return ;
+
+        // Calculate dynamic boundaries based on current GUI height
+        // We use 0.5 because 'top' 0 is the center of the screen
+        const guiHeight = gui.getSize().height;
+        const topBoundary = -guiHeight / 2;
+
+        const speed = scrollSpeed * Math.max(0, texts.length - minNotifs) * 0.35;
+        // An alternative, which makes speed changes happen more smoothely
+        // const speed = this.scrollSpeed * ((this.texts.length - 1 + this.texts[0].text.alpha) - this.minNotifs) * 0.35;
+        
+        for (let i = 0; i < texts.length && texts[i]; i++) {
+            const entry = texts[i];
+            // Fade out
+            //entry.pos -= speed;
+            const targetPos: number = topBoundary + (i * spread) + fontSize;
+            entry.pos = targetPos;
+            entry.text.top = `${entry.pos}px`;
+            //const fadeStart = topBoundary + spread;
+            //const fadeEnd = topBoundary + fontSize;
+            //if (entry.pos <= fadeStart) {
+            //    const alpha = (entry.pos - fadeEnd) / (fadeStart - fadeEnd);
+            //    entry.text.alpha = Math.max(0, Math.min(1, alpha));
+            // Delete entries when fully faded
+            if (entry.pos < topBoundary) {
+                entry.text.dispose();
+                texts.splice(i, 1);
+                i--;
+            }
+        }
+    })
+}
+
 /**
  * @param gui GUI element that gets control of the notification text blocks
- * @param canvas_height the height property of the Babylon Canvas (canvas.height)
+ * @param canvas.height the height property of the Babylon Canvas (canvas.height)
  * @param scene Scene to use for animating texts to move
  * 
  * @property scene reference to scene
@@ -32,11 +79,10 @@ interface GameNotificationEntry {
 export class GameNotifications {
     private scene: Scene;
     private texts: Array<GameNotificationEntry>;
+    private buffer: Array<string>;
     private gui: AdvancedDynamicTexture;
+    private started: boolean;
     public spread: number;
-    public topPosition: number;
-    public startFadePosition: number;
-    public endFadePosition: number;
     public fontSize: number = 24;
     public color: string = "#63a6d0";
     public scrollSpeed: number = 1;
@@ -45,45 +91,23 @@ export class GameNotifications {
     public maxNotifLength = 120;
     public action: ExecuteCodeAction;
 
-    constructor(gui: AdvancedDynamicTexture, canvas_height: number, scene: Scene) {
+    constructor(gui: AdvancedDynamicTexture, canvas: HTMLCanvasElement, scene: Scene) {
         this.scene = scene;
         this.texts = [];
+        this.buffer = [];
         this.gui = gui;
+        this.started = false;
         this.spread = 1.25 * this.fontSize;
-        this.topPosition =  -canvas_height / 2 + this.fontSize;
-        this.startFadePosition = -canvas_height / 2 + this.spread + this.fontSize;
-        this.endFadePosition = -canvas_height / 2 + this.fontSize * 1;
 
         // Animation of texts fading
-        this.action = new ExecuteCodeAction({
-            trigger: ActionManager.OnEveryFrameTrigger,
-        },
-        () => {
-            if (this.texts.length == 0)
-                return ;
-            const start = this.startFadePosition;
-            const end = this.endFadePosition;
-            const speed = this.scrollSpeed * Math.max(0, this.texts.length - this.minNotifs) * 0.35;
-            // An alternative, which makes speed changes happen more smoothely
-            // const speed = this.scrollSpeed * ((this.texts.length - 1 + this.texts[0].text.alpha) - this.minNotifs) * 0.35;
-           
-            for (let i = 0; i < this.texts.length && this.texts[i]; i++) {
-                const entry = this.texts[i];
-                // Fade out
-                if (entry.pos <= start && entry.pos >= end) {
-                    entry.text.alpha = 1 - (entry.pos - start) / (end - start);
-                }
-                // Move up
-                entry.text.top = entry.pos - speed;
-                entry.pos -= speed;
-                // Delete entries when fully faded
-                if (entry.pos < this.topPosition) {
-                    entry.text.dispose();
-                    this.texts.splice(i, 1);
-                    i--;
-                }
-            }
-        })
+        this.action = generateAnimationAction(
+            this.texts,
+            this.gui,
+            this.spread,
+            this.fontSize,
+            this.scrollSpeed,
+            this.minNotifs,
+        )
         scene.actionManager.registerAction(this.action);
     }
 
@@ -92,12 +116,19 @@ export class GameNotifications {
      * @param text Message to display
      * @warning if message would exceed maxNotifs it is ignored
      * @note cuts off messages if they are longer then maxNotifLength
+     * @note Messages will only appear, after start() has been called
      */
     add(text: string) {
         // Limitting input, messages may be swallowed
-        if (this.texts.length >= this.maxNotifs || !this.gui) {
+        if (this.texts.length >= this.maxNotifs) {
             return ;
         }
+
+        if (!this.started) {
+            this.buffer.push(text);
+            return ;
+        }
+
         // Cut off messages, maximum has to at least allow 3 characters
         const maxLength = (this.maxNotifLength >= 3) ?
             this.maxNotifLength :
@@ -107,15 +138,27 @@ export class GameNotifications {
             new TextBlock("notification", text);
         newest.fontSize = this.fontSize;
         newest.color = this.color;
-        const position = (this.texts.length == 0) ?
-            this.topPosition + this.spread :
-            this.texts[this.texts.length -1].pos + this.spread;
-        newest.top = position;
-        this.texts.push({text: newest, pos: position});
+        this.texts.push({text: newest, pos: 0});
         this.gui.addControl(newest);
+    }
+
+    /**
+     * Call this when the canvas is properly set up to make the stored messages appear
+     */
+    start() {
+        this.started = true;
+        this.buffer.forEach((text) => {
+            this.add(text);
+        })
     }
 
     dispose() {
         this.scene.actionManager.unregisterAction(this.action);
+        this.started = false;
+        this.texts.forEach((text) => {
+            text.text.dispose();
+        })
+        this.texts = [];
+        this.buffer = [];
     }
 }

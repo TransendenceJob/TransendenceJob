@@ -45,6 +45,6 @@ export function spawnPlayers(data: gameData) {
       if (!position) break;
       new_player.worms.push({ pos_x: position.x, pos_y: position.y });
     }
-    (data.players as playerData[]).push(new_player);
+    data.players.push(new_player);
   }
 }

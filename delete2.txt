@@ -1,0 +1,21 @@
+Order is:
+CS_ConnectionAttempt -> SC_StarLobby
+CS_GetGameState -> SC_DEV_GameState 0
+	this is fine for debugging 
+
+CS_DEV_StartLoading
+	also fine for debugging
+	!!!Missing SC_StartLoading!!!
+SC_DEV_GameState 0
+SC_GameData
+SC_StartLoading
+	In wrong posititon ^
+SC_DEV_GameState 1
+	Should 
+SC_DEV_GameState 2
+SC_DEV_GameState 3
+SC_DEV_GameState 4
+
+
+1) SC_StartLoading is sent at wrong time
+2) GameServers GameState should only jump to 1, when Client says Loading finishes

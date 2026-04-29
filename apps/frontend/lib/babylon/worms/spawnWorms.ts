@@ -2,7 +2,7 @@ import { Scene, Vector3, Scalar, Color3 } from '@babylonjs/core';
 
 import { Worm } from './Worm';
 import { Player } from '../Player';
-import { generateSpawnAreas } from './vectorData';
+import { generateSpawnAreas } from '../data/vectorData';
 
 /**
  * Generates a position from the avaliable areas and returns it
