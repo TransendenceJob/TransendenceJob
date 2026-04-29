@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/Providers";
 import AuthModal from "@/components/AuthModal";
 import BattleArena from "@/components/BattleArena";
+import SearchHandler from "@/components/SearchHandler";
 
 
 function LandingPageContent() {
@@ -21,8 +22,18 @@ function LandingPageContent() {
             setAuthModalOpen(true);
         }
     }, [showLogin, isAuthenticated]);
+
     return (
         <div className="flex flex-col gap-16 py-12 max-w-5xl mx-auto px-6">
+
+            <Suspense fallback={null}>
+                <SearchHandler
+                    onLogin={() => {
+                        setAuthType('Login');
+                        setAuthModalOpen(true);
+                    }}
+                />
+            </Suspense>
 
             {isAuthenticated && (
                 <section className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800">

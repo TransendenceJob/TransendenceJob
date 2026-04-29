@@ -23,6 +23,7 @@ describe("ProtectedRoute Behavior", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        sessionStorage.clear();
         (useRouter as any).mockReturnValue({ push: mockPush });
         (usePathname as any).mockReturnValue("/protected-zone");
     });
@@ -72,7 +73,7 @@ describe("ProtectedRoute Behavior", () => {
 
     it("performs active validation when pathname changes", async () => {
         (useAuth as any).mockReturnValue({ isLoading: false, isAuthenticated: true });
-        localStorage.setItem("accessToken", "test-token");
+        sessionStorage.setItem("auth.accessToken", "test-token");
 
         render(<ProtectedRoute>Secret Content</ProtectedRoute>);
 
@@ -87,12 +88,12 @@ describe("ProtectedRoute Behavior", () => {
             isAuthenticated: true
         });
 
-        localStorage.setItem("accessToken", "test-token");
+        sessionStorage.setItem("auth.accessToken", "test-token");
 
         render(<ProtectedRoute>Secret Content</ProtectedRoute>);
 
         await waitFor(() => {
-            expect(authClient.getMe).toHaveBeenCalledWith("test-token");
+            expect(authClient.getMe).toHaveBeenCalledWith();
         });
     });
 });

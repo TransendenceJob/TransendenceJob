@@ -44,6 +44,8 @@ services:
     build:
       context: ../apps/frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
       additional_contexts:
         shared: ../shared/game
     container_name: frontend
@@ -51,6 +53,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     volumes:
       - frontend_next:/app/.next:ro
     expose:
@@ -261,7 +264,7 @@ services:
       - ../apps/stats:/app
       - stats_service_node_modules:/app/node_modules
       - stats_service_dist:/app/dist
-    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
+    command: [ "sh", "-c", "npm ci --include=dev && npx prisma generate && npm run build" ]
 
   stats_service:
     profiles: [ "prod" ]

@@ -22,20 +22,22 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     // useCallBack prevents rerun every react render
     const logout = useCallback(async () => {
-        const accessToken = localStorage.getItem("accessToken");
-        const refreshToken = localStorage.getItem("refreshToken");
+        const accessToken = sessionStorage.getItem("auth.accessToken");
+        const refreshToken = sessionStorage.getItem("auth.refreshToken");
 
         try {
             if (accessToken && refreshToken) {
-                await authClient.logout({ refreshToken }, accessToken);
+                await authClient.logout({ refreshToken });
             }
         } catch (error) {
             console.error("Server-side logout failed", error);
         } finally {
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("refreshToken");
-            setUser(null);
+            sessionStorage.removeItem("auth.accessToken");
+            sessionStorage.removeItem("auth.refreshToken");
+            sessionStorage.removeItem("auth.expiresIn");
+            sessionStorage.removeItem("auth.tokenType");
 
+            setUser(null);
             router.push("/");
         }
     }, [router]);
@@ -43,7 +45,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // run once on startup
     useEffect(() => {
         const bootstrapSession = async () => {
-            const token = localStorage.getItem('accessToken');
+            const token = sessionStorage.getItem('auth.accessToken');
 
             if (!token) {
                 setIsLoading(false);
@@ -51,11 +53,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             }
 
             try {
-                const result = await authClient.getMe(token);
+                const result = await authClient.getMe();
+
                 if (result.ok) {
                     setUser(result.data.user);
                 } else {
-                    localStorage.removeItem('accessToken'); // will be replaced be refresh call
+                    sessionStorage.removeItem('auth.accessToken');
+                    sessionStorage.removeItem('auth.refreshToken');
                 }
             } catch (error) {
                 console.error("Bootstrap failed", error);
@@ -64,14 +68,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             }
         };
 
-        bootstrapSession();
+        void bootstrapSession();
     }, []);
 
     // auto cleanup when cookies expire
     useEffect(() => {
         const handleUnauthorized = () => {
             console.warn("Session expired or unauthorized. Performing cleanup...");
-            logout();
+            void logout();
         };
 
         window.addEventListener("auth-unauthorized", handleUnauthorized);

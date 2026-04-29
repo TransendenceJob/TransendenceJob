@@ -31,11 +31,11 @@ const TestConsumer = () => {
 describe("Providers - Auth State Transitions", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        localStorage.clear();
+        sessionStorage.clear();
     });
 
-    it("bootstraps user from localStorage successfully", async () => {
-        localStorage.setItem("accessToken", "valid-token");
+    it("bootstraps user from sessionStorage successfully", async () => {
+        sessionStorage.setItem("auth.accessToken", "valid-token");
         (authClient.getMe as any).mockResolvedValue({
             ok: true,
             data: { user: { email: "test@test.com" } }
@@ -53,7 +53,7 @@ describe("Providers - Auth State Transitions", () => {
 
     it("triggers logout state when 'auth-unauthorized' event is fired", async () => {
         // Start logged in
-        localStorage.setItem("accessToken", "expiring-token");
+        sessionStorage.setItem("auth.accessToken", "expiring-token");
         (authClient.getMe as any).mockResolvedValue({
             ok: true,
             data: { user: { email: "zombie@42.de" } }
@@ -73,7 +73,7 @@ describe("Providers - Auth State Transitions", () => {
 
         await waitFor(() => {
             expect(getByText("Out")).toBeInTheDocument();
-            expect(localStorage.getItem("accessToken")).toBeNull();
+            expect(sessionStorage.getItem("auth.accessToken")).toBeNull();
             expect(mockPush).toHaveBeenCalledWith("/");
         });
     });
