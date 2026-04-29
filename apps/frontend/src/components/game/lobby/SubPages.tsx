@@ -6,10 +6,12 @@ import EndPage from "@/src/components/game/lobby/EndPage";
 import ErrorPage from '@/src/components/game/lobby/ErrorPage';
 import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
+import {PlayerSlot} from "@/app/(game)/game/page";
 
 interface Params {
   state: string,
   msgToServer: msgToServerType,
+  slots: PlayerSlot[];
   socket: Socket,
   isConnected: boolean,
   DEBUG: boolean,
@@ -30,13 +32,14 @@ export default function SubPages({
   socket,
   isConnected,
   DEBUG,
+  slots,
 }: Params) {
   if (state == 'CONNECTING') {
     return <ConnectingPage  msgToServer={msgToServer}
                             isConnected={isConnected}/>
   }
   else if (state === 'LOBBY') {
-    return <LobbyPage msgToServer={msgToServer}/>
+    return <LobbyPage msgToServer={msgToServer} players={slots}/>
   }
   else if (state === 'LOADING') {
     return <LoadingPage msgToServer={msgToServer}/>

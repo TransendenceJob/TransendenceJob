@@ -4,32 +4,25 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CS_DEV_StartLoading, CS_Type } from '@/shared/packets/ClientServerPackets';
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
+import { PlayerSlot } from "@/app/(game)/game/page";
 
 interface Params {
   msgToServer: msgToServerType;
+  players: PlayerSlot [];
 }
 
-export default function LobbyPage({ msgToServer }: Params) {
-  const [players, setPlayers] = useState([
-    { id: 0, name: "Alpha_Wolf", isReady: false, color: "text-red-600", border: "border-red-200", bg: "bg-red-50/50" },
-    { id: 1, name: "Beta_Tactician", isReady: false, color: "text-blue-600", border: "border-blue-200", bg: "bg-blue-50/50" },
-    { id: 2, name: "Gamma_Striker", isReady: false, color: "text-emerald-600", border: "border-emerald-200", bg: "bg-emerald-50/50" },
-    { id: 3, name: "Delta_Lead", isReady: false, color: "text-amber-600", border: "border-amber-200", bg: "bg-amber-50/50" },
-  ]);
+export default function LobbyPage({ msgToServer, players }: Params) {
 
   const [feed, setFeed] = useState<{id: number, msg: string}[]>([]);
+  const feedCounter = useRef(0);
 
   const readyCount = players.filter(p => p.isReady).length;
-  const allReady = readyCount === players.length;
-
-  const feedCounter = useRef(0);
+  const allReady = readyCount === 4;
 
   const addFeedEvent = (msg: string) => {
     setFeed(prev => {
       if (prev.length > 0 && prev[prev.length - 1].msg === msg) return prev;
-
       feedCounter.current += 1;
-
       return [
         ...prev,
         { id: feedCounter.current, msg }
@@ -37,15 +30,13 @@ export default function LobbyPage({ msgToServer }: Params) {
     });
   };
 
-  const togglePlayerReady = (id: number) => {
-    const player = players.find(p => p.id === id);
-    if (!player) return;
+  const togglePlayerReady = (player: PlayerSlot) => {
+    if (!player.userId) return;
+    msgToServer(CS_Type.CS_ReadyChange, {
+      ready: !player.isReady
+    });
 
-    const newState = !player.isReady;
-
-    setPlayers(prev => prev.map(p => p.id === id ? { ...p, isReady: newState } : p));
-
-    addFeedEvent(`${player.name} >> ${newState ? 'READY_CONFIRMED' : 'STANDBY_MODE'}`);
+    addFeedEvent(`${player.username} >> REQUESTING_SYNC`);
   };
 
   return (
@@ -113,9 +104,9 @@ export default function LobbyPage({ msgToServer }: Params) {
 
           {/* PLAYER CARDS */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {players.map((player) => (
+            {players.map((player,index) => (
                 <motion.div
-                    key={player.id}
+                    key={player.userId || `empty-${index}`} // use fall back index number for empty slots
                     whileHover={{ y: -6 }}
                     transition={{ type: "spring", stiffness: 300 }}
                     className="relative"
@@ -124,13 +115,13 @@ export default function LobbyPage({ msgToServer }: Params) {
                 ${player.isReady ? 'border-zinc-900 bg-white shadow-2xl shadow-zinc-200' : 'border-zinc-200 bg-white shadow-sm'}
               `}>
                     <div className="flex justify-between items-center mb-10">
-                      <span className="font-mono text-[10px] text-zinc-400 font-black tracking-widest uppercase">Node_0{player.id + 1}</span>
+                      <span className="font-mono text-[10px] text-zinc-400 font-black tracking-widest uppercase">Node_0{index + 1}</span>
                       <div className={`w-3 h-3 rounded-full transition-all duration-700 ${player.isReady ? 'bg-blue-600' : 'bg-zinc-200'}`} />
                     </div>
 
-                    <div className={`flex-grow flex flex-col items-center justify-center gap-4 rounded-[1.5rem] transition-all duration-700 ${player.isReady ? player.bg : 'bg-zinc-50'}`}>
+                    <div className={`flex-grow flex flex-col items-center justify-center gap-4 rounded-[1.5rem] transition-all duration-700 ${player.isReady ? 'bg-blue-50/50': 'bg-zinc-50'}`}>
                   <span className={`text-2xl font-black uppercase tracking-tight transition-colors duration-500 ${player.isReady ? player.color : 'text-zinc-300'}`}>
-                    {player.name}
+                    {player.username}
                   </span>
 
                       {player.isReady && (
@@ -145,14 +136,19 @@ export default function LobbyPage({ msgToServer }: Params) {
                     </div>
 
                     <button
-                        onClick={() => togglePlayerReady(player.id)}
+                        onClick={() => {
+                          console.log("Button clicked!");
+                          // disabled={!player.userId}
+                          togglePlayerReady(player);
+                        }}
                         className={`mt-10 w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95
-                    ${player.isReady
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
-                            : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}
-                  `}
+                          ${!player.userId ? 'opacity-50 cursor-not-allowed bg-zinc-100 text-zinc-300' :
+                            player.isReady
+                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
+                              : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}
+                          `}
                     >
-                      {player.isReady ? 'Confirmed' : 'Standby'}
+                      {!player.userId ? 'Empty Slot' : player.isReady ? 'Confirmed' : 'Standby'}
                     </button>
                   </div>
                 </motion.div>
@@ -162,9 +158,9 @@ export default function LobbyPage({ msgToServer }: Params) {
           {/* System Status */}
           <div className="mt-20 flex flex-col items-center">
             <div className="w-full max-w-md bg-white border border-zinc-200 rounded-full p-1.5 mb-6 flex gap-1 shadow-inner">
-              {players.map((p) => (
+              {players.map((p, index) => (
                   <div
-                      key={p.id}
+                      key={p.userId || `bar-${index}`}
                       className={`flex-grow h-3 rounded-full transition-all duration-1000 ease-out ${p.isReady ? 'bg-blue-600 shadow-sm' : 'bg-zinc-100'}`}
                   />
               ))}
@@ -206,6 +202,13 @@ export default function LobbyPage({ msgToServer }: Params) {
           </div>
 
         </main>
+          <div>
+              <button className="border-2 border-solid rounded-xl bg-slate-700  w-30 h-10" onClick={
+                  () => {
+                      msgToServer<CS_DEV_StartLoading>(CS_Type.CS_DEV_StartLoading, {});
+                  }
+              }>Load Assets</button>
+          </div>
       </div>
   );
 }
