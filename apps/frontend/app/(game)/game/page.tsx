@@ -6,6 +6,7 @@ import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
 import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets';
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { useAuth } from "@/components/Providers";
 
 export interface PlayerSlot {
   userId: string | null;
@@ -34,8 +35,9 @@ export default function LobbyPageController() {
       [0, 1, 2, 3].map(i => ({ userId: null, username: "Empty Slot", isReady: false, color: COLORS[i] }))
   );
 
+  const { user, isAuthenticated } = useAuth();
   // grab this later from auth
-  const myUserId = "current_user_id";
+  const myUserId = user?.id || "guest";
 
   useEffect(() => {
     const onConnect = () => setIsConnected(true);
@@ -105,6 +107,10 @@ export default function LobbyPageController() {
     };
   }, [lobbyId]);
 
+  // for now do it like this later we use protected route here
+  if (!isAuthenticated) {
+    return <div>Please log in to join the lobby.</div>;
+  }
   // Function for simpler packet handling
   const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
       type: T['type'],
