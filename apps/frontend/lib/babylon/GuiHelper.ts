@@ -76,6 +76,9 @@ export class GuiHelper {
 
 		// Set up Game Notification UI element
 		this.notifications = new GameNotifications(this.textGui, canvas, scene);
+
+		// FOR DEBUGGING ONLY! Remove this line later on.
+		this.notifications.start();
 		this.resize();
 	}
 

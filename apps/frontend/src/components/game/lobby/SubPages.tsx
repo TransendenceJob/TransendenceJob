@@ -44,7 +44,12 @@ export default function SubPages({
   return (
     <>
     {/* Game always exists, but not always displayed */}
-    <div style = {{ display: state === 'GAME' ? 'block' : 'none', width: "100%", height: "100%"}}>
+    <div style = {{
+      position: state === 'GAME' ? 'relative' : 'absolute',
+      opacity: state === 'GAME' ? 1 : 0,
+      visibility: state === 'GAME' ? 'visible' : 'hidden',
+      width: "100%", height: "100%"
+    }}>
       <BabylonCanvas msgToServer={msgToServer}
                       socket={socket}
                       lobbyId={lobbyId}

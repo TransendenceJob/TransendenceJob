@@ -24,10 +24,8 @@ export class SocketStatus {
 		if (!this || !this.obj)
 			return ;
 		this.obj.top =  -1 * (this.canvasRef.height / 2 * 0.71) + this.fontSize / 2;
-		console.log(`${-1 * (this.canvasRef.height / 2 * 0.71)} + ${this.fontSize / 2}`);
 
 		this.obj.left = (this.canvasRef.width / 2) * 0.877;
-		console.log(`${this.obj.top}, ${this.obj.left}`);
 	}
 
 	set(connected: boolean) {
