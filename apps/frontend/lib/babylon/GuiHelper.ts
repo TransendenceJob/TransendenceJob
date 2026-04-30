@@ -40,6 +40,7 @@ export class GuiHelper {
 
 		// Text that displays the status of the socket connection
 		this.socketStatus = new SocketStatus(this.textGui, canvas);
+		this.resizeFunctions.push(() => this.socketStatus.resize());
 
 		// DEV TOOL sends packet to move to next state of Frontend Pages
 		const endGameButton = Button.CreateSimpleButton("endGame", "End Game");

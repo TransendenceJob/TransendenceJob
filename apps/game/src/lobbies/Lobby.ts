@@ -134,15 +134,7 @@ export class Lobby {
   msgToServer(data: CS_GenericPacket) {
     this.queue.write(data);
   }
-  /*
-  <T extends SC_Base & { type: SC_Type }>(
-    type: T['type'],
-    data: Omit<T, keyof SC_Base | 'type'>,
-  ): T {
-    const response = this.createBasePacket<T>(type, data);
-    this.msgToClient(JSON.stringify(response));
-  }
-    */
+
   /**
    * Change state of Lobby, automatically tells Clients to change as well
    * @param newState New State to set Lobby to
