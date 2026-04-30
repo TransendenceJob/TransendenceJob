@@ -5,11 +5,15 @@ import { GameState } from '../../../../shared/state/GameState';
 // @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 
-export class GamePendingState implements IState {
+export class GameLoadingState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
+
+		// Setup
+		this.machine.setupGame()
+		this.machine.guiHelper?.notifications.add("Finished loading")
 
 		// Actions
 		const actions: Array<IAction> = [];
@@ -25,7 +29,7 @@ export class GamePendingState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.GAME_LOADING);
+			this.machine.sendStatePacket(GameState.GAME_START);
 		}
 	}
 
