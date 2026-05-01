@@ -97,15 +97,16 @@ export class MessageQueue {
 			return ;
 		}
 
-		if (!this.lastSeq)
+		if (!this.lastSeq) {
 			this.lastSeq = object.seq[0] - 1;
+		}
 
 		// Put in buffer and sort buffer
 		this.buffer.push(object);
 		this.buffer.sort((a, b) => a.seq[0] - b.seq[0]);
 
 		// Move handleable buffer into queue
-		while (this.buffer.length > 0 && this.lastSeq && this.buffer[0].seq[0] == this.lastSeq + 1) {
+		while (this.buffer.length > 0 && this.lastSeq != undefined && this.buffer[0].seq[0] == this.lastSeq + 1) {
 			const nextPacket = this.buffer.shift()!;
 			this.queue.push(nextPacket);
 			this.lastSeq = nextPacket.seq[nextPacket.seq.length - 1];

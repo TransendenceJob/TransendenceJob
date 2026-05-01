@@ -4,15 +4,15 @@ import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
 import { GameState } from '@/shared/state/GameState';
 import { IState } from './gamestate/IState';
 import { GamePendingState } from './gamestate/0GamePendingState';
-import { GameStartState } from './gamestate/1GameStartState';
-import { RoundStartState } from './gamestate/2RoundStartState';
-import { TurnStartState } from './gamestate/3TurnStartState';
-import { PickWormState } from './gamestate/4PickWormState';
-import { MovementState } from './gamestate/5MovementState';
-import { AimingState } from './gamestate/6AimingState';
-import { TurnEndState } from './gamestate/7TurnEndState';
-import { GameEndState } from './gamestate/8GameEndState';
-import { SC_Base, SC_Type } from '@/shared/packets/ServerClientPackets';
+import { GameLoadingState } from './gamestate/1GameLoadingState';
+import { GameStartState } from './gamestate/2GameStartState';
+import { RoundStartState } from './gamestate/3RoundStartState';
+import { TurnStartState } from './gamestate/4TurnStartState';
+import { PickWormState } from './gamestate/5PickWormState';
+import { MovementState } from './gamestate/6MovementState';
+import { AimingState } from './gamestate/7AimingState';
+import { TurnEndState } from './gamestate/8TurnEndState';
+import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/msgToClientType';
 
 export class Game {
@@ -47,14 +47,15 @@ export class Game {
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));
-    this.stateMap.set(GameState.GAME_START, new GameStartState(this));
-    this.stateMap.set(GameState.ROUND_START, new RoundStartState(this));
-    this.stateMap.set(GameState.TURN_START, new TurnStartState(this));
-    this.stateMap.set(GameState.PICK_WORM, new PickWormState(this));
-    this.stateMap.set(GameState.MOVEMENT, new MovementState(this));
-    this.stateMap.set(GameState.AIMING, new AimingState(this));
-    this.stateMap.set(GameState.TURN_END, new TurnEndState(this));
-    this.stateMap.set(GameState.GAME_END, new GameEndState(this));
+    this.stateMap.set(GameState.GAME_LOADING, new GameLoadingState(this));
+    this.stateMap.set(GameState.GAME_START,   new GameStartState(this));
+    this.stateMap.set(GameState.ROUND_START,  new RoundStartState(this));
+    this.stateMap.set(GameState.TURN_START,   new TurnStartState(this));
+    this.stateMap.set(GameState.PICK_WORM,    new PickWormState(this));
+    this.stateMap.set(GameState.MOVEMENT,     new MovementState(this));
+    this.stateMap.set(GameState.AIMING,       new AimingState(this));
+    this.stateMap.set(GameState.TURN_END,     new TurnEndState(this));
+    this.stateMap.set(GameState.GAME_END,     new GameEndState(this));
     this.currentState = new GamePendingState(this);
     this.currentState.enter();
   }

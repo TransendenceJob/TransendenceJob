@@ -10,6 +10,7 @@ export class RoundStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
+		console.log('Entered Round Start State');
 		this.reset()
 
 		// Setup

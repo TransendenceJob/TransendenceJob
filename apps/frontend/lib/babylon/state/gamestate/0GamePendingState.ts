@@ -10,6 +10,7 @@ export class GamePendingState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
+		console.log('Entered Pending State');
 
 		// Actions
 		const actions: Array<IAction> = [];

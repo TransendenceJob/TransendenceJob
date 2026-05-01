@@ -48,7 +48,7 @@ export async function createScene(
 	const queue = new MessageQueue(lobbyId, socket, state, DEBUG, log);
 
 	// Then properly initialize and start the Game
-	state.init(queue)
+	state.init(queue);
 
 	const resizeUi = () => {
 		state.guiHelper?.resize();

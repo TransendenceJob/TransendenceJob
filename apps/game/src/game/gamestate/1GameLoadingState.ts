@@ -6,7 +6,7 @@ import { gameData } from '@/shared/packets/util';
 import { spawnPlayers } from '../spawning/spawnPlayers';
 import { generateGameData } from '../spawning/generateGameData';
 
-export class GamePendingState implements IState {
+export class GameLoadingState implements IState {
   constructor(private game: Game) {}
 
   enter() {
@@ -15,12 +15,13 @@ export class GamePendingState implements IState {
     // Setup
     console.log('Game pending');
 
-    // Transitionary state only, since we only create the Game, when the Lobby starts loading
+    // Tells Clients to start Loading
+    this.game.sendState();
+    // 
+    this.game.sendPacket(SC_Type.SC_GameData, generateGameData());
   }
 
-  tick() {
-    this.game.setState(GameState.GAME_LOADING);
-  }
+  tick() {}
 
   exit() {
     this.reset();

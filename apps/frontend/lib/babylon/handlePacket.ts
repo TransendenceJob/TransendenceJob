@@ -10,11 +10,9 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 	switch (data.type) {
 		case SC_Type.SC_DEV_GameState : {
 			const text = state.guiHelper?.textGui.getControlByName("get_state");
-			if (!text) {
-				console.warn("Babylon Error: Cannot find element to display game state");
-				return ;
+			if (text) {
+				text.text = `Current State: ${data.gameState}`;
 			}
-			text.text = `Current State: ${data.gameState}`;
 			state.setState(data.gameState as GameState);
 		}
 	}

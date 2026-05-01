@@ -144,7 +144,8 @@ export class StateMachine {
 		this.scene.actionManager.actions = [];
 		
 		// Add actions that always need to exist
-		this.scene.actionManager.registerAction(this.guiHelper?.notifications.action)
+		if (this.guiHelper)
+			this.scene.actionManager.registerAction(this.guiHelper?.notifications.action)
 
 		// Register new ones
 		if (!actions)

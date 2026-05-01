@@ -10,7 +10,7 @@ export class GameLoadingState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
-
+		console.log('Entered Loading State');
 		// Setup
 		this.machine.setupGame()
 		this.machine.guiHelper?.notifications.add("Finished loading")

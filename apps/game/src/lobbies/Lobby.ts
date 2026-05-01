@@ -172,8 +172,21 @@ export class Lobby {
     }
   }
 
-  dispose() {
-    this.engine.dispose();
+  private connectToGame() {
+    let state = translateLobbyState(this.state);
+    if (state == SC_Type.SC_StartGame) {
+      console.log("Rejoining active game");
+      // Start a new Game when player connects mid-game (Temporary only)
+      this.setState(LobbyStateEnum.OpenLobby);
+      this.setState(LobbyStateEnum.Loading);
+      state = SC_Type.SC_StartLoading;
+    }
+    const response: SC_GenericStatePacket = {
+      type: state,
+      lobbyId: this.id,
+      seq: [0],
+    };
+    this.msgToClient(JSON.stringify(response));
   }
 
   private handlePackets() {
@@ -184,12 +197,8 @@ export class Lobby {
       // Client wants to connect, so send them the current state to display
       switch (data.type) {
         case CS_Type.CS_ConnectAttempt: {
-          const response: SC_GenericStatePacket = {
-            type: translateLobbyState(this.state),
-            lobbyId: this.id,
-            seq: [0],
-          };
-          this.msgToClient(JSON.stringify(response));
+          // Just make a new Game
+          this.connectToGame();
           break;
         }
 
@@ -250,5 +259,9 @@ export class Lobby {
         }
       }
     });
+  }
+  
+  dispose() {
+    this.engine.dispose();
   }
 }

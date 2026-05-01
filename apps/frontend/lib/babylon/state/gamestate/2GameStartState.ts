@@ -10,6 +10,7 @@ export class GameStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
+		console.log('Entered Game start State');
 		this.reset()
 
 		// Setup
