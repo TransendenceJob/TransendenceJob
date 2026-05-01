@@ -15,6 +15,7 @@ interface Params {
   socket: Socket,
   isConnected: boolean,
   DEBUG: boolean,
+  currentUserId: string
 }
 
 /**
@@ -33,13 +34,14 @@ export default function SubPages({
   isConnected,
   DEBUG,
   slots,
+  currentUserId
 }: Params) {
   if (state == 'CONNECTING') {
     return <ConnectingPage  msgToServer={msgToServer}
                             isConnected={isConnected}/>
   }
   else if (state === 'LOBBY') {
-    return <LobbyPage msgToServer={msgToServer} players={slots}/>
+    return <LobbyPage msgToServer={msgToServer} players={slots} currentUserId={currentUserId}/>
   }
   else if (state === 'LOADING') {
     return <LoadingPage msgToServer={msgToServer}/>

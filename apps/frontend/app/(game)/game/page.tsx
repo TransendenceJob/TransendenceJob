@@ -23,21 +23,39 @@ export default function LobbyPageController() {
   /** State of the Page */
   const [state, setState] = useState("CONNECTING");
 
-  /** bool wether websocket is connected */
+  /** bool whether websocket is connected */
   const [isConnected, setIsConnected] = useState(false);
 
   /** number representing to which lobby we are connected */
   /** Since we only have 1 lobby so far, and no way to specify, which to join, this is useless so far */
   const [lobbyId, setLobbyId] = useState(0);
 
-  // initialize 4 empty player slots
+  const { user, isAuthenticated } = useAuth();
+  const myUserId = user?.id || "guest";
+
+  // initialize 4 empty player slots for static purpose in the first render
   const [slots, setSlots] = useState<PlayerSlot[]>(
       [0, 1, 2, 3].map(i => ({ userId: null, username: "Empty Slot", isReady: false, color: COLORS[i] }))
   );
 
-  const { user, isAuthenticated } = useAuth();
-  // grab this later from auth
-  const myUserId = user?.id || "guest";
+  // Function for simpler packet handling
+  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
+      type: T['type'],
+      data: Omit<T, 'type' | 'lobbyId'>,
+  ) => {
+    const packet = {
+      type,
+      lobbyId,
+      ...data };
+    const packet_string = JSON.stringify(packet);
+    if (socket?.connected) {
+      socket.emit('msgToServer', packet_string);
+      if (DEBUG) console.log("Server Sent:", packet_string);
+    }
+    else {
+      console.warn("Socket not connected. Cannot send.");
+    }
+  }, [lobbyId]);
 
   useEffect(() => {
     const onConnect = () => setIsConnected(true);
@@ -66,20 +84,36 @@ export default function LobbyPageController() {
 
           case SC_Type.SC_LobbyData:
             // If the server provides a lobbyId, sync it here
-            if (p.lobbyId) setLobbyId(p.lobbyId);
+            if (p.lobbyId !== undefined) setLobbyId(p.lobbyId);
 
             setSlots(prev => {
-              const newSlots = [...prev];
-              p.players.forEach((playerData: any, i: number) => {
-                if (newSlots[i]) newSlots[i] = { ...newSlots[i], ...playerData };
-              });
+              // made sure we always use the newest server data to handle disconnect properly
+              const newSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
+                userId: null,
+                username: "Empty Slot",
+                isReady: false,
+                color: COLORS[i]
+              }));
+
+              // fill slots with data from server
+              if (Array.isArray(p.players)) {
+                p.players.forEach((playerData: any, i: number) => {
+                  if (newSlots[i]) {
+                    newSlots[i] = {
+                      ...newSlots[i],
+                      userId: playerData.userId,
+                      username: playerData.username || playerData.userId || "Unknown",
+                      isReady: !!playerData.isReady,
+                    };
+                  }
+                });
+              }
               return newSlots;
             });
             break;
         }
       };
-
-      // 1. Handle State Transitions
+      // Handle State Transitions
       switch (packet.type) {
         case SC_Type.SC_StartLobby:       setState("LOBBY"); break;
         case SC_Type.SC_StartLoading:     setState("LOADING"); break;
@@ -88,7 +122,7 @@ export default function LobbyPageController() {
         case SC_Type.SC_DEV_StartConnecting: setState("CONNECTING"); break;
       }
 
-      // 2. Handle Lobby UI updates
+      // Handle Lobby UI updates
       handleLobbyUpdates(packet);
     };
     // Bind functions to events
@@ -107,28 +141,18 @@ export default function LobbyPageController() {
     };
   }, [lobbyId]);
 
+
+  useEffect(() => {
+    if (isConnected && isAuthenticated) {
+      console.log("Sending JoinLobby request for user:", myUserId);
+      msgToServer(CS_Type.CS_JoinLobby, { userId: myUserId });
+    }
+  }, [isConnected, isAuthenticated, msgToServer, myUserId]);
+
   // for now do it like this later we use protected route here
   if (!isAuthenticated) {
     return <div>Please log in to join the lobby.</div>;
   }
-  // Function for simpler packet handling
-  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
-      type: T['type'],
-      data: Omit<T, 'type' | 'lobbyId'>,
-  ) => {
-    const packet = {
-      type,
-      lobbyId,
-      ...data };
-    const packet_string = JSON.stringify(packet);
-    if (socket?.connected) {
-      socket.emit('msgToServer', packet_string);
-      if (DEBUG) console.log("Server Sent:", packet_string);
-    }
-    else {
-      console.warn("Socket not connected. Cannot send.");
-    }
-  }, [lobbyId]);
 
   return (
       <main className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center">
@@ -140,6 +164,7 @@ export default function LobbyPageController() {
             isConnected={isConnected}
             DEBUG={DEBUG}
             slots={slots}
+            currentUserId={myUserId}
         />
       </main>
   );

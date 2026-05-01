@@ -9,9 +9,10 @@ import { PlayerSlot } from "@/app/(game)/game/page";
 interface Params {
   msgToServer: msgToServerType;
   players: PlayerSlot [];
+  currentUserId: string;
 }
 
-export default function LobbyPage({ msgToServer, players }: Params) {
+export default function LobbyPage({ msgToServer, players, currentUserId }: Params) {
 
   const [feed, setFeed] = useState<{id: number, msg: string}[]>([]);
   const feedCounter = useRef(0);
@@ -31,12 +32,16 @@ export default function LobbyPage({ msgToServer, players }: Params) {
   };
 
   const togglePlayerReady = (player: PlayerSlot) => {
-    if (!player.userId) return;
-    msgToServer(CS_Type.CS_ReadyChange, {
-      ready: !player.isReady
-    });
+      if (!player.userId || player.userId !== currentUserId) {
+          console.warn("You can't toggle someone else's ready status!");
+          return;
+      }
 
-    addFeedEvent(`${player.username} >> REQUESTING_SYNC`);
+      msgToServer(CS_Type.CS_ReadyChange, {
+          ready: !player.isReady
+      });
+
+      addFeedEvent(`YOU >> REQUESTING_SYNC`);
   };
 
   return (
