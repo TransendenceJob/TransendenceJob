@@ -22,6 +22,7 @@ export enum CS_Type {
 	CS_ReadyChange =			"CS_ReadyChange",
 	CS_FinishedLoading =		"CS_FinishedLoading",
 	CS_FailedLoading =			"CS_FailedLoading",
+    CS_JoinLobby= 			    "CS_JoinLobby",
 }
 
 /**
@@ -40,6 +41,15 @@ export interface CS_ConnectAttempt extends CS_Base {
 	type: CS_Type.CS_ConnectAttempt,
 }
 
+/**
+ * Sent when a user wants to formally join the lobby slots
+ * @param userId identifying number for a player
+ */
+export interface CS_JoinLobby extends CS_Base {
+	type: CS_Type.CS_JoinLobby;
+	userId: string;
+}
+
 // LOBBY ======================================================================
 
 /**
@@ -49,7 +59,7 @@ export interface CS_ConnectAttempt extends CS_Base {
  */
 export interface CS_ReadyChange extends CS_Base {
 	type: CS_Type.CS_ReadyChange,
-	userId: number,
+	userId: string,
 	ready: boolean,
 }
 
@@ -68,7 +78,7 @@ export interface CS_DEV_StartLobby extends CS_Base {
  */
 export interface CS_FinishedLoading extends CS_Base {
 	type: CS_Type.CS_FinishedLoading,
-	userId: number,
+	userId: string,
 }
 
 /**
@@ -78,7 +88,7 @@ export interface CS_FinishedLoading extends CS_Base {
  */
 export interface CS_FailedLoading extends CS_Base {
 	type: CS_Type.CS_FailedLoading,
-	userId: number,
+	userId: string,
 	msg: string,
 }
 
@@ -120,7 +130,7 @@ export interface CS_DEV_StartEndscreen extends CS_Base {
 }
 
 export type CS_GenericPacket = 
-			CS_ConnectAttempt | CS_ReadyChange | CS_DEV_StartLobby |
+			CS_ConnectAttempt | CS_ReadyChange | CS_JoinLobby | CS_DEV_StartLobby |
 			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
 			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen 
 			;

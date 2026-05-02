@@ -96,14 +96,14 @@ export default function LobbyPageController() {
               }));
 
               // fill slots with data from server
-              if (Array.isArray(p.players)) {
-                p.players.forEach((playerData: any, i: number) => {
+              if (Array.isArray(p.lobbyData)) {
+                p.lobbyData.forEach((playerData: any, i: number) => {
                   if (newSlots[i]) {
                     newSlots[i] = {
                       ...newSlots[i],
                       userId: playerData.userId,
                       username: playerData.username || playerData.userId || "Unknown",
-                      isReady: !!playerData.isReady,
+                      isReady: !!playerData.ready,
                     };
                   }
                 });

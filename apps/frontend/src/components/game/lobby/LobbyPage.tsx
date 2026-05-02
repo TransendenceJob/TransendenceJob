@@ -32,12 +32,16 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
   };
 
   const togglePlayerReady = (player: PlayerSlot) => {
+      console.log("Checking permission:");
+      console.log("Player ID in slot:", player.userId);
+      console.log("My currentUserId:", currentUserId);
       if (!player.userId || player.userId !== currentUserId) {
           console.warn("You can't toggle someone else's ready status!");
           return;
       }
 
       msgToServer(CS_Type.CS_ReadyChange, {
+          userId: currentUserId,
           ready: !player.isReady
       });
 
