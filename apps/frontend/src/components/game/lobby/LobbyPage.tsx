@@ -255,7 +255,6 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
               <span className="text-zinc-400 font-mono text-[10px] uppercase tracking-[0.3em] font-bold">
                 Readiness: {readyCount} / {players.length} Squad Members
               </span>
-                                <div className="w-1 h-4 bg-zinc-200 rounded-full animate-bounce mt-2" />
                             </motion.div>
                         )}
                     </AnimatePresence>
