@@ -2,10 +2,8 @@ import { IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '../../../shared/state/GameState';
 import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '../../../shared/packets/ClientServerPackets';
 import { gameData, playerData } from '@shared/game/packets/util';
-import { spawnWorms } from '../worms/spawnWorms';
-import { createPlayers, Player } from '../Player';
+import { Player } from '../Player';
 import { points } from '../data/vectorData';
-import { colors } from '../data/gameData';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
 import { GuiHelper } from '../GuiHelper';
@@ -40,6 +38,7 @@ export class StateMachine {
 	public players: Array<Player>;
 	public turn: Turn | undefined;
 	private initialized: boolean = false;
+	public turnOrder: Array<number>;
 
 	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, log: (data: string) => void) {
 		// Created once, on Object creation, persist until the end of the canvas
@@ -64,6 +63,7 @@ export class StateMachine {
 		this.guiHelper = undefined;
 		this.ground = undefined;
 		this.turn = undefined;
+		this.turnOrder = [];
 	}
 
 	// Called only once per canvas, when sockets have been set up
@@ -102,6 +102,10 @@ export class StateMachine {
 			this.registerNewActions(actions);
 	}
 
+	/**
+	 * Called, when game starts loading
+	 * @param data Packet that contains info/data to load game
+	 */
 	loadGame(data: gameData) {
 		console.log("BABYLON: Setting up Game according to given data");
 		if (!data) return ;
@@ -123,7 +127,9 @@ export class StateMachine {
 				if (this.turn)
 					this.turn.chosenWorm = chosen;
 			})
-		})
+		});
+
+		this.turnOrder = data.turnOrder;
 	}
 	
 	/**
@@ -135,19 +141,6 @@ export class StateMachine {
 		
 		// Set up a fresh Game
 		this.log("Setting up new Game");
-		
-		/*
-			Old Worm and player spawning code
-
-			// First create Player object, that turn can reference
-			this.players = createPlayers();
-			// Then populate players with Worms
-			if (!spawnWorms(this.scene, this.players, colors))
-				console.warn("Babylon: Error during Worm spawning");
-			// Create turn (with first player as active player)
-			this.turn = new Turn(this.players[0]);
-			
-		*/
 
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
@@ -200,6 +193,7 @@ export class StateMachine {
 		this.players = [];
 		this.turn?.dispose()
 		this.turn = undefined;
+		this.turnOrder = [];
 		this.guiHelper?.dispose()
 		this.guiHelper = undefined;
 		this.ground?.dispose();

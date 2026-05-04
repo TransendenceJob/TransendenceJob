@@ -17,7 +17,7 @@ export interface wormData {
 /**
  * Represent data of 1 player
  * @param id will later be changed to string, identifier for player
- * @param slot number for which slot this player is in (1-4)
+ * @param slot number for which slot this player is in (0-3)
  * @param name displayed name for this player
  * @param worms Array of data to create the worms for that player
  */
@@ -35,7 +35,9 @@ export interface mapData {
 /**
  * Interface that holds all data for starting a game
  * @param players Holds data about players and their worms
+ * @param turnOrder order based on slot numbers (0-3)
  */
 export interface gameData {
 	players: Array<playerData>
+	turnOrder: Array<number>;
 }

@@ -14,8 +14,9 @@ export class TurnStartState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.guiHelper?.notifications.add("A new Turn has started")
-		this.machine.turn = new Turn(this.machine.players[0]);
+		const chosenPlayer = this.machine.players[this.machine.turnOrder[0]];
+		this.machine.guiHelper?.notifications.add(`${chosenPlayer.name} starts their Turn`)
+		this.machine.turn = new Turn(chosenPlayer);
 
 		// Actions
 		const actions: Array<IAction> = [];
