@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CS_DEV_StartLoading, CS_Type } from '@/shared/packets/ClientServerPackets';
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
@@ -19,7 +19,7 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
 
   const readyCount = players.filter(p => p.isReady).length;
   const allReady = readyCount === 4;
-
+  
   const addFeedEvent = (msg: string) => {
     setFeed(prev => {
       if (prev.length > 0 && prev[prev.length - 1].msg === msg) return prev;
@@ -30,6 +30,37 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
       ].slice(-5);
     });
   };
+
+    // 1. We use a ref here, kinda like a container to prevent completly rerender when changes arrives
+    const prevPlayersRef = useRef<PlayerSlot[]>(players);
+    const isFirstRender = useRef(true);
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            prevPlayersRef.current = players;
+            return;
+        }
+        players.forEach((player, index) => {
+            const prevPlayer = prevPlayersRef.current[index];
+
+            // Case A: A new player joined an empty slot
+            if (player.userId && !prevPlayer?.userId) {
+                addFeedEvent(`${player.username} CONNECTED_TO_NODE_0${index + 1}`);
+            }
+            // Case B: A player left
+            else if (!player.userId && prevPlayer?.userId) {
+                addFeedEvent(`${prevPlayer.username} DISCONNECTED`);
+            }
+            // Case C: Readiness changed
+            else if (player.userId && prevPlayer && player.isReady !== prevPlayer.isReady) {
+                const status = player.isReady ? 'READY_CONFIRMED' : 'STANDBY_MODE';
+                addFeedEvent(`${player.username} >> ${status}`);
+            }
+        });
+
+        prevPlayersRef.current = players;
+    }, [players]);
 
   const togglePlayerReady = (player: PlayerSlot) => {
       console.log("Checking permission:");
@@ -44,8 +75,6 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
           userId: currentUserId,
           ready: !player.isReady
       });
-
-      addFeedEvent(`${player.userId}  >> ${player.isReady? 'STANDBY_MODE' : 'READY_CONFIRMED'}`);
   };
 
     return (
