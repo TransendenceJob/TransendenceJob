@@ -102,16 +102,28 @@ export class StateMachine {
 			this.registerNewActions(actions);
 	}
 
-	setupGameData(data: gameData) {
+	loadGame(data: gameData) {
 		console.log("BABYLON: Setting up Game according to given data");
 		if (!data) return ;
+
+		// Delete old Player&Worm Data
 		this.players.forEach(element => {
 			element.dispose();
 		});
+
+		// Create new Players and Worms
 		this.players = new Array<Player>();
 		data.players.forEach((player: playerData) => {
 			this.players.push(new Player(this.scene, player));
 		});
+
+		// Setup up interactions for worms
+		this.players.forEach((player) => {
+			player.initPickWorm((chosen: Worm) => {
+				if (this.turn)
+					this.turn.chosenWorm = chosen;
+			})
+		})
 	}
 	
 	/**
@@ -134,13 +146,7 @@ export class StateMachine {
 				console.warn("Babylon: Error during Worm spawning");
 			// Create turn (with first player as active player)
 			this.turn = new Turn(this.players[0]);
-			// Setup up interactions for worms
-			this.players.forEach((player) => {
-				player.initPickWorm((chosen: Worm) => {
-					if (this.turn)
-						this.turn.chosenWorm = chosen;
-				})
-			})
+			
 		*/
 
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);

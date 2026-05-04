@@ -24,8 +24,7 @@ class WormSpawner {
       const pos = Math.floor(Scalar.RandomRange(0, this.points[num].length));
       result = {
         id: this.idCounter,
-        pos_x: this.points[num][pos].x,
-        pos_y: this.points[num][pos].y,
+        pos: { x: this.points[num][pos].x, y: this.points[num][pos].y },
       };
       this.idCounter++;
       // Remove position from subarea, and subarea f rom areas if neccesary

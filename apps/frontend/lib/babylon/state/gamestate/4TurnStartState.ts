@@ -4,6 +4,7 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '../../../../shared/state/GameState';
 // @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
+import { Turn } from '../Turn';
 
 export class TurnStartState implements IState {
 	private next: boolean = false;
@@ -14,6 +15,7 @@ export class TurnStartState implements IState {
 
 		// Setup
 		this.machine.guiHelper?.notifications.add("A new Turn has started")
+		this.machine.turn = new Turn(this.machine.players[0]);
 
 		// Actions
 		const actions: Array<IAction> = [];

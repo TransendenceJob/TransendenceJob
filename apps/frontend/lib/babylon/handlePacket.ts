@@ -19,7 +19,7 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 		case SC_Type.SC_GameData : {
 			console.log("Received Game data");
 			console.log(data.data);
-			state.setupGameData(data.data)
+			state.loadGame(data.data)
 			break ;
 		}
 		default : {

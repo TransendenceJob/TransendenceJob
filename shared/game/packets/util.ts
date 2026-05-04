@@ -1,3 +1,8 @@
+export interface pointData {
+	x: number,
+	y: number,
+}
+
 /**
  * Represent data of 1 worm
  * @param id Unique id to identify this specific worm
@@ -6,8 +11,7 @@
  */
 export interface wormData {
 	id: number,
-	pos_x: number,
-	pos_y: number
+	pos: pointData
 }
 
 /**
@@ -22,6 +26,10 @@ export interface playerData {
 	slot: number,
 	name: string,
 	worms: Array<wormData>
+}
+
+export interface mapData {
+	points: Array<pointData>
 }
 
 /**

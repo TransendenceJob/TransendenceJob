@@ -34,6 +34,7 @@ export class Worm {
 	public id: number;
 	public name: string;
     private action: ActionManager | undefined = undefined;
+    private clickable: boolean;
     /**
      * 
      * @param scene Scene that tracks worm mesh
@@ -46,10 +47,11 @@ export class Worm {
         let color = new Color3(0, 0, 0);
         if (slot >= 0 && slot < colors.length)
             color = colors[slot];
-		this.mesh = createWorm(scene, new Vector3(data.pos_x, data.pos_y, 0), color);
+		this.mesh = createWorm(scene, new Vector3(data.pos.x, data.pos.y, 0), color);
         this.mesh.actionManager = new ActionManager(scene);
         this.id = data.id;
         this.name = `Unnamed worm ${this.id}`;
+        this.clickable = false;
 	}
     
     /**
@@ -70,11 +72,20 @@ export class Worm {
      * Tells the Worm to activate the functionality for being able to pick a worm
      */
     makeClickable() {
+        if (this.clickable)
+            return ;
+        this.clickable = true;
         if (this.action && this.mesh.actionManager)
             this.mesh.actionManager.registerAction(this.action);
     }
 
+    /**
+     * Tells the Worm to deactivate the functionality for being able to pick a worm
+     */
     removeClickable() {
+        if (!this.clickable)
+            return ;
+        this.clickable = false;
         if (this.action && this.mesh.actionManager)
             this.mesh.actionManager.unregisterAction(this.action);
     }

@@ -31,6 +31,8 @@ export class WormPointer {
 		middle.position.y += length / 2 + height;
 		this.mesh = Mesh.MergeMeshes([middle, right, left], true, false, null, false, false);
 		this.mesh.actionManager = new ActionManager(scene);
+		// This makes the mesh render in front of everything else
+		this.mesh.renderingGroupId = 1;
 
 		// Animation
 		const DURATION = 2;
