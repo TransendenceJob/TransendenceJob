@@ -81,6 +81,7 @@ export class Lobby {
     this.game = undefined;
     this.queue = new MessageQueue();
     this.registerLoop();
+    console.log(`Created Lobby with ${this.id}`);
   }
 
   /**
@@ -172,17 +173,17 @@ export class Lobby {
     }
   }
 
+  /**
+   * Transitionary logic, that exists this way, because we dont track,
+   * when a Client disconnects.
+   * Instead of restarting a Lobby, when all Clients disconnect or the game ends,
+   * we reset it when someone new connects
+   * THIS SHOULD BE CHANGED LATER
+   */
   private connectToGame() {
-    let state = translateLobbyState(this.state);
-    if (state == SC_Type.SC_StartGame) {
-      console.log("Rejoining active game");
-      // Start a new Game when player connects mid-game (Temporary only)
-      this.setState(LobbyStateEnum.OpenLobby);
-      this.setState(LobbyStateEnum.Loading);
-      state = SC_Type.SC_StartLoading;
-    }
+    this.setState(LobbyStateEnum.OpenLobby);
     const response: SC_GenericStatePacket = {
-      type: state,
+      type: SC_Type.SC_StartLobby,
       lobbyId: this.id,
       seq: [0],
     };
@@ -260,7 +261,7 @@ export class Lobby {
       }
     });
   }
-  
+
   dispose() {
     this.engine.dispose();
   }

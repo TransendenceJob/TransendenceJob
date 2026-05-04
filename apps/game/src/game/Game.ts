@@ -48,14 +48,14 @@ export class Game {
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));
     this.stateMap.set(GameState.GAME_LOADING, new GameLoadingState(this));
-    this.stateMap.set(GameState.GAME_START,   new GameStartState(this));
-    this.stateMap.set(GameState.ROUND_START,  new RoundStartState(this));
-    this.stateMap.set(GameState.TURN_START,   new TurnStartState(this));
-    this.stateMap.set(GameState.PICK_WORM,    new PickWormState(this));
-    this.stateMap.set(GameState.MOVEMENT,     new MovementState(this));
-    this.stateMap.set(GameState.AIMING,       new AimingState(this));
-    this.stateMap.set(GameState.TURN_END,     new TurnEndState(this));
-    this.stateMap.set(GameState.GAME_END,     new GameEndState(this));
+    this.stateMap.set(GameState.GAME_START, new GameStartState(this));
+    this.stateMap.set(GameState.ROUND_START, new RoundStartState(this));
+    this.stateMap.set(GameState.TURN_START, new TurnStartState(this));
+    this.stateMap.set(GameState.PICK_WORM, new PickWormState(this));
+    this.stateMap.set(GameState.MOVEMENT, new MovementState(this));
+    this.stateMap.set(GameState.AIMING, new AimingState(this));
+    this.stateMap.set(GameState.TURN_END, new TurnEndState(this));
+    this.stateMap.set(GameState.GAME_END, new GameEndState(this));
     this.currentState = new GamePendingState(this);
     this.currentState.enter();
   }

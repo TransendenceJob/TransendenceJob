@@ -1,6 +1,7 @@
 import { IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '../../../shared/state/GameState';
 import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '../../../shared/packets/ClientServerPackets';
+import { gameData, playerData } from '@shared/game/packets/util';
 import { spawnWorms } from '../worms/spawnWorms';
 import { createPlayers, Player } from '../Player';
 import { points } from '../data/vectorData';
@@ -100,6 +101,18 @@ export class StateMachine {
 		if (actions)
 			this.registerNewActions(actions);
 	}
+
+	setupGameData(data: gameData) {
+		console.log("BABYLON: Setting up Game according to given data");
+		if (!data) return ;
+		this.players.forEach(element => {
+			element.dispose();
+		});
+		this.players = new Array<Player>();
+		data.players.forEach((player: playerData) => {
+			this.players.push(new Player(this.scene, player));
+		});
+	}
 	
 	/**
 	 * Restart a new Game
@@ -111,20 +124,25 @@ export class StateMachine {
 		// Set up a fresh Game
 		this.log("Setting up new Game");
 		
-		// First create Player object, that turn can reference
-		this.players = createPlayers();
-		// Then populate players with Worms
-		if (!spawnWorms(this.scene, this.players, colors))
-			console.warn("Babylon: Error during Worm spawning");
-		// Create turn (with first player as active player)
-		this.turn = new Turn(this.players[0]);
-		// Setup up interactions for worms
-		this.players.forEach((player) => {
-			player.initPickWorm((chosen: Worm) => {
-				if (this.turn)
-					this.turn.chosenWorm = chosen;
+		/*
+			Old Worm and player spawning code
+
+			// First create Player object, that turn can reference
+			this.players = createPlayers();
+			// Then populate players with Worms
+			if (!spawnWorms(this.scene, this.players, colors))
+				console.warn("Babylon: Error during Worm spawning");
+			// Create turn (with first player as active player)
+			this.turn = new Turn(this.players[0]);
+			// Setup up interactions for worms
+			this.players.forEach((player) => {
+				player.initPickWorm((chosen: Worm) => {
+					if (this.turn)
+						this.turn.chosenWorm = chosen;
+				})
 			})
-		})
+		*/
+
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();

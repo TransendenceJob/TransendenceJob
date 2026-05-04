@@ -1,5 +1,7 @@
 // @ts-ignore
 import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { wormData } from '@shared/game/packets/util';
+import { colors } from '../data/gameData';
 
 /**
  * Function to create the mesh of a worm
@@ -40,11 +42,14 @@ export class Worm {
      * @param color Color for the worms mesh texture
      * @param name Display name of the worm
      */
-	constructor(scene: Scene, pos: Vector3, id: number, color: Color3, name: string = "Unnamed worm") {
-		this.mesh = createWorm(scene, pos, color);
+	constructor(scene: Scene, data: wormData, slot: number) {
+        let color = new Color3(0, 0, 0);
+        if (slot >= 0 && slot < colors.length)
+            color = colors[slot];
+		this.mesh = createWorm(scene, new Vector3(data.pos_x, data.pos_y, 0), color);
         this.mesh.actionManager = new ActionManager(scene);
-        this.id = id;
-        this.name = name;
+        this.id = data.id;
+        this.name = `Unnamed worm ${this.id}`;
 	}
     
     /**

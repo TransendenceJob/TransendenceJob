@@ -1,18 +1,6 @@
-import { ExecuteCodeAction, ActionManager } from '@babylonjs/core';
+import { ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 import { Worm } from './worms/Worm';
-
-/**
- * @brief Used to create the different Player objects
- * @warning Currently uses hardcoded values, since we do not have sessions and players set up yet
- * @returns Array of players created
- */
-export function createPlayers() {
-	const amount = 4;
-	const players: Array<Player> = [];
-	for (let i = 1; i < amount + 1; i++)
-		players.push(new Player(i, `Player ${i}`));
-	return (players);
-}
+import { playerData, wormData } from '@shared/game/packets/util';
 
 /**
  * @brief Class representing a Player
@@ -29,13 +17,14 @@ export class Player {
 	public readonly name: string;
 	public worms: Array<Worm>;
 	private clickableAction: ExecuteCodeAction;
-	constructor(id: number, name: string =`Generic Player ${id}`) {
-		this.id = id;
-		this.name = name;
+	constructor(scene: Scene, data: playerData) {
+		this.id = data.id;
+		this.name = data.name;
 		this.worms = [];
-		this.clickableAction = new ExecuteCodeAction(ActionManager.OnPickUpTrigger, () => {
-
+		data.worms.forEach((worm: wormData) => {
+			this.worms.push(new Worm(scene, worm, data.slot));
 		});
+		this.clickableAction = new ExecuteCodeAction(ActionManager.OnPickUpTrigger, () => {});
 	}
 
 	/**

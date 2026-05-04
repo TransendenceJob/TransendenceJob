@@ -14,6 +14,16 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 				text.text = `Current State: ${data.gameState}`;
 			}
 			state.setState(data.gameState as GameState);
+			break ;
+		}
+		case SC_Type.SC_GameData : {
+			console.log("Received Game data");
+			console.log(data.data);
+			state.setupGameData(data.data)
+			break ;
+		}
+		default : {
+			console.log("BABYLON> Received unhandled type: ", data.type);
 		}
 	}
 }
