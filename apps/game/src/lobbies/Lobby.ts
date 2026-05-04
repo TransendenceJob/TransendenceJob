@@ -232,7 +232,7 @@ export class Lobby {
           //Add new player to our server-side array
           this.players.push({
             userId: data.userId,
-            name: `Player ${this.players.length + 1}`,
+            userName: `Player ${this.players.length + 1}`,
             indexInLobby: this.players.length,
             ready: false,
             seq: [0]

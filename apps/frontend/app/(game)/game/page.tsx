@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback  } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
-import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets';
+import { SC_Type, SC_GenericPacket, PlayerInLobby } from '@/shared/packets/ServerClientPackets';
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { useAuth } from "@/components/Providers";
 
@@ -61,6 +61,70 @@ export default function LobbyPageController() {
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
 
+    const handleLobbyUpdates = (p: SC_GenericPacket) => {
+      switch (p.type) {
+        case SC_Type.SC_ReadyChange:
+          setSlots(prev => prev.map(s =>
+              s.userId === p.userId ? {...s, isReady: p.ready} : s
+          ));
+          break;
+
+        case SC_Type.SC_ClientJoin:
+          setSlots(prev => {
+            const newSlots = [...prev];
+            const emptyIndex = newSlots.findIndex(s => s.userId === null);
+            if (emptyIndex !== -1) {
+              newSlots[emptyIndex] = {
+                ...newSlots[emptyIndex],
+                userId: p.userId,
+                // username: p.username || "New Recruit", will be used later
+                isReady: false
+              };
+            }
+            return newSlots;
+          });
+          console.log("Player joined:", p.userId);
+          break;
+
+        case SC_Type.SC_ClientDisconnect:
+          setSlots(prev => prev.map(s =>
+              s.userId === p.userId
+                  ? { ...s, userId: null, username: "Empty Slot", isReady: false }
+                  : s
+          ));
+          break;
+
+        case SC_Type.SC_LobbyData: {
+          // If the server provides a lobbyId, sync it here
+          if (p.lobbyId !== undefined) setLobbyId(p.lobbyId);
+
+          // made sure we always use the newest server data to handle disconnect properly
+          const refreshedSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
+            userId: null,
+            username: "Empty Slot",
+            isReady: false,
+            color: COLORS[i]
+          }));
+
+          // fill slots with data from server
+          p.lobbyData.forEach((playerData:PlayerInLobby) => {
+            const i = playerData.indexInLobby;
+
+            if (refreshedSlots[i]) {
+              refreshedSlots[i] = {
+                ...refreshedSlots[i],
+                userId: playerData.userId,
+                username: playerData.userId,
+                isReady: playerData.ready,
+              };
+            }
+          });
+          setSlots(refreshedSlots);
+          break;
+        }
+      }
+    }
+
     const msgToClient = (data: string) => {
       const packet: SC_GenericPacket = JSON.parse(data);
 
@@ -74,44 +138,7 @@ export default function LobbyPageController() {
 
       if (lobbyId !== packet.lobbyId) return;
 
-      const handleLobbyUpdates = (p: any) => {
-        switch (p.type) {
-          case SC_Type.SC_ReadyChange:
-            setSlots(prev => prev.map(s =>
-                s.userId === p.userId ? {...s, isReady: p.ready} : s
-            ));
-            break;
 
-          case SC_Type.SC_LobbyData: {
-            // If the server provides a lobbyId, sync it here
-            if (p.lobbyId !== undefined) setLobbyId(p.lobbyId);
-
-            // made sure we always use the newest server data to handle disconnect properly
-            const newSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
-              userId: null,
-              username: "Empty Slot",
-              isReady: false,
-              color: COLORS[i]
-            }));
-
-            // fill slots with data from server
-            if (Array.isArray(p.lobbyData)) {
-              p.lobbyData.forEach((playerData: any, i: number) => {
-                if (newSlots[i]) {
-                  newSlots[i] = {
-                    ...newSlots[i],
-                    userId: playerData.userId,
-                    username: playerData.username || playerData.userId || "Unknown",
-                    isReady: !!playerData.ready,
-                  };
-                }
-              });
-            }
-            setSlots(newSlots);
-            break;
-          }
-        }
-      }
       // Handle State Transitions
       switch (packet.type) {
         case SC_Type.SC_StartLobby:       setState("LOBBY"); break;
@@ -121,8 +148,10 @@ export default function LobbyPageController() {
         case SC_Type.SC_DEV_StartConnecting: setState("CONNECTING"); break;
       }
 
-      // Handle Lobby UI updates
-      handleLobbyUpdates(packet);
+      // Lobby Guard: Only update player slots if we are in the Lobby to prevent not necessary rerender
+      if (state === "LOBBY") {
+        handleLobbyUpdates(packet);
+      }
     };
     // Bind functions to events
     socket.on('connect', onConnect);
@@ -138,7 +167,7 @@ export default function LobbyPageController() {
       socket.off('disconnect', onDisconnect);
       socket.off('msgToClient', msgToClient);
     };
-  }, [lobbyId]);
+  }, [lobbyId, state]);
 
 
   useEffect(() => {

@@ -115,13 +115,13 @@ export interface SC_ClientJoin extends SC_Base {
  * NOT A PACKET, just utility
  * Represents 1 filled player slot in the lobby
  * @param userId unique number to identify the user with
- * @param name Name for that player UNUSED
+ * @param userName Name from the database
  * @param indexInLobby Position that this player occupies in the lobby
  * @param ready whether the player is ready or not
  */
 export interface PlayerInLobby {
 	userId: string,
-	name: string,
+	userName: string,
 	indexInLobby: number,
 	ready: boolean,
 	seq: Array<number>,
