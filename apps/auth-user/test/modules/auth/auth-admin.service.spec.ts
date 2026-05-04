@@ -14,7 +14,10 @@ describe('AuthAdminService', () => {
   let prisma: { $transaction: jest.Mock };
   let users: {
     findById: jest.Mock;
+    findByIdWithAdminRelations: jest.Mock;
+    searchUsers: jest.Mock;
     disableUser: jest.Mock;
+    enableUser: jest.Mock;
     setPasswordHash: jest.Mock;
   };
   let roles: {
@@ -38,7 +41,10 @@ describe('AuthAdminService', () => {
 
     users = {
       findById: jest.fn(),
+      findByIdWithAdminRelations: jest.fn(),
+      searchUsers: jest.fn(),
       disableUser: jest.fn(),
+      enableUser: jest.fn(),
       setPasswordHash: jest.fn(),
     };
 
@@ -203,6 +209,132 @@ describe('AuthAdminService', () => {
       db,
     );
     expect(response.revokedSessions).toBe(0);
+  });
+
+  it('enables a disabled user and records audit event', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    users.findById.mockResolvedValue({ id: 'user-1' });
+    users.enableUser.mockResolvedValue({ id: 'user-1', status: 'ACTIVE' });
+
+    const response = await service.enableUser(
+      'user-1',
+      { reason: 'appeal approved' },
+      {
+        bearerToken: 'token',
+        requestId: 'req-enable',
+        serviceName: 'bff',
+      },
+    );
+
+    expect(users.enableUser).toHaveBeenCalledWith('user-1', db);
+    expect(auditLogs.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'USER_ENABLED',
+        userId: 'user-1',
+        actorUserId: 'admin-1',
+        metadataJson: expect.objectContaining({
+          source: 'internal/auth/users/enable',
+          reason: 'appeal approved',
+          authMode: 'admin',
+        }),
+      }),
+      db,
+    );
+    expect(response).toEqual({
+      userId: 'user-1',
+      status: 'active',
+    });
+  });
+
+  it('searches users with cursor pagination and maps auth views', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    users.searchUsers.mockResolvedValue([
+      {
+        id: 'user-2',
+        email: 'stefan@example.com',
+        username: 'stefan',
+        status: 'ACTIVE',
+        createdAt: new Date('2026-04-01T00:00:00.000Z'),
+        roles: [{ role: { name: 'ADMIN' } }],
+        authProviders: [],
+      },
+      {
+        id: 'user-1',
+        email: 'other@example.com',
+        username: 'other',
+        status: 'DISABLED',
+        createdAt: new Date('2026-03-01T00:00:00.000Z'),
+        roles: [{ role: { name: 'USER' } }],
+        authProviders: [],
+      },
+    ]);
+
+    const response = await service.searchUsers(
+      {
+        query: 'stefan',
+        limit: 1,
+      },
+      {
+        bearerToken: 'token',
+      },
+    );
+
+    expect(users.searchUsers).toHaveBeenCalledWith({
+      query: 'stefan',
+      cursor: undefined,
+      take: 2,
+    });
+    expect(response.items).toHaveLength(1);
+    expect(response.items[0]).toEqual(
+      expect.objectContaining({
+        id: 'user-2',
+        email: 'stefan@example.com',
+        username: 'stefan',
+        status: 'active',
+        roles: ['admin'],
+      }),
+    );
+    expect(response.pageInfo).toEqual({
+      nextCursor: 'user-2',
+      hasNextPage: true,
+    });
+  });
+
+  it('returns a selected user by id', async () => {
+    accessTokens.verifyAccessToken.mockResolvedValue({
+      sub: 'admin-1',
+      roles: ['ADMIN'],
+    });
+    users.findByIdWithAdminRelations.mockResolvedValue({
+      id: 'user-1',
+      email: 'selected@example.com',
+      username: 'selected',
+      status: 'ACTIVE',
+      createdAt: new Date('2026-04-01T00:00:00.000Z'),
+      roles: [{ role: { name: 'USER' } }],
+      authProviders: [],
+    });
+
+    const response = await service.getUser('user-1', {
+      bearerToken: 'token',
+    });
+
+    expect(users.findByIdWithAdminRelations).toHaveBeenCalledWith('user-1');
+    expect(response.user).toEqual(
+      expect.objectContaining({
+        id: 'user-1',
+        email: 'selected@example.com',
+        username: 'selected',
+        status: 'active',
+        roles: ['user'],
+      }),
+    );
   });
 
   it('rejects missing token for non-service actors', async () => {

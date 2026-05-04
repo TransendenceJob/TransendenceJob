@@ -8,6 +8,13 @@ type UserWithRoles = Prisma.UserGetPayload<{
   include: { roles: { include: { role: true } } };
 }>;
 
+export type UserWithAdminRelations = Prisma.UserGetPayload<{
+  include: {
+    roles: { include: { role: true } };
+    authProviders: true;
+  };
+}>;
+
 type UserWithAuthProviders = Prisma.UserGetPayload<{
   include: { authProviders: true };
 }>;
@@ -65,6 +72,57 @@ export class UserRepository {
           },
         },
       },
+    });
+  }
+
+  findByIdWithAdminRelations(
+    userId: string,
+    db?: DbClient,
+  ): Promise<UserWithAdminRelations | null> {
+    return this.db(db).user.findUnique({
+      where: { id: userId },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+        authProviders: true,
+      },
+    });
+  }
+
+  searchUsers(
+    input: {
+      query?: string;
+      cursor?: string;
+      take: number;
+    },
+    db?: DbClient,
+  ): Promise<UserWithAdminRelations[]> {
+    const query = input.query?.trim();
+    const where = query
+      ? this.buildSearchWhere(query)
+      : ({} satisfies Prisma.UserWhereInput);
+
+    return this.db(db).user.findMany({
+      where,
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+        authProviders: true,
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+      take: input.take,
+      ...(input.cursor
+        ? {
+            cursor: { id: input.cursor },
+            skip: 1,
+          }
+        : {}),
     });
   }
 
@@ -205,5 +263,34 @@ export class UserRepository {
     }
 
     return user.roles.map((entry) => entry.role.name);
+  }
+
+  private buildSearchWhere(query: string): Prisma.UserWhereInput {
+    const filters: Prisma.UserWhereInput[] = [
+      {
+        email: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      {
+        username: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+    ];
+
+    if (this.isUuid(query)) {
+      filters.push({ id: query });
+    }
+
+    return { OR: filters };
+  }
+
+  private isUuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    );
   }
 }

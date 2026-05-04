@@ -3,6 +3,7 @@ import { AuthSuccessResponseDto } from '../dto/auth-success-response.dto';
 import { LogoutResponseDto } from '../dto/logout-response.dto';
 import { RefreshResponseDto } from '../dto/refresh-response.dto';
 import { RevokeSessionsResponseDto } from '../dto/revoke-sessions-response.dto';
+import { UserEnabledResponseDto } from '../dto/user-enabled-response.dto';
 import { UserDisabledResponseDto } from '../dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../dto/user-roles-response.dto';
 import { VerifyResponseDto } from '../dto/verify-response.dto';
@@ -234,6 +235,13 @@ export class AuthContractMapper {
       userId,
       status: UserStatusDto.DISABLED,
       revokedSessions,
+    };
+  }
+
+  static toUserEnabledResponse(userId: string): UserEnabledResponseDto {
+    return {
+      userId,
+      status: UserStatusDto.ACTIVE,
     };
   }
 

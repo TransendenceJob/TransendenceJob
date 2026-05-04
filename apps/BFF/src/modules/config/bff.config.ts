@@ -16,6 +16,9 @@ type BffConfigShape = {
       frontendCallbackUrl: string;
     };
   };
+  stats: {
+    serviceUrl: string;
+  };
 };
 
 export const bffConfig = registerAs<BffConfigShape>(
@@ -37,6 +40,9 @@ export const bffConfig = registerAs<BffConfigShape>(
           stateSecret: env.GOOGLE_STATE_SECRET,
           frontendCallbackUrl: env.GOOGLE_FRONTEND_CALLBACK_URL,
         },
+      },
+      stats: {
+        serviceUrl: env.STATS_SERVICE_URL,
       },
     };
   },

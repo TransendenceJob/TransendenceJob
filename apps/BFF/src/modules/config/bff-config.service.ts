@@ -16,4 +16,8 @@ export class BffConfigService {
   get auth() {
     return this.config.auth;
   }
+
+  get stats() {
+    return this.config.stats;
+  }
 }

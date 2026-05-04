@@ -12,15 +12,20 @@ import { RoleRepository } from '../../persistence/repositories/role.repository';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
 import { UserRepository } from '../../persistence/repositories/user.repository';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
+import { EnableUserRequestDto } from '../contracts/dto/enable-user-request.dto';
 import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
 import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
+import { UserDetailResponseDto } from '../contracts/dto/user-detail-response.dto';
+import { UserSearchQueryDto } from '../contracts/dto/user-search-query.dto';
+import { UserSearchResponseDto } from '../contracts/dto/user-search-response.dto';
 import { SetPasswordRequestDto } from '../contracts/dto/set-password-request.dto';
 import { SetPasswordResponseDto } from '../contracts/dto/set-password-response.dto';
 import { AuditActionDto } from '../contracts/enums/audit-action.enum';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
+import { UserEnabledResponseDto } from '../contracts/dto/user-enabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import { AuthContractMapper } from '../contracts/mappers/auth-contract.mapper';
 import { PasswordHashService } from '../hashing/password-hash.service';
@@ -162,6 +167,82 @@ export class AuthAdminService {
     });
 
     return AuthContractMapper.toUserDisabledResponse(userId, result);
+  }
+
+  async enableUser(
+    userId: string,
+    input: EnableUserRequestDto,
+    context: DisableUserContext,
+  ): Promise<UserEnabledResponseDto> {
+    const actor = await this.authorize(context);
+
+    await this.prisma.$transaction(async (db) => {
+      const user = await this.users.findById(userId, db);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.users.enableUser(userId, db);
+
+      await this.auditLogs.createEvent(
+        {
+          action: 'USER_ENABLED',
+          userId,
+          actorUserId: actor.actorUserId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/users/enable',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            reason: input.reason ?? null,
+            authMode: actor.authMode,
+          },
+        },
+        db,
+      );
+    });
+
+    return AuthContractMapper.toUserEnabledResponse(userId);
+  }
+
+  async searchUsers(
+    input: UserSearchQueryDto,
+    context: DisableUserContext,
+  ): Promise<UserSearchResponseDto> {
+    await this.authorize(context);
+
+    const limit = input.limit ?? 20;
+    const users = await this.users.searchUsers({
+      query: input.query,
+      cursor: input.cursor,
+      take: limit + 1,
+    });
+
+    const hasNextPage = users.length > limit;
+    const pageItems = hasNextPage ? users.slice(0, limit) : users;
+    const nextCursor = hasNextPage ? pageItems[pageItems.length - 1].id : null;
+
+    return {
+      items: pageItems.map((user) => AuthContractMapper.toUserAuthView(user)),
+      pageInfo: AuthContractMapper.toPageInfo(nextCursor),
+    };
+  }
+
+  async getUser(
+    userId: string,
+    context: DisableUserContext,
+  ): Promise<UserDetailResponseDto> {
+    await this.authorize(context);
+
+    const user = await this.users.findByIdWithAdminRelations(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      user: AuthContractMapper.toUserAuthView(user),
+    };
   }
 
   async setUserRoles(

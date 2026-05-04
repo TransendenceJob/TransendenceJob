@@ -7,9 +7,6 @@ import {
   Post,
   Query,
   Redirect,
-  Param,
-  UseGuards,
-  UnauthorizedException,
 } from '@nestjs/common';
 import {
   type AuthMeResponseDto,
@@ -140,41 +137,5 @@ export class AuthController {
     @Headers('authorization') authorization?: string,
   ): Promise<AuthMeResponseDto> {
     return this.authService.me({ requestId, authorization });
-  }
-
-  @Post('users/:userId/disable')
-  @HttpCode(200)
-  disableUser(
-    @Param('userId') userId: string,
-    @Body() body: any,
-    @Headers('x-request-id') requestId?: string,
-    @Headers('authorization') authorization?: string,
-  ) {
-    if (!authorization) throw new UnauthorizedException();
-    return this.authService.disableUser(userId, body, { requestId, authorization });
-  }
-
-  @Post('users/:userId/role')
-  @HttpCode(200)
-  setUserRoles(
-    @Param('userId') userId: string,
-    @Body() body: any,
-    @Headers('x-request-id') requestId?: string,
-    @Headers('authorization') authorization?: string,
-  ) {
-    if (!authorization) throw new UnauthorizedException();
-    return this.authService.setUserRoles(userId, body, { requestId, authorization });
-  }
-
-  @Post('users/:userId/sessions/revoke')
-  @HttpCode(200)
-  revokeUserSessions(
-    @Param('userId') userId: string,
-    @Body() body: any,
-    @Headers('x-request-id') requestId?: string,
-    @Headers('authorization') authorization?: string,
-  ) {
-    if (!authorization) throw new UnauthorizedException();
-    return this.authService.revokeUserSessions(userId, body, { requestId, authorization });
   }
 }

@@ -156,10 +156,19 @@ export type RevokeSessionsRequestDto = {
   reason?: string;
 };
 
+export type EnableUserRequestDto = {
+  reason?: string;
+};
+
 export type UserDisabledResponseDto = {
   userId: string;
   status: string;
   revokedSessions: number;
+};
+
+export type UserEnabledResponseDto = {
+  userId: string;
+  status: string;
 };
 
 export type UserRolesResponseDto = {
@@ -172,3 +181,66 @@ export type RevokeSessionsResponseDto = {
   userId: string;
   revokedSessions: number;
 };
+
+export type PageInfoDto = {
+  nextCursor?: string | null;
+  hasNextPage: boolean;
+};
+
+export type UserSearchQueryDto = {
+  query?: string;
+  cursor?: string;
+  limit?: number;
+};
+
+export type UserSearchResponseDto = {
+  items: AuthUserDto[];
+  pageInfo: PageInfoDto;
+};
+
+export type UserDetailResponseDto = {
+  user: AuthUserDto;
+};
+
+export type AuditQueryDto = {
+  userId?: string;
+  action?: string;
+  cursor?: string;
+  limit?: number;
+};
+
+export type AuditLogItemDto = {
+  id: string;
+  userId?: string | null;
+  actorUserId?: string | null;
+  action: string;
+  ip?: string | null;
+  userAgent?: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type AuditListResponseDto = {
+  items: AuditLogItemDto[];
+  pageInfo: PageInfoDto;
+};
+
+export type UpdatePlayerStatsDto = {
+  matchesWon?: string[];
+  matchesLost?: string[];
+  achievements?: string[];
+  weapons?: string[];
+  matchParticipants?: string[];
+  xp?: number;
+  level?: number;
+  wins?: number;
+  losses?: number;
+  kills?: number;
+  deaths?: number;
+  damageDealt?: number;
+  damageTaken?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type PlayerStatsDto = Record<string, unknown>;

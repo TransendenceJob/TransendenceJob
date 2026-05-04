@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  ForbiddenException,
   HttpException,
   Injectable,
   UnauthorizedException,
@@ -26,9 +27,18 @@ import {
   type DisableUserRequestDto,
   type SetUserRolesRequestDto,
   type RevokeSessionsRequestDto,
+  type EnableUserRequestDto,
   type UserDisabledResponseDto,
+  type UserEnabledResponseDto,
   type UserRolesResponseDto,
   type RevokeSessionsResponseDto,
+  type UserSearchQueryDto,
+  type UserSearchResponseDto,
+  type UserDetailResponseDto,
+  type AuditQueryDto,
+  type AuditListResponseDto,
+  type UpdatePlayerStatsDto,
+  type PlayerStatsDto,
 } from './contracts/dto/auth-contracts.dto';
 import { AuthContractMapper } from './contracts/mappers/auth-contract.mapper';
 import { BffConfigService } from '../config/bff-config.service';
@@ -165,8 +175,56 @@ export class AuthService {
 
     const response = await this.callAuthService<UserDisabledResponseDto>({
       method: 'POST',
-      path: `/internal/auth/users/${userId}/disable`,
+      path: `/internal/auth/users/${encodeURIComponent(userId)}/disable`,
       data: input,
+      context,
+    });
+
+    return response;
+  }
+
+  async enableUser(
+    userId: string,
+    input: EnableUserRequestDto,
+    context: RequestContext,
+  ): Promise<UserEnabledResponseDto> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<UserEnabledResponseDto>({
+      method: 'POST',
+      path: `/internal/auth/users/${encodeURIComponent(userId)}/enable`,
+      data: input,
+      context,
+    });
+
+    return response;
+  }
+
+  async searchUsers(
+    input: UserSearchQueryDto,
+    context: RequestContext,
+  ): Promise<UserSearchResponseDto> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<UserSearchResponseDto>({
+      method: 'GET',
+      path: '/internal/auth/users',
+      params: input,
+      context,
+    });
+
+    return response;
+  }
+
+  async getUser(
+    userId: string,
+    context: RequestContext,
+  ): Promise<UserDetailResponseDto> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<UserDetailResponseDto>({
+      method: 'GET',
+      path: `/internal/auth/users/${encodeURIComponent(userId)}`,
       context,
     });
 
@@ -182,7 +240,7 @@ export class AuthService {
 
     const response = await this.callAuthService<UserRolesResponseDto>({
       method: 'POST',
-      path: `/internal/auth/users/${userId}/role`,
+      path: `/internal/auth/users/${encodeURIComponent(userId)}/role`,
       data: input,
       context,
     });
@@ -199,12 +257,75 @@ export class AuthService {
 
     const response = await this.callAuthService<RevokeSessionsResponseDto>({
       method: 'POST',
-      path: `/internal/auth/users/${userId}/sessions/revoke`,
+      path: `/internal/auth/users/${encodeURIComponent(userId)}/sessions/revoke`,
       data: input,
       context,
     });
 
     return response;
+  }
+
+  async listAuditLogs(
+    input: AuditQueryDto,
+    context: RequestContext,
+  ): Promise<AuditListResponseDto> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<AuditListResponseDto>({
+      method: 'GET',
+      path: '/internal/auth/audit',
+      params: input,
+      context,
+    });
+
+    return response;
+  }
+
+  async getPlayerStats(
+    userId: string,
+    context: RequestContext,
+  ): Promise<PlayerStatsDto> {
+    await this.ensureAdmin(context);
+
+    return this.callStatsService<PlayerStatsDto>({
+      method: 'GET',
+      path: `/internal/stats/user/${encodeURIComponent(userId)}`,
+      context,
+    });
+  }
+
+  async updatePlayerStats(
+    userId: string,
+    input: UpdatePlayerStatsDto,
+    context: RequestContext,
+  ): Promise<PlayerStatsDto> {
+    await this.ensureAdmin(context);
+
+    return this.callStatsService<PlayerStatsDto>({
+      method: 'PUT',
+      path: `/internal/stats/user/${encodeURIComponent(userId)}`,
+      data: input,
+      context,
+    });
+  }
+
+  private async ensureAdmin(context: RequestContext): Promise<void> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<InternalVerifyResponse>({
+      method: 'GET',
+      path: '/internal/auth/verify',
+      context,
+    });
+
+    const roles = response.user.roles ?? [];
+    const isAdmin = roles.some((role) => role.toLowerCase() === 'admin');
+    if (!isAdmin) {
+      throw new ForbiddenException({
+        code: 'admin_role_required',
+        message: 'Admin role is required.',
+      } satisfies ApiErrorDto);
+    }
   }
 
   private ensureAuthorization(authorization?: string): void {
@@ -221,6 +342,7 @@ export class AuthService {
     path: string;
     context: RequestContext;
     data?: unknown;
+    params?: Record<string, unknown>;
   }): Promise<T> {
     const headers: Record<string, string> = {
       'x-service-name': 'bff',
@@ -240,14 +362,48 @@ export class AuthService {
         url: `${this.config.auth.serviceUrl}${input.path}`,
         headers,
         data: input.data,
+        params: input.params,
       });
       return response.data;
     } catch (error) {
-      this.throwNormalizedError(error);
+      this.throwNormalizedError(error, 'auth_service');
     }
   }
 
-  private throwNormalizedError(error: unknown): never {
+  private async callStatsService<T>(input: {
+    method: 'GET' | 'PUT';
+    path: string;
+    context: RequestContext;
+    data?: unknown;
+    params?: Record<string, unknown>;
+  }): Promise<T> {
+    const headers: Record<string, string> = {
+      'x-service-name': 'bff',
+    };
+
+    if (input.context.requestId) {
+      headers['x-request-id'] = input.context.requestId;
+    }
+
+    if (input.context.authorization) {
+      headers.authorization = input.context.authorization;
+    }
+
+    try {
+      const response = await axios.request<T>({
+        method: input.method,
+        url: `${this.config.stats.serviceUrl}${input.path}`,
+        headers,
+        data: input.data,
+        params: input.params,
+      });
+      return response.data;
+    } catch (error) {
+      this.throwNormalizedError(error, 'stats_service');
+    }
+  }
+
+  private throwNormalizedError(error: unknown, serviceCode: string): never {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
       const data: unknown = error.response?.data;
@@ -255,7 +411,7 @@ export class AuthService {
 
       throw new HttpException(
         {
-          code: `auth_service_${status ?? 'error'}`,
+          code: `${serviceCode}_${status ?? 'error'}`,
           message,
           details: data,
         } satisfies ApiErrorDto,
@@ -264,8 +420,8 @@ export class AuthService {
     }
 
     throw new BadGatewayException({
-      code: 'auth_service_unreachable',
-      message: 'Unable to reach auth service.',
+      code: `${serviceCode}_unreachable`,
+      message: `Unable to reach ${serviceCode.replace('_', ' ')}.`,
       details: error,
     } satisfies ApiErrorDto);
   }
