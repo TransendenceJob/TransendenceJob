@@ -14,12 +14,20 @@ const validateForm = (
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    const username = formData.get("username") as string | null;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
     if (type === "Register") {
         const confirmEmail = formData.get("confirmEmail") as string;
         const confirmPassword = formData.get("confirmPassword") as string;
+        const displayName = formData.get("displayName") as string | null;
         // pre validation browser side
         if (email !== confirmEmail) return "Emails do not match!";
         if (password !== confirmPassword) return "Passwords do not match!";
+        if (username) {
+            if (username.length < 3 || username.length > 24) return "Username must be 3-24 characters";
+            if (!usernameRegex.test(username)) return "Username can only contain letters, numbers and underscores";
+        }
     }
 
     return null;
@@ -64,12 +72,14 @@ export default function AuthModal({
 
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
+        const displayName = (formData.get("displayName") as string) ?? undefined;
+        const username = (formData.get("username") as string) ?? undefined;
 
         setIsSubmitting(true);
         try {
             const result = await (type === 'Login'
                 ? authClient.login({ email, password })
-                : authClient.register({ email, password }));
+                : authClient.register({ email, password, displayName, username }));
 
             if (!result.ok) {
                 setErrorMessage(result.error.message);
@@ -146,9 +156,17 @@ export default function AuthModal({
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
 
                     {type === 'Register' && (
-                        <input name="confirmEmail" type="email" placeholder="Confirm Email Address" required disabled={isSubmitting}
+                           <input name="confirmEmail" type="email" placeholder="Confirm Email Address" required disabled={isSubmitting}
                                className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
                     )}
+                          {type === 'Register' && (
+                           <input name="displayName" type="text" placeholder="Display Name (optional)" disabled={isSubmitting}
+                               className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
+                          )}
+                          {type === 'Register' && (
+                           <input name="username" type="text" placeholder="Username (3-24 chars)" disabled={isSubmitting}
+                               className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
+                          )}
                     {/* Password Input */}
                     <input name="password" type="password" placeholder="Password" autoComplete={type === 'Login' ? "current-password" : "new-password"} required disabled={isSubmitting}
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>

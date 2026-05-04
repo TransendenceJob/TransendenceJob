@@ -60,13 +60,20 @@ describe("AuthModal Component", () => {
 
         fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "new@test.com" } });
         fireEvent.change(screen.getByPlaceholderText("Confirm Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Display Name (optional)"), { target: { value: "Display" } });
+        fireEvent.change(screen.getByPlaceholderText("Username (3-24 chars)"), { target: { value: "newuser" } });
         fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "Pass123!" } });
         fireEvent.change(screen.getByPlaceholderText("Confirm Password"), { target: { value: "Pass123!" } });
 
         fireEvent.click(screen.getByRole("button", { name: /Create Account/i }));
 
         await waitFor(() => {
-            expect(mockRegister).toHaveBeenCalled();
+            expect(mockRegister).toHaveBeenCalledWith(expect.objectContaining({
+                email: 'new@test.com',
+                password: 'Pass123!',
+                username: 'newuser',
+                displayName: 'Display'
+            }));
             expect(mockOnClose).toHaveBeenCalled();
         });
     });
