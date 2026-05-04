@@ -12,6 +12,7 @@ import {
   type GoogleExchangeRequestDto,
   type InternalAuthSuccessResponse,
   type InternalLogoutResponse,
+  type InternalSetPasswordResponse,
   type InternalRefreshResponse,
   type InternalVerifyResponse,
   type LoginRequestDto,
@@ -19,6 +20,8 @@ import {
   type RefreshRequestDto,
   type RefreshResponseDto,
   type RegisterRequestDto,
+  type SetPasswordRequestDto,
+  type SetPasswordResponseDto,
   type VerifyResponseDto,
 } from './contracts/dto/auth-contracts.dto';
 import { AuthContractMapper } from './contracts/mappers/auth-contract.mapper';
@@ -103,6 +106,24 @@ export class AuthService {
     });
 
     return AuthContractMapper.toRefreshResponse(response);
+  }
+
+  async setPassword(
+    input: SetPasswordRequestDto,
+    context: RequestContext,
+  ): Promise<SetPasswordResponseDto> {
+    this.ensureAuthorization(context.authorization);
+
+    const response = await this.callAuthService<InternalSetPasswordResponse>({
+      method: 'POST',
+      path: '/internal/auth/password/set',
+      data: input,
+      context,
+    });
+
+    return {
+      success: !!response.success,
+    } satisfies SetPasswordResponseDto;
   }
 
   async verify(context: RequestContext): Promise<VerifyResponseDto> {

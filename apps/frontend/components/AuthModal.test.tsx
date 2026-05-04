@@ -17,6 +17,7 @@ vi.mock("@/src/core/api/auth/auth.client", () => ({
     authClient: {
         login: vi.fn(),
         register: vi.fn(),
+        startGoogleOAuth: vi.fn(),
     },
 }));
 
@@ -110,6 +111,27 @@ describe("AuthModal Component", () => {
         fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
 
         expect(await screen.findByText(/Invalid credentials/i)).toBeInTheDocument();
+        expect(await screen.findByText(/linked to Google OAuth/i)).toBeInTheDocument();
+        expect(await screen.findByTestId("oauth-recovery-button")).toBeInTheDocument();
+    });
+
+    it("starts Google OAuth from recovery hint", async () => {
+        (authClient.login as any).mockResolvedValue({
+            ok: false,
+            status: 401,
+            error: { message: "Invalid email or password" }
+        });
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "oauth@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "random-pass" } });
+        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+        const recoveryButton = await screen.findByTestId("oauth-recovery-button");
+        fireEvent.click(recoveryButton);
+
+        expect(authClient.startGoogleOAuth).toHaveBeenCalled();
     });
 
     it("displays connection error if the API call fails entirely", async () => {

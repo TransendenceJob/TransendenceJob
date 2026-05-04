@@ -59,6 +59,10 @@ export interface GoogleExchangeRequest {
     redirectUri?: string;
 }
 
+export interface SetPasswordRequest {
+    password: string;
+}
+
 /** * --- Responses ---
  */
 
@@ -123,4 +127,8 @@ export interface ApiError {
     code: string;
     message: string;
     details?: Record<string, any> | null;
+}
+
+export interface SetPasswordResponse {
+    success: boolean;
 }

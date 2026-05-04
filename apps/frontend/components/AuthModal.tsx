@@ -5,6 +5,8 @@ import {useState} from "react";
 import {authClient} from "@/src/core/api/auth/auth.client";
 import {useAuth} from "@/components/Providers";
 
+const OAUTH_PASSWORD_RECOVERY_KEY = "auth.oauth.password.recovery";
+
 const validateForm = (
     formData: FormData,
     type: "Login" | "Register"
@@ -38,6 +40,8 @@ export default function AuthModal({
     const {setUser, isAuthenticated} = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showOAuthHint, setShowOAuthHint] = useState(false);
+    const [oauthRecoveryPassword, setOauthRecoveryPassword] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
     if (!isOpen || isAuthenticated) return null;
 
@@ -47,6 +51,9 @@ export default function AuthModal({
         if (isSubmitting) return; // prevent double submit second guard
 
         setErrorMessage(null);
+        setShowOAuthHint(false);
+        setOauthRecoveryPassword(null);
+        sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
 
         const formData = new FormData(e.currentTarget);
         const error = validateForm(formData, type);
@@ -66,8 +73,16 @@ export default function AuthModal({
 
             if (!result.ok) {
                 setErrorMessage(result.error.message);
+                if (
+                    type === 'Login' &&
+                    /invalid credentials|invalid email or password/i.test(result.error.message)
+                ) {
+                    setShowOAuthHint(true);
+                    setOauthRecoveryPassword(password);
+                }
                 return;
             }
+            sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
             sessionStorage.setItem("auth.accessToken", result.data.tokens.accessToken);
             sessionStorage.setItem("auth.refreshToken", result.data.tokens.refreshToken);
             setUser(result.data.user);
@@ -80,7 +95,12 @@ export default function AuthModal({
         }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = async (recoveryPassword?: string | null) => {
+        if (recoveryPassword && recoveryPassword.length >= 8) {
+            sessionStorage.setItem(OAUTH_PASSWORD_RECOVERY_KEY, recoveryPassword);
+        } else {
+            sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
+        }
         setGoogleLoading(true);
         authClient.startGoogleOAuth();
     };
@@ -98,6 +118,22 @@ export default function AuthModal({
                     {errorMessage && (
                         <div className="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold border border-red-100 dark:border-red-800">
                             {errorMessage}
+                            {showOAuthHint && (
+                                <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-800/60 text-left">
+                                    <p className="font-semibold text-red-700 dark:text-red-300">
+                                        This email may be linked to Google OAuth.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleGoogleLogin(oauthRecoveryPassword)}
+                                        disabled={googleLoading}
+                                        data-testid="oauth-recovery-button"
+                                        className="mt-2 text-sm font-bold underline underline-offset-4"
+                                    >
+                                        {googleLoading ? 'Connecting...' : 'Continue with Google'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                     <p className="text-sm text-zinc-500 mt-2">

@@ -10,6 +10,10 @@ export type LoginRequestDto = {
   password: string;
 };
 
+export type SetPasswordRequestDto = {
+  password: string;
+};
+
 export type GoogleExchangeRequestDto = {
   provider: 'google';
   authorizationCode?: string;
@@ -87,6 +91,10 @@ export type LogoutResponseDto = {
   revokedSessionIds: string[];
 };
 
+export type SetPasswordResponseDto = {
+  success: true;
+};
+
 export type VerifyResponseDto = {
   success: true;
   valid: boolean;
@@ -122,6 +130,10 @@ export type InternalRefreshResponse = {
 export type InternalLogoutResponse = {
   success: boolean;
   revokedSessionIds: string[];
+};
+
+export type InternalSetPasswordResponse = {
+  success: boolean;
 };
 
 export type InternalVerifyResponse = {
