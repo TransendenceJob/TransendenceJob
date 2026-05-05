@@ -3,7 +3,7 @@ import { AdvancedDynamicTexture, TextBlock, Button} from "@babylonjs/gui";
 // @ts-ignore
 import { Scene } from "@babylonjs/core";
 // @ts-ignore
-import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress, CS_GetGameState } from "../../shared/packets/ClientServerPackets"
+import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress, CS_GetGameState } from "@/shared/packets/ClientServerPackets"
 
 import { setButtonSize, setButtonPos } from './util/guiUtil';
 import type { msgToServerType } from '../packets/msgToServerType';

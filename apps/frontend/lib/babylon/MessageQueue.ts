@@ -1,5 +1,5 @@
 //@ts-ignore
-import { SC_GenericPacket } from '../../shared/packets/ServerClientPackets'
+import { SC_GenericPacket } from '@/shared/packets/ServerClientPackets'
 // @ts-ignore
 import { Socket } from 'socket.io-client';
 import { StateMachine } from './state/StateMachine';

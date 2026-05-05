@@ -1,6 +1,5 @@
 import { IState } from './IState';
 import { Game } from '../Game';
-import { GameState } from '@/shared/state/GameState';
 
 export class GamePendingState implements IState {
   constructor(private game: Game) {}
@@ -14,9 +13,7 @@ export class GamePendingState implements IState {
     // Transitionary state only, since we only create the Game, when the Lobby starts loading
   }
 
-  tick() {
-    this.game.setState(GameState.GAME_LOADING);
-  }
+  tick() {}
 
   exit() {
     this.reset();

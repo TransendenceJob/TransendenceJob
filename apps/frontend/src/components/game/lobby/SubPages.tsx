@@ -17,7 +17,7 @@ interface Params {
   socket: Socket,
   isConnected: boolean,
   lobbyId: number,
-  game: BabylonCanvas | undefined,
+  userId: string,
   DEBUG: boolean,
   currentUserId: string
 }
@@ -37,6 +37,7 @@ export default function SubPages({
   socket,
   isConnected,
   lobbyId,
+  userId,
   DEBUG,
   slots,
   currentUserId
@@ -53,6 +54,7 @@ export default function SubPages({
       <BabylonCanvas msgToServer={msgToServer}
                       socket={socket}
                       lobbyId={lobbyId}
+                      userId={userId}
                       DEBUG={DEBUG}/>
     </div>
     {state === 'CONNECTING' && <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>}

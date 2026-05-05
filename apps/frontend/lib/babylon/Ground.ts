@@ -1,6 +1,15 @@
 import { Scene, Vector2, Vector3, Mesh, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
-import earcut from "earcut";
 //@ts-ignore
+import earcut from "earcut";
+import { mapData, pointData } from '@/shared/packets/util';
+
+function mapDataToVector3(data: mapData) {
+	const result = new Array<Vector3>();
+	data.points.forEach((point: pointData) => {
+		result.push(new Vector3(point.x, 0, point.y));
+	})
+	return (result);
+}
 
 /**
  * raw angle formula derived from https://wumbo.net/formulas/angle-between-two-vectors-2d/
@@ -24,10 +33,10 @@ export class Ground
 	private groundMesh: Mesh | null;
 	private physicsAggregate: PhysicsAggregate | null = null;
 
-	constructor(scene: Scene, pointsArray: Vector3[], DEBUG: boolean = false)
+	constructor(scene: Scene, points: mapData, DEBUG: boolean = false)
     {
 		this.scene = scene;
-		this.points = pointsArray;
+		this.points = mapDataToVector3(points);
 		this.depth = 1;
 		this.name = "ground";
 		this.DEBUG = DEBUG;

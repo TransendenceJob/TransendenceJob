@@ -11,6 +11,7 @@ export class GameStartState implements IState {
 
     // Setup
     console.log('Game starts');
+    console.log(this.game.userIds);
     this.timer = Date.now();
 
     // Tell Clients to move to next state

@@ -1,10 +1,10 @@
 // @ts-ignore
 import { AdvancedDynamicTexture } from '@babylonjs/gui'
 // @ts-ignore
-import { SC_Type, SC_GenericPacket } from "../../shared/packets/ServerClientPackets"
+import { SC_Type, SC_GenericPacket } from "@/shared/packets/ServerClientPackets"
 import { StateMachine } from './state/StateMachine';
 // @ts-ignore
-import { GameState } from '../../shared/state/GameState';
+import { GameState } from '@/shared/state/GameState';
 
 export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 	switch (data.type) {
@@ -17,9 +17,7 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			break ;
 		}
 		case SC_Type.SC_GameData : {
-			console.log("Received Game data");
-			console.log(data.data);
-			state.loadGame(data.data)
+			state.load(data.data)
 			break ;
 		}
 		default : {

@@ -17,6 +17,7 @@ export async function createScene(
 	socket: Socket, 
 	msgToServer: msgToServerType, 
 	lobbyId: number,
+	userId: string,
 	DEBUG: boolean, 
 ) {
 	var scene = new Scene(engine);
@@ -42,7 +43,7 @@ export async function createScene(
 		};
 	
 	// Need to set up empty StateMachine so MessageQueue has something to reference
-	const state = new StateMachine(canvas, scene, msgToServer, log);
+	const state = new StateMachine(canvas, scene, msgToServer, userId, log);
 
 	// Set up queue and socket before Game starts
 	const queue = new MessageQueue(lobbyId, socket, state, DEBUG, log);

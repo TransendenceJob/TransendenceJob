@@ -101,37 +101,13 @@ export default function LobbyPageController() {
   /** Since we only have 1 lobby so far, and no way to specify, which to join, this is useless so far */
   const [lobbyId, setLobbyId] = useState(0);
 
-  const { user} = useAuth();
+  /** NEEDS TO COME FROM SOMEWHERE, CHANGE LATER */
+  const [userId, setUserId] = useState("none123");
 
-  // initialize 4 empty player slots for static purpose in the first render
-  const [slots, setSlots] = useState<PlayerSlot[]>(
-      [0, 1, 2, 3].map(i => ({
-        userId: null,
-        username: "Empty Slot",
-        isReady: false,
-        color: COLORS[i]
-      }))
-  );
-
-  // Function for simpler packet handling
-  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
-      type: T['type'],
-      data: Omit<T, 'type' | 'lobbyId'>,
-  ) => {
-    const packet = {
-      type,
-      lobbyId,
-      ...data };
-    const packet_string = JSON.stringify(packet);
-    if (socket?.connected) {
-      socket.emit('msgToServer', packet_string);
-      if (DEBUG) console.log("Server Sent:", packet_string);
-    }
-    else {
-      if (DEBUG) console.warn("Socket not connected. Cannot send.");
-    }
-  }, [lobbyId]);
-
+  /**
+   * This will only be executed once on startup, regardless of re-rendering
+   * This is important, because otherwise we keep adding new listeners
+  */
   useEffect(() => {
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
@@ -168,6 +144,7 @@ export default function LobbyPageController() {
     };
 
     const msgToClient = (data: string) => {
+      //if (DEBUG) console.log("NEXT: Client received packet: ", data);
       //if (DEBUG) console.log("NEXT: Client received packet: ", data);
       const dataObj: SC_GenericPacket = JSON.parse(data);
 
@@ -218,28 +195,29 @@ export default function LobbyPageController() {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('msgToClient', msgToClient);
     };
-  }, [lobbyId, state]);
+  }, [])
 
-
-  useEffect(() => {
-    if (isConnected && user){
-      if (DEBUG) console.log("Sending JoinLobby request for user:", user);
-      msgToServer(CS_Type.CS_JoinLobby, {
-        userId: user.id,
-        userName: user?.username
-      });
+  // Function for simpler packet handling
+  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
+    type: T['type'],
+    data: Omit<T, | 'type' | 'lobbyId' | 'userId'>,
+  ) => {
+    const packet: T = {
+      type: type,
+      lobbyId: lobbyId,
+      userId: userId,
+      ...data,
+    } as T;
+    const packet_string = JSON.stringify(packet);
+    if (socket && socket.connected) {
+      socket.emit('msgToServer', packet_string);
+      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
     }
-  }, [isConnected, msgToServer, user]);
+  }, [socket, lobbyId, userId]);
 
-  // for now do it like this later we use protected route here
-  // if (!user){
-  //   return <div>Please log in to join the lobby.</div>;
-  // }
-
+  // JSX element for displaying page
   return (
-    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
     <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
       <SubPages state={state} 
@@ -247,6 +225,7 @@ export default function LobbyPageController() {
                 socket={socket}
                 isConnected={isConnected}
                 lobbyId={0}
+                userId={userId}
                 DEBUG={DEBUG}
                 />
     </div>

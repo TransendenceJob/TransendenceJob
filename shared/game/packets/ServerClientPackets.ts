@@ -112,7 +112,6 @@ export interface SC_ClientDisconnect extends SC_Base {
 export interface SC_ClientJoin extends SC_Base {
 	type: SC_Type.SC_ClientJoin,
 	userId: string,
-	userName: string,
 }
 
 /**

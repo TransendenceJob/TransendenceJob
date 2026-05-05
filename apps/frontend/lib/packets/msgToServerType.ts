@@ -1,5 +1,5 @@
 // @ts-ignore
-import { CS_Base, CS_Type } from '../../shared/ClientServerPackets';
+import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 /**
  * @note Explanation of this Syntax:
@@ -22,5 +22,5 @@ import { CS_Base, CS_Type } from '../../shared/ClientServerPackets';
  */
 export type msgToServerType = <T extends CS_Base & { type: CS_Type }>(
 		type: T['type'],
-   		data: Omit<T, | 'type' | 'lobbyId'>,
+   		data: Omit<T, | 'type' | 'lobbyId' | 'userId'>,
 	) => void;

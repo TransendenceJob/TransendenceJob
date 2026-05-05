@@ -1,7 +1,7 @@
 import { IAction, Scene, ActionManager } from '@babylonjs/core';
-import { GameState } from '../../../shared/state/GameState';
-import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '../../../shared/packets/ClientServerPackets';
-import { gameData, playerData } from '@shared/game/packets/util';
+import { GameState } from '@/shared/state/GameState';
+import { CS_DEV_SetGameState, CS_GetGameState, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { gameData, playerData } from '@/shared/packets/util';
 import { Player } from '../Player';
 import { points } from '../data/vectorData';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
@@ -21,9 +21,10 @@ import { GameEndState }			from './gamestate/9GameEndState';
 import { MessageQueue } from '../MessageQueue';
 import { handlePacket } from '../handlePacket';
 import { Turn } from './Turn';
-import { Worm } from '../worms/Worm';
+import { loadGame } from './loading/loadGame';
 
 export class StateMachine {
+	private userId: string;
 	public scene: Scene;
 	public canvas: HTMLCanvasElement;
 	public msgToServer: msgToServerType;
@@ -40,11 +41,12 @@ export class StateMachine {
 	private initialized: boolean = false;
 	public turnOrder: Array<number>;
 
-	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, log: (data: string) => void) {
+	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, userId: string, log: (data: string) => void) {
 		// Created once, on Object creation, persist until the end of the canvas
+		this.userId = userId;
 		this.scene = scene;
 		this.canvas = canvas;
-		this.msgToServer = msgToServer;
+		this.msgToServer = msgToServer
 		this.log = log;
 		this.states.set(GameState.GAME_PENDING, new GamePendingState(this));
 		this.states.set(GameState.GAME_LOADING, new GameLoadingState(this));
@@ -102,34 +104,8 @@ export class StateMachine {
 			this.registerNewActions(actions);
 	}
 
-	/**
-	 * Called, when game starts loading
-	 * @param data Packet that contains info/data to load game
-	 */
-	loadGame(data: gameData) {
-		console.log("BABYLON: Setting up Game according to given data");
-		if (!data) return ;
-
-		// Delete old Player&Worm Data
-		this.players.forEach(element => {
-			element.dispose();
-		});
-
-		// Create new Players and Worms
-		this.players = new Array<Player>();
-		data.players.forEach((player: playerData) => {
-			this.players.push(new Player(this.scene, player));
-		});
-
-		// Setup up interactions for worms
-		this.players.forEach((player) => {
-			player.initPickWorm((chosen: Worm) => {
-				if (this.turn)
-					this.turn.chosenWorm = chosen;
-			})
-		});
-
-		this.turnOrder = data.turnOrder;
+	load(data: gameData) {
+		loadGame(this, data);
 	}
 	
 	/**
@@ -145,7 +121,6 @@ export class StateMachine {
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
-		this.ground = new Ground(this.scene, points);
 		this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
 	}
 

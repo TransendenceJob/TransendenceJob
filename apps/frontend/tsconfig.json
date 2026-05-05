@@ -27,8 +27,9 @@
       "@/*": [
         "./*"
       ],
-      "@shared/game/packets/*": [
-        "./shared/game/packets/*"
+      "@/shared/*": [
+        "shared/*",
+        "../../shared/game/*",
       ]
     }
   },

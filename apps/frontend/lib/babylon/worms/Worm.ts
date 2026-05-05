@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
-import { wormData } from '@shared/game/packets/util';
+import { wormData } from '@/shared/packets/util';
 import { colors } from '../data/gameData';
 
 /**

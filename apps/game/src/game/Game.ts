@@ -25,6 +25,7 @@ export class Game {
   public state: GameState;
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
+  public userIds: Array<string>;
 
   // Connstructor
   constructor(
@@ -44,6 +45,7 @@ export class Game {
     );
     this.sendState = sendStatePacket;
     this.sendPacket = sendPacket;
+    this.userIds = new Array<string>();
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));
