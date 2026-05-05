@@ -80,7 +80,7 @@ export class Lobby {
     this.engine = new NullEngine();
     // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
     this.seqHandler = new SeqHandler(1);
-    this.seqHandler.registerPlayer(0, 0);
+    this.seqHandler.registerPlayer('unused', 0);
     this.game = new Game(
       this.engine,
       () => {
@@ -113,7 +113,7 @@ export class Lobby {
     const response = {
       type: type,
       lobbyId: this.id,
-      seq: this.seqHandler.getSeq(0),
+      seq: this.seqHandler.getSeq('unused'),
       ...data,
     };
     this.emitData(JSON.stringify(response));
@@ -184,7 +184,7 @@ export class Lobby {
         // When a Client connects to a game
         case CS_Type.CS_ConnectAttempt: {
           this.msgToClient<SC_ConnectSuccess>(SC_Type.SC_ConnectSuccess, {
-            userId: data.userId as string,
+            userId: data.userId,
           });
 
           // Mock logic for disconnection of last client CHANGE LATER
@@ -192,7 +192,7 @@ export class Lobby {
             this.setState(LobbyStateEnum.EndScreen);
           }
 
-          this.game.userIds.push(data.userId as string);
+          this.game.userIds.push(data.userId);
           // Just make a new Game, so we can debug easier. Needs to be CHANGED later on!!
           this.msgToClient<SC_GenericStatePacket>(
             translateLobbyState(this.state),
@@ -244,6 +244,18 @@ export class Lobby {
         // For getting game state
         case CS_Type.CS_GetGameState: {
           this.sendGameStatePacket();
+          break;
+        }
+
+        // For when Client progresses Loading
+        case CS_Type.CS_LoadingProgress: {
+          //TODO
+          break;
+        }
+
+        // For when Client finishes Loading
+        case CS_Type.CS_FinishedLoading: {
+          //TODO
           break;
         }
 

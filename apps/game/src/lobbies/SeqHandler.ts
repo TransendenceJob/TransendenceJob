@@ -10,7 +10,7 @@
  * seq: [0, 1, 2, 3]
  */
 export class SeqHandler {
-  private map: Array<{ id: number | undefined; value: Array<number> }>;
+  private map: Array<{ id: string | undefined; value: Array<number> }>;
   private lastSeq: number;
   private playerCount: number;
 
@@ -19,7 +19,7 @@ export class SeqHandler {
    * @param playerCount creates this many slots
    */
   constructor(playerCount: number) {
-    this.map = new Array<{ id: number | undefined; value: Array<number> }>(
+    this.map = new Array<{ id: string | undefined; value: Array<number> }>(
       playerCount,
     );
     for (let i = 0; i < playerCount; i++)
@@ -43,7 +43,7 @@ export class SeqHandler {
    * @param target userId of the player whoose seq is requested
    * @returns Array of seq numbers
    */
-  getSeq(target: number): Array<number> | undefined {
+  getSeq(target: string): Array<number> | undefined {
     let pos: number = 0;
     for (; pos < this.playerCount; pos++) {
       if (this.map[pos].id == target) {
@@ -73,7 +73,7 @@ export class SeqHandler {
    * @param userId Id of the player, used as alias
    * @param position position, where the player is stored in the array
    */
-  registerPlayer(userId: number, position: number) {
+  registerPlayer(userId: string, position: number) {
     if (position < 0 || position > 3) return;
     this.map[position] = { id: userId, value: new Array<number>() };
   }

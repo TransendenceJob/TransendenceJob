@@ -175,12 +175,16 @@ export default function LobbyPageController() {
     }
 
     // Create fixed setter functions for binding to evens
-    const onConnect = () => {setIsConnected(true)};
+    
+    const onConnect = (socket: Socket) => {
+      setIsConnected(true)
+      console.log(`socket ${socket.id} connected`);
+    };
     const onDisconnect = () => {setIsConnected(false)};
 
     // Check for socket already being connected
     if (socket.connected) {
-      onConnect();
+      onConnect(socket);
     }
 
     // Bind functions to events

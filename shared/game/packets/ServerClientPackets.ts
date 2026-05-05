@@ -124,7 +124,7 @@ export interface SC_ClientJoin extends SC_Base {
  */
 export interface PlayerInLobby {
 	userId: string,
-	userName: string,
+	name: string,
 	indexInLobby: number,
 	ready: boolean,
 	seq: Array<number>,

@@ -14,7 +14,7 @@ export class PickWormState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.guiHelper?.notifications.add(`${this.machine.players[0].name} is picking a worm`)
+		this.machine.guiHelper?.notifications.add(`${this.machine.turn?.activePlayer.name} is picking a worm`)
 		this.machine.turn?.activePlayer.wormsClickable(true);
 		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm);
 		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;

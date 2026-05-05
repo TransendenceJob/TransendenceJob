@@ -11,10 +11,10 @@ import { Worm } from "../../worms/Worm";
 class LoadingHelper {
 	private percentPerStep: number;
 	private step: number;
-	private sendPacket: (progress: number, msg: string, userId: number) => void;
+	private sendPacket: (progress: number, msg: string) => void;
 
 	// Mock constructor, actual constructor is start()
-	constructor(stepCount: number, send: (progress: number, msg: string, userId: number) => void) {
+	constructor(stepCount: number, send: (progress: number, msg: string) => void) {
 		if (stepCount == 0)
 			this.percentPerStep = 0;
 		else
@@ -23,8 +23,8 @@ class LoadingHelper {
 		this.sendPacket = send;
 	}
 
-	send(msg: string, userId: number) {
-		this.sendPacket(this.percentPerStep * this.step, msg, userId);
+	send(msg: string) {
+		this.sendPacket(this.percentPerStep * this.step, msg);
 		this.step++;
 	}
 }
