@@ -8,6 +8,7 @@ import type { msgToServerType } from '@/lib/packets/msgToServerType';
 interface Params {
   msgToServer: msgToServerType,
   isConnected: boolean,
+  socketId: string,
 }
 
 /**
@@ -22,10 +23,13 @@ interface Params {
 export default function ConnectingPage({
   msgToServer,
   isConnected,
+  socketId
 }: Params) {
   useEffect(() => {
     if (isConnected) {
-      msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {});
+      msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {
+        socketId: socketId
+      });
     }
   }, [isConnected, msgToServer]);
   return (

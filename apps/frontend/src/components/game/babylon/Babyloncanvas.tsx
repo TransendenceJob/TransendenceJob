@@ -14,6 +14,7 @@ interface Params {
   socket: Socket,
   lobbyId: number,
   userId: string,
+  socketId: string,
   DEBUG: boolean,
 }
 
@@ -23,6 +24,7 @@ export default function BabylonCanvas({
   socket, 
   lobbyId,
   userId,
+  socketId,
   DEBUG,
 }: Params) {
 
@@ -68,7 +70,7 @@ export default function BabylonCanvas({
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
 
-    createScene(canvas, engine, socket, msgRef.current, lobbyId, userId, DEBUG).then(({scene, resizeUi, cleanup}) => {
+    createScene(canvas, engine, socket, msgRef.current, lobbyId, userId, socketId, DEBUG).then(({scene, resizeUi, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanup?.();

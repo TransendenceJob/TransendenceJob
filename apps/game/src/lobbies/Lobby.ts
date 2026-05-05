@@ -192,7 +192,11 @@ export class Lobby {
             this.setState(LobbyStateEnum.EndScreen);
           }
 
-          this.game.userIds.push(data.userId);
+          const newUser = {
+            userId: data.userId,
+            socketId: data.socketId,
+          };
+          this.game.clients.push(newUser);
           // Just make a new Game, so we can debug easier. Needs to be CHANGED later on!!
           this.msgToClient<SC_GenericStatePacket>(
             translateLobbyState(this.state),

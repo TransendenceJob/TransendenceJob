@@ -101,8 +101,11 @@ export default function LobbyPageController() {
   /** Since we only have 1 lobby so far, and no way to specify, which to join, this is useless so far */
   const [lobbyId, setLobbyId] = useState(0);
 
-  /** NEEDS TO COME FROM SOMEWHERE, CHANGE LATER */
-  const [userId, setUserId] = useState("none123");
+  /** Tracks the user of this lobbies id */
+  const [userId, setUserId] = useState("undefined");
+
+  /** Tracks the string that identifies a connection on the socket */
+  const [socketId, setSocketId] = useState("undefined");
 
   /**
    * This will only be executed once on startup, regardless of re-rendering
@@ -176,15 +179,17 @@ export default function LobbyPageController() {
 
     // Create fixed setter functions for binding to evens
     
-    const onConnect = (socket: Socket) => {
+    const onConnect = () => {
       setIsConnected(true)
-      console.log(`socket ${socket.id} connected`);
+      setSocketId(socket.id);
     };
-    const onDisconnect = () => {setIsConnected(false)};
+    const onDisconnect = () => {
+      setIsConnected(false)
+    };
 
     // Check for socket already being connected
     if (socket.connected) {
-      onConnect(socket);
+      onConnect();
     }
 
     // Bind functions to events
@@ -200,7 +205,7 @@ export default function LobbyPageController() {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
     };
-  }, [])
+  }, [userId])
 
   // Function for simpler packet handling
   const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
@@ -230,6 +235,7 @@ export default function LobbyPageController() {
                 isConnected={isConnected}
                 lobbyId={0}
                 userId={userId}
+                socketId={socketId}
                 DEBUG={DEBUG}
                 />
     </div>

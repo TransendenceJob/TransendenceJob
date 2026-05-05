@@ -15,6 +15,13 @@ import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/msgToClientType';
 
+interface userObject {
+  userId: string;
+  //userName: string;
+  //slot: number;
+  socketId: string;
+}
+
 export class Game {
   // Member properties
   private engine: NullEngine;
@@ -25,7 +32,7 @@ export class Game {
   public state: GameState;
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
-  public userIds: Array<string>;
+  public clients: Array<userObject>;
 
   // Connstructor
   constructor(
@@ -45,7 +52,7 @@ export class Game {
     );
     this.sendState = sendStatePacket;
     this.sendPacket = sendPacket;
-    this.userIds = new Array<string>();
+    this.clients = new Array<userObject>();
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));

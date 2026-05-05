@@ -18,6 +18,7 @@ interface Params {
   isConnected: boolean,
   lobbyId: number,
   userId: string,
+  socketId: string,
   DEBUG: boolean,
   currentUserId: string
 }
@@ -38,6 +39,7 @@ export default function SubPages({
   isConnected,
   lobbyId,
   userId,
+  socketId,
   DEBUG,
   slots,
   currentUserId
@@ -55,9 +57,10 @@ export default function SubPages({
                       socket={socket}
                       lobbyId={lobbyId}
                       userId={userId}
+                      socketId={socketId}
                       DEBUG={DEBUG}/>
     </div>
-    {state === 'CONNECTING' && <ConnectingPage msgToServer={msgToServer} isConnected={isConnected}/>}
+    {state === 'CONNECTING' && <ConnectingPage msgToServer={msgToServer} isConnected={isConnected} socketId={socketId}/>}
     {state === 'LOBBY' && <LobbyPage msgToServer={msgToServer}/>}
     {state === 'LOADING' && <LoadingPage msgToServer={msgToServer}/>}
     {state === 'ENDSCREEN' && <EndPage msgToServer={msgToServer}/>}
