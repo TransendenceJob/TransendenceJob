@@ -19,9 +19,14 @@ async function handleResponse<T>(res: Response): Promise<ApiResult<T>> {
 // define statsClient object with two function
 
 export const statsClient = {
-  // expects BFF endpoint that returns a compact summary for the current user
-  async getStatsUsers(accessToken?: string) {
-    const res = await fetch(`${BASE_URL}/stats/users`, {
+	
+	// expects BFF endpoint that returns a compact summary for the current user
+	async getStatsUsers(accessToken?: string) {
+
+    const url = `${BASE_URL}/stats/users`;
+    // eslint-disable-next-line no-console
+    console.log('statsClient.getStatsUsers ->', url, { accessToken: !!accessToken });
+    const res = await fetch(url, {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
@@ -30,7 +35,10 @@ export const statsClient = {
 
   // fallback: fetch by explicit userId
   async getStatsUserById(userId: string, accessToken?: string) {
-    const res = await fetch(`${BASE_URL}/stats/user/${encodeURIComponent(userId)}`, {
+    const url = `${BASE_URL}/stats/user/${encodeURIComponent(userId)}`;
+    // eslint-disable-next-line no-console
+    console.log('statsClient.getStatsUserById ->', url, { userId, accessToken: !!accessToken });
+    const res = await fetch(url, {
       method: 'GET',
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });

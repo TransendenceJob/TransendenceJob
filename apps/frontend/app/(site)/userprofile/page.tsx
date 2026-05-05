@@ -28,7 +28,7 @@ export default function ProfilePage() {
         }
 
         const accessToken = typeof window !== 'undefined' ? sessionStorage.getItem('auth.accessToken') ?? undefined : undefined;
-
+		console.log("userID: ", userId);
         statsClient.getStatsUserById(userId, accessToken)
             .then(res => { if (!mounted) return; if (res.ok) setStats(res.data); else setStats(null); })
             .catch(() => { if (mounted) setStats(null); });
@@ -43,6 +43,8 @@ export default function ProfilePage() {
         {name: 'Invitations', icon: '✉️'},
     ];
 
+	// [TEST CONSOLE LOG: ]
+	console.log("BASE URL: ", process.env.NEXT_PUBLIC_API_URL+ "/stats/users");
 	const statsData = [
 	{ label: "Matches", value: stats?.matches?.toString() ?? "—", color: "text-blue-500" },
 	{ label: "Win Rate", value: stats?.winRate ?? "—", color: "text-green-500" },
