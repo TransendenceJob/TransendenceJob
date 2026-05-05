@@ -100,7 +100,7 @@ export class AuthRegisterService {
             ? `${process.env.STATS_SERVICE_URL.replace(/\/+$/, '')}/internal/stats/user`
             : 'http://stats_service:3000/internal/stats/user';
 
-          await axios.post(url, payload, {
+          await axios.post("http://localhost:3004/internal/stats/user", payload, {
             headers: {
               'x-service-name': 'auth_service',
             },

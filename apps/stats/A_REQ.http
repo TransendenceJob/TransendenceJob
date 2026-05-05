@@ -17,7 +17,7 @@ Content-Type: application/json
 
 
 ### update the stats for player
-PUT http://localhost:3004/internal/stats/user/842e1132-2258-4b04-b2a2-dee603638c93
+PUT http://localhost:3004/internal/stats/user/d83adc00-2764-44eb-897c-92e24ee50968
 Content-Type: application/json
 
 {
