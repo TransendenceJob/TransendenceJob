@@ -3,7 +3,9 @@ import {
   ConflictException,
   Injectable,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
+import axios from 'axios';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthConfigService } from '../../config/auth-config.service';
 import { AuditLogRepository } from '../../persistence/repositories/audit-log.repository';
@@ -48,10 +50,12 @@ type ExchangeResult = {
     revokedAt: Date | null;
   };
   refreshToken: string;
+  isFirstLogin: boolean;
 };
 
 @Injectable()
 export class AuthGoogleExchangeService {
+  private readonly logger = new Logger(AuthGoogleExchangeService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AuthConfigService,
@@ -230,6 +234,7 @@ export class AuthGoogleExchangeService {
           revokedAt: session.revokedAt,
         },
         refreshToken: refreshPair.refreshToken,
+        isFirstLogin,
       } satisfies ExchangeResult;
     });
 
@@ -253,6 +258,17 @@ export class AuthGoogleExchangeService {
       requestId: context.requestId,
       serviceName: context.serviceName,
     });
+
+    // Initialize stats for newly created users (best-effort)
+    if (exchanged.isFirstLogin) {
+      try {
+        await this.initPlayerStats(exchanged.user);
+      } catch (err) {
+        this.logger.warn(
+          `Failed to initialize stats for google-created user=${exchanged.user.id}: ${err?.message ?? err}`,
+        );
+      }
+    }
 
     return AuthContractMapper.toAuthSuccessResponse({
       user: {
@@ -370,4 +386,28 @@ export class AuthGoogleExchangeService {
         payload.email_verified === true || payload.email_verified === 'true',
     };
   }
+  
+  private async initPlayerStats(user: ExchangeResult['user']): Promise<void> {
+    const payload: Record<string, unknown> = {
+      userId: user.id,
+      xp: 50,
+      level: 1,
+      wins: 0,
+      losses: 0,
+      kills: 0,
+      deaths: 0,
+      email: user.email,
+      username: user.username ?? null,
+      displayName: null,
+    };
+
+    const url = 'http://stats_service:3000/internal/stats/user';
+
+    await axios.post(url, payload, {
+      headers: { 'x-service-name': 'auth_service' },
+      timeout: 2000,
+    });
+  }
 }
+
+

@@ -79,41 +79,14 @@ export class AuthRegisterService {
 
       await this.cacheRegisteredSession(created, context);
 
-      // Initialize player stats in the stats service (fire-and-forget).
-      // Keep this best-effort so registration doesn't fail if stats service is unavailable.
-      (async () => {
-        const payload = {
-          userId: created.user.id,
-          displayName: (input.displayName as string) ?? created.user.username ?? null,
-          username: created.user.username ?? null,
-          email: created.user.email,
-          xp: 50,
-          level: 1,
-          wins: 0,
-          losses: 0,
-          kills: 0,
-          deaths: 0,
-        } as const;
-
-        try {
-          const url = process.env.STATS_SERVICE_URL
-            ? `${process.env.STATS_SERVICE_URL.replace(/\/+$/, '')}/internal/stats/user`
-            : 'http://stats_service:3000/internal/stats/user';
-
-          await axios.post("http://localhost:3004/internal/stats/user", payload, {
-            headers: {
-              'x-service-name': 'auth_service',
-            },
-            timeout: 2000,
-          });
-        } catch (err) {
-          this.logger.warn(
-            `Failed to init stats for user=${created.user.id}: ${
-              (err as Error)?.message ?? String(err)
-            }`,
-          );
-        }
-      })();
+      // Initialize player stats in stats service (best-effort)
+      try {
+        await this.initPlayerStats(created.user, input);
+      } catch (err) {
+        this.logger.warn(
+          `Failed to initialize stats for user=${created.user.id}: ${err?.message ?? err}`,
+        );
+      }
 
       const accessToken = await this.tokenIssue.issueAccessToken({
         userId: created.user.id,
@@ -305,5 +278,30 @@ export class AuthRegisterService {
     }
 
     return null;
+  }
+
+  private async initPlayerStats(
+    user: CreatedRegisterData['user'],
+    input: RegisterRequestDto,
+  ): Promise<void> {
+    const payload: Record<string, unknown> = {
+      userId: user.id,
+      xp: 50,
+      level: 1,
+      wins: 0,
+      losses: 0,
+      kills: 0,
+      deaths: 0,
+      email: user.email,
+      username: user.username ?? input.username ?? null,
+      displayName: (input as { displayName?: string })?.displayName ?? null,
+    };
+
+    const url = 'http://stats_service:3000/internal/stats/user';
+
+    await axios.post(url, payload, {
+      headers: { 'x-service-name': 'auth_service' },
+      timeout: 2000,
+    });
   }
 }
