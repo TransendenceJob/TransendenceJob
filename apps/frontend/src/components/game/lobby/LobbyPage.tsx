@@ -46,11 +46,11 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
 
             // Case A: A new player joined an empty slot
             if (player.userId && !prevPlayer?.userId) {
-                addFeedEvent(`${player.username} CONNECTED_TO_NODE_0${index + 1}`);
+                addFeedEvent(`${player.username} >> CONNECTED_TO_NODE_0${index + 1}`);
             }
             // Case B: A player left
             else if (!player.userId && prevPlayer?.userId) {
-                addFeedEvent(`${prevPlayer.username} DISCONNECTED`);
+                addFeedEvent(`${prevPlayer.username} >> DISCONNECTED`);
             }
             // Case C: Readiness changed
             else if (player.userId && prevPlayer && player.isReady !== prevPlayer.isReady) {
@@ -175,19 +175,21 @@ export default function LobbyPage({ msgToServer, players, currentUserId }: Param
                                         )}
                                     </div>
 
-                                    <div className={`flex-grow flex flex-col items-center justify-center gap-4 rounded-[1.5rem] transition-all duration-700 
+                                    <div className={`flex-grow flex flex-col items-center justify-center gap-4 rounded-[1.5rem] transition-all duration-700 w-full px-4
                   ${isEmpty ? 'bg-zinc-50/30' : player.isReady ? 'bg-blue-50/50' : 'bg-zinc-50'}
                 `}>
-                  <span className={`text-2xl font-black uppercase tracking-tight transition-colors duration-500 
-                    ${isEmpty ? 'text-zinc-200' : player.isReady ? player.color : 'text-zinc-400'}
-                  `}>
+                  <span
+                      title={isEmpty ? '' : player.username} // Mouse over for truncated names
+                        className={`text-2xl font-black uppercase tracking-tight transition-colors duration-500 truncate w-full text-center
+        ${isEmpty ? 'text-zinc-200' : player.isReady ? player.color : 'text-zinc-400'}
+    `}>
                     {isEmpty ? '---' : player.username}
                   </span>
 
                                         {!isEmpty && player.isReady && (
                                             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="px-3 py-1 bg-zinc-900 rounded-full">
                       <span className="text-[8px] font-mono text-white font-bold uppercase tracking-widest">
-                        {isMe ? 'Me Active' : 'Active'}
+                        {isMe ? 'You are Ready' : 'Active'}
                       </span>
                                             </motion.div>
                                         )}

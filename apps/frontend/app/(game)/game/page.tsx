@@ -81,7 +81,7 @@ const buildSlotsFromLobbyData = (
       refreshedSlots[i] = {
         ...refreshedSlots[i],
         userId: player.userId,
-        username: player.userName || "Unknown Operative",
+        username: player.userName || `Player ${i + 1}`,
         isReady: player.ready,
       };
     }
@@ -228,7 +228,7 @@ export default function LobbyPageController() {
       if (DEBUG) console.log("Sending JoinLobby request for user:", user);
       msgToServer(CS_Type.CS_JoinLobby, {
         userId: user.id,
-        userName: user?.username || "Unknown"
+        userName: user?.username
       });
     }
   }, [isConnected, msgToServer, user]);
