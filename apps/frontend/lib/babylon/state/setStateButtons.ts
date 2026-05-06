@@ -1,4 +1,3 @@
-// @ts-ignore
 import { AdvancedDynamicTexture, Button} from "@babylonjs/gui";
 
 import { setButtonSize, setButtonPos } from '../util/guiUtil';

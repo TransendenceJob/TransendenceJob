@@ -1,10 +1,8 @@
 "use client";
-// @ts-ignore
 import { useEffect, useRef } from "react";
-// @ts-ignore
 import { Engine, Scene } from "@babylonjs/core" ;
-// @ts-ignore
 import { Socket } from 'socket.io-client';
+
 
 import { createScene } from "@/lib/babylon/createScene";
 import type { msgToServerType } from '@/lib/packets/msgToServerType';

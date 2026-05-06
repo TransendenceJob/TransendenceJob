@@ -1,10 +1,8 @@
-// @ts-ignore
 import { Scene, Mesh, MeshBuilder, Vector3, StandardMaterial, Color3 } from '@babylonjs/core'
 import { AimingAngle } from "./aiming/AimingAngle";
 import { IAimType } from "./aiming/IAimType";
 import { Explosion } from "./Explosion";
 import { IWeapon } from "./IWeapon";
-import { Worm } from '../worms/Worm';
 import { Turn } from '../state/Turn';
 
 /**

@@ -1,15 +1,11 @@
-// @ts-ignore
 import { Scene, FreeCamera, Vector3, HemisphericLight, Engine, ActionManager } from "@babylonjs/core";
-// @ts-ignore
 import { Socket } from 'socket.io-client';
-// @ts-ignore
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 
 import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
 import { StateMachine } from './state/StateMachine';
 import { MessageQueue } from './MessageQueue';
-import { setButtonPos, setButtonSize } from "./util/guiUtil";
 
 export async function createScene(
 	canvas: HTMLCanvasElement, 
@@ -21,14 +17,13 @@ export async function createScene(
 	socketId: string,
 	DEBUG: boolean, 
 ) {
-	var scene = new Scene(engine);
+	const scene = new Scene(engine);
 	scene.actionManager = new ActionManager(scene);
-	var camera = createCamera(scene, canvas, 0, 0, 62);
-	var light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
+	const camera = createCamera(scene, canvas, 0, 0, 62);
+	const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;
 
 	try {
-		// @ts-ignore
 		const HavokPhysics = (await import("@babylonjs/havok")).default;
 		const havokInterface = await HavokPhysics();
 		const plugin = new HavokPlugin(undefined, havokInterface);
@@ -60,6 +55,7 @@ export async function createScene(
 		state.dispose();
 		queue.dispose();
 	}
+
 
 	return { scene, resizeUi, cleanup };
 };
