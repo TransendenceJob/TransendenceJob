@@ -4,7 +4,7 @@ import { CS_FinishedLoading, CS_LoadingProgress, CS_Type } from '@/shared/packet
 import { Ground } from "../../Ground";
 import { Player } from "../../Player";
 import { Worm } from "../../worms/Worm";
-import { loadWeapons } from "./loadWeapons";
+import { loadWeapons, loadingWeaponResult } from "./loadWeapons";
 
 /**
  * Helper class, that offers the send function to send packages with an ever increasing percentage
@@ -77,7 +77,11 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	machine.turnOrder = data.turnOrder;
 	loadingHelper.send("Turn Order loaded");
 
-	const guns = await loadWeapons(machine.scene);
+	const result: loadingWeaponResult = await loadWeapons(machine.scene);
+	if (!result.success) {
+		// do something
+		return ;
+	}
 	loadingHelper.send("Imported Weapon Meshes")
 
 	// Finished

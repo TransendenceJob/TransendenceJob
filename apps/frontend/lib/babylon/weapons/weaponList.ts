@@ -1,5 +1,5 @@
 import { AbstractMesh, Scene } from "@babylonjs/core"
-import { AssaultRifle } from "./AssaultRifle"
+import { AssaultRifle } from "./weaponClasses/AssaultRifle"
 import { IWeapon } from "./IWeapon"
 
 /**
