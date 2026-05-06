@@ -16,8 +16,79 @@ export interface PlayerSlot {
 }
 
 const socket: Socket = io("ws://localhost:8080", { transports: ['websocket'] });
-const DEBUG: boolean = (process.env.NODE_ENV == "development");
+// const DEBUG: boolean = (process.env.NODE_ENV == "development");
+const DEBUG: boolean = true; // always true to testing prod as well
 const COLORS = ['text-red-600', 'text-blue-600', 'text-emerald-600', 'text-amber-600'];
+
+const updateSlotReadyState = (
+    slots: PlayerSlot[],
+    userId: string,
+    isReady: boolean
+) =>
+    slots.map(slot =>
+        slot.userId === userId
+            ? { ...slot, isReady }
+            : slot
+    );
+
+const addPlayerToSlots = (
+    slots: PlayerSlot[],
+    userId: string,
+    username?: string
+): PlayerSlot[] => {
+  const newSlots = [...slots];
+
+  const emptyIndex = newSlots.findIndex(slot => slot.userId === null);
+
+  if (emptyIndex !== -1) {
+    newSlots[emptyIndex] = {
+      ...newSlots[emptyIndex],
+      userId,
+      username: username || "New Recruit",
+      isReady: false,
+    };
+  }
+
+  return newSlots;
+};
+
+const removePlayerFromSlots = (
+    slots: PlayerSlot[],
+    userId: string
+): PlayerSlot[] =>
+    slots.map(slot =>
+        slot.userId === userId
+            ? { ...slot, userId: null, username: "Empty Slot", isReady: false }
+            : slot
+    );
+
+const buildSlotsFromLobbyData = (
+    players: PlayerInLobby[]
+): PlayerSlot[] => {
+  // reset them before updating
+  const refreshedSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
+    userId: null,
+    username: "Empty Slot",
+    isReady: false,
+    color: COLORS[i],
+  }));
+
+  // fill slots with data from server
+  players.forEach(player => {
+    if (DEBUG) console.log("Processing Player at Index:", player.indexInLobby, "Data:", player);
+    const i = player.indexInLobby;
+    if (refreshedSlots[i]) {
+      refreshedSlots[i] = {
+        ...refreshedSlots[i],
+        userId: player.userId,
+        username: player.userName || "Unknown Operative",
+        isReady: player.ready,
+      };
+    }
+  });
+
+  return refreshedSlots;
+};
 
 export default function LobbyPageController() {
   /** State of the Page */
@@ -34,7 +105,12 @@ export default function LobbyPageController() {
 
   // initialize 4 empty player slots for static purpose in the first render
   const [slots, setSlots] = useState<PlayerSlot[]>(
-      [0, 1, 2, 3].map(i => ({ userId: null, username: "Empty Slot", isReady: false, color: COLORS[i] }))
+      [0, 1, 2, 3].map(i => ({
+        userId: null,
+        username: "Empty Slot",
+        isReady: false,
+        color: COLORS[i]
+      }))
   );
 
   // Function for simpler packet handling
@@ -52,7 +128,7 @@ export default function LobbyPageController() {
       if (DEBUG) console.log("Server Sent:", packet_string);
     }
     else {
-      console.warn("Socket not connected. Cannot send.");
+      if (DEBUG) console.warn("Socket not connected. Cannot send.");
     }
   }, [lobbyId]);
 
@@ -63,63 +139,29 @@ export default function LobbyPageController() {
     const handleLobbyUpdates = (p: SC_GenericPacket) => {
       switch (p.type) {
         case SC_Type.SC_ReadyChange:
-          setSlots(prev => prev.map(s =>
-              s.userId === p.userId ? {...s, isReady: p.ready} : s
-          ));
+          setSlots(prev =>
+              updateSlotReadyState(prev, p.userId, p.ready)
+          );
           break;
 
         case SC_Type.SC_ClientJoin:
-          setSlots(prev => {
-            const newSlots = [...prev];
-            const emptyIndex = newSlots.findIndex(s => s.userId === null);
-            if (emptyIndex !== -1) {
-              newSlots[emptyIndex] = {
-                ...newSlots[emptyIndex],
-                userId: p.userId,
-                username: p.userName || "New Recruit",
-                isReady: false
-              };
-            }
-            return newSlots;
-          });
-          console.log("Player joined:", p.userId);
+          setSlots(prev =>
+              addPlayerToSlots(prev, p.userId, p.userName)
+          );
+          if (DEBUG) console.log("Player joined:", p.userId);
           break;
 
         case SC_Type.SC_ClientDisconnect:
-          setSlots(prev => prev.map(s =>
-              s.userId === p.userId
-                  ? { ...s, userId: null, username: "Empty Slot", isReady: false }
-                  : s
-          ));
+          setSlots(prev =>
+              removePlayerFromSlots(prev, p.userId)
+          );
           break;
 
         case SC_Type.SC_LobbyData: {
           // If the server provides a lobbyId, sync it here
           if (p.lobbyId !== undefined) setLobbyId(p.lobbyId);
 
-          // made sure we always use the newest server data to handle disconnect properly
-          const refreshedSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
-            userId: null,
-            username: "Empty Slot",
-            isReady: false,
-            color: COLORS[i]
-          }));
-
-          // fill slots with data from server
-          p.lobbyData.forEach((playerData:PlayerInLobby) => {
-            console.log("Processing Player at Index:", playerData.indexInLobby, "Data:", playerData);
-            const i = playerData.indexInLobby;
-
-            if (refreshedSlots[i]) {
-              refreshedSlots[i] = {
-                ...refreshedSlots[i],
-                userId: playerData.userId,
-                username: playerData.userName || "Unknown Operative",
-                isReady: playerData.ready,
-              };
-            }
-          });
-          setSlots(refreshedSlots);
+          setSlots(buildSlotsFromLobbyData(p.lobbyData));
           break;
         }
       }
@@ -129,14 +171,13 @@ export default function LobbyPageController() {
       const packet: SC_GenericPacket = JSON.parse(data);
 
       if (!packet || !('type' in packet)) {
-        console.error("Frontend received malformed packet:", packet);
+        if (DEBUG) console.error("Frontend received malformed packet:", packet);
         return;
       }
 
-      console.log("RAW PACKET ARRIVED:", packet);
-      if (DEBUG) console.log("NEXT: Client received packet: ", packet);
+      if (DEBUG) if (DEBUG) console.log("NEXT: Client received packet: ", packet);
 
-      console.log(`[Packet Arrival] Type: ${packet.type} | Current UI State: ${state}`);
+      if (DEBUG) console.log(`[Packet Arrival] Type: ${packet.type} | Current UI State: ${state}`);
       if (lobbyId !== packet.lobbyId) return;
 
 
@@ -151,7 +192,7 @@ export default function LobbyPageController() {
 
       // Determine if this packet carries Lobby Data
       const isLobbyDataPacket = [
-        SC_Type.SC_LobbyData,
+        SC_Type.SC_LobbyData, // contains the full list of players
         SC_Type.SC_ReadyChange,
         SC_Type.SC_ClientJoin,
         SC_Type.SC_ClientDisconnect
@@ -159,7 +200,6 @@ export default function LobbyPageController() {
 
       // We process if we are ALREADY in the lobby,
       // Or if we just received a packet that tells us we are NOW in the lobby
-
       if (state === "LOBBY" || packet.type === SC_Type.SC_StartLobby || isLobbyDataPacket) {
         handleLobbyUpdates(packet);
       } else {
@@ -185,7 +225,7 @@ export default function LobbyPageController() {
 
   useEffect(() => {
     if (isConnected && user){
-      console.log("Sending JoinLobby request for user:", user);
+      if (DEBUG) console.log("Sending JoinLobby request for user:", user);
       msgToServer(CS_Type.CS_JoinLobby, {
         userId: user.id,
         userName: user?.username || "Unknown"
