@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useAuth } from "@/components/Providers";
 
 export default function Footer() {
+    const { user } = useAuth();
+    const profileHref = user?.id ? `/profile/${user.id}` : '/login';
+
     return (
         <footer className="p-8 border-t border-foreground/10 text-center">
             <div className="flex justify-center space-x-6 mb-4 text-sm text-zinc-500">
@@ -13,7 +19,7 @@ export default function Footer() {
                 <Link href="/about" className="hover:text-foreground transition">
                     Meet the Team
                 </Link>
-                <Link href="/userprofile" className="hover:text-foreground transition">
+                <Link href={profileHref} className="hover:text-foreground transition">
                     User profile
                 </Link>
             </div>
