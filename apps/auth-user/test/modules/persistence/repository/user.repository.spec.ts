@@ -5,6 +5,7 @@ describe('UserRepository', () => {
   const prisma = {
     user: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -39,6 +40,93 @@ describe('UserRepository', () => {
             },
           },
         },
+      }),
+    );
+  });
+
+  it('findByIdWithAdminRelations loads roles and providers', async () => {
+    await repository.findByIdWithAdminRelations('u1');
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'u1' },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+        authProviders: true,
+      },
+    });
+  });
+
+  it('searchUsers matches email and username case-insensitively', async () => {
+    await repository.searchUsers({ query: 'Stefan', take: 21 });
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          OR: [
+            {
+              email: {
+                contains: 'Stefan',
+                mode: 'insensitive',
+              },
+            },
+            {
+              username: {
+                contains: 'Stefan',
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+          authProviders: true,
+        },
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        take: 21,
+      }),
+    );
+  });
+
+  it('searchUsers includes uuid exact match and cursor pagination', async () => {
+    const userId = '842e1132-2258-4b04-b2a2-dee603638c93';
+
+    await repository.searchUsers({
+      query: userId,
+      cursor: 'd200724c-2856-4319-aefa-b41a73a0a0eb',
+      take: 10,
+    });
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          OR: [
+            {
+              email: {
+                contains: userId,
+                mode: 'insensitive',
+              },
+            },
+            {
+              username: {
+                contains: userId,
+                mode: 'insensitive',
+              },
+            },
+            {
+              id: userId,
+            },
+          ],
+        },
+        cursor: { id: 'd200724c-2856-4319-aefa-b41a73a0a0eb' },
+        skip: 1,
       }),
     );
   });

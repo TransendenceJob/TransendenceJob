@@ -47,7 +47,22 @@ export class AppModule implements NestModule {
     });
 
     consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users',
+      method: RequestMethod.GET,
+    });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users/:userId',
+      method: RequestMethod.GET,
+    });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
       path: 'users/:userId/disable',
+      method: RequestMethod.POST,
+    });
+
+    consumer.apply(BearerTokenMiddleware).forRoutes({
+      path: 'users/:userId/enable',
       method: RequestMethod.POST,
     });
 

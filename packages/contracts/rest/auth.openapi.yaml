@@ -10,12 +10,36 @@ servers:
     description: Docker internal network address used by BFF and internal services
 
 tags:
+  - name: Health
+    description: Internal health and dependency status
   - name: InternalAuth
     description: Endpoints consumed by BFF / trusted services only
   - name: InternalAdmin
     description: Admin-only internal auth operations
 
 paths:
+  /internal/auth/health:
+    get:
+      tags: [Health]
+      summary: Auth service health
+      description: Reports auth service health and Redis dependency status.
+      operationId: getInternalAuthHealth
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/XRequestId"
+      responses:
+        "200":
+          description: Health status
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
   /internal/auth/register:
     post:
       tags: [InternalAuth]
@@ -98,10 +122,9 @@ paths:
     post:
       tags: [InternalAuth]
       summary: Logout session (internal)
-      description: Revokes the current session or all sessions for the authenticated user.
+      description: Revokes the current session or all sessions for the refresh token owner. The current implementation authenticates this operation with the refresh token in the request body.
       operationId: logoutInternalAuthUser
-      security:
-        - BearerAuth: []
+      security: []
       parameters:
         - $ref: "#/components/parameters/XRequestId"
         - $ref: "#/components/parameters/XServiceName"
@@ -236,6 +259,123 @@ paths:
         "409":
           $ref: "#/components/responses/Conflict"
 
+  /internal/auth/password/set:
+    post:
+      tags: [InternalAuth]
+      summary: Set password for current user (internal)
+      description: Lets an authenticated user create or replace their local password, including Google-authenticated users adding password login.
+      operationId: setInternalAuthPassword
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPasswordRequest"
+            examples:
+              default:
+                value:
+                  password: StrongPassword123!
+      responses:
+        "200":
+          description: Password set
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetPasswordResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /internal/auth/users:
+    get:
+      tags: [InternalAdmin]
+      summary: Search auth users
+      description: Admin/trusted-service endpoint for paged auth user search.
+      operationId: searchInternalAuthUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+            example: stefan
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+            example: usr_123
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: User search page returned
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /internal/auth/users/{userId}:
+    get:
+      tags: [InternalAdmin]
+      summary: Get auth user detail
+      description: Admin/trusted-service endpoint that returns one auth user with roles and linked providers.
+      operationId: getInternalAuthUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User detail returned
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDetailResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /internal/auth/users/{userId}/disable:
     post:
       tags: [InternalAdmin]
@@ -264,6 +404,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDisabledResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /internal/auth/users/{userId}/enable:
+    post:
+      tags: [InternalAdmin]
+      summary: Enable user account
+      description: Re-enables a disabled auth identity.
+      operationId: enableInternalAuthUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/XRequestId"
+        - $ref: "#/components/parameters/XServiceName"
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnableUserRequest"
+            examples:
+              default:
+                value:
+                  reason: Appeal approved
+      responses:
+        "200":
+          description: User enabled
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/XRequestId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnabledResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -344,6 +525,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RevokeSessionsResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
@@ -457,8 +640,12 @@ components:
           examples:
             unauthorized:
               value:
-                code: UNAUTHORIZED
-                message: Authentication is required or the token is invalid.
+                statusCode: 401
+                path: /internal/auth/verify
+                error:
+                  message: Missing authorization header
+                  error: Unauthorized
+                  statusCode: 401
     Forbidden:
       description: Forbidden
       content:
@@ -487,18 +674,38 @@ components:
   schemas:
     Error:
       type: object
-      required: [code, message]
+      required: [statusCode, path, error]
       properties:
-        code:
+        statusCode:
+          type: integer
+          example: 401
+        path:
           type: string
-          example: INVALID_CREDENTIALS
-        message:
+          example: /internal/auth/login
+        error:
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+          example:
+            message: Invalid email or password
+            error: Unauthorized
+            statusCode: 401
+
+    HealthResponse:
+      type: object
+      required: [status, dependencies]
+      properties:
+        status:
           type: string
-          example: Email or password is incorrect.
-        details:
+          enum: [ok, degraded]
+        dependencies:
           type: object
-          nullable: true
-          additionalProperties: true
+          required: [redis]
+          properties:
+            redis:
+              type: string
+              enum: [up, down]
 
     UserStatus:
       type: string
@@ -550,6 +757,10 @@ components:
           type: string
           format: date-time
           nullable: true
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProviderLink"
 
     ProviderLink:
       type: object
@@ -688,6 +899,24 @@ components:
         session:
           $ref: "#/components/schemas/SessionInfo"
 
+    SetPasswordRequest:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+
+    SetPasswordResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          example: true
+
     VerifyClaims:
       type: object
       required: [sub, iat, exp, iss]
@@ -745,7 +974,7 @@ components:
 
     DisableUserRequest:
       type: object
-      required: [reason, revokeSessions]
+      required: [reason]
       properties:
         reason:
           type: string
@@ -767,6 +996,25 @@ components:
         revokedSessions:
           type: integer
           example: 4
+
+    EnableUserRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: Appeal approved
+
+    UserEnabledResponse:
+      type: object
+      required: [userId, status]
+      properties:
+        userId:
+          type: string
+          example: usr_123
+        status:
+          $ref: "#/components/schemas/UserStatus"
 
     SetUserRolesRequest:
       type: object
@@ -812,6 +1060,24 @@ components:
         revokedSessions:
           type: integer
           example: 3
+
+    UserSearchResponse:
+      type: object
+      required: [items, pageInfo]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserAuthView"
+        pageInfo:
+          $ref: "#/components/schemas/PageInfo"
+
+    UserDetailResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/UserAuthView"
 
     AuditLogItem:
       type: object

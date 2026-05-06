@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { authClient } from "@/src/core/api/auth/auth.client";
+
+const OAUTH_PASSWORD_RECOVERY_KEY = "auth.oauth.password.recovery";
 
 function parseHashParams(hash: string): Record<string, string> {
   const normalized = hash.startsWith("#") ? hash.slice(1) : hash;
@@ -16,7 +19,6 @@ function parseHashParams(hash: string): Record<string, string> {
 }
 
 export default function GoogleCallbackClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -26,33 +28,48 @@ export default function GoogleCallbackClient() {
   );
 
   useEffect(() => {
-    if (oauthError) {
-      setErrorMessage(oauthError);
-      return;
-    }
+    const finalizeCallback = async () => {
+      if (oauthError) {
+        setErrorMessage(oauthError);
+        return;
+      }
 
-    const { accessToken, refreshToken, expiresIn, tokenType } = parseHashParams(
-      window.location.hash,
-    );
+      const { accessToken, refreshToken, expiresIn, tokenType } = parseHashParams(
+        window.location.hash,
+      );
 
-    window.history.replaceState(
-      null,
-      "",
-      `${window.location.pathname}${window.location.search}`,
-    );
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
 
-    if (!accessToken || !refreshToken) {
-      setErrorMessage("Missing OAuth tokens in callback response");
-      return;
-    }
+      if (!accessToken || !refreshToken) {
+        setErrorMessage("Missing OAuth tokens in callback response");
+        return;
+      }
 
-    sessionStorage.setItem("auth.accessToken", accessToken);
-    sessionStorage.setItem("auth.refreshToken", refreshToken);
-    sessionStorage.setItem("auth.expiresIn", expiresIn);
-    sessionStorage.setItem("auth.tokenType", tokenType || "Bearer");
+      sessionStorage.setItem("auth.accessToken", accessToken);
+      sessionStorage.setItem("auth.refreshToken", refreshToken);
+      sessionStorage.setItem("auth.expiresIn", expiresIn);
+      sessionStorage.setItem("auth.tokenType", tokenType || "Bearer");
 
-    window.location.href = "/homepage" // force full page refresh
-  }, [oauthError, router]);
+      const recoveryPassword = sessionStorage.getItem(OAUTH_PASSWORD_RECOVERY_KEY);
+      if (recoveryPassword && recoveryPassword.length >= 8) {
+        try {
+          await authClient.setPassword({ password: recoveryPassword });
+        } finally {
+          sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
+        }
+      } else {
+        sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
+      }
+
+      window.location.href = "/homepage";
+    };
+
+    void finalizeCallback();
+  }, [oauthError]);
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6">

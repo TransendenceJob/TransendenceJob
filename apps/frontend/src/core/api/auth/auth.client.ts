@@ -10,6 +10,8 @@ import type
     RefreshResponse,
     VerifyResponse,
     GoogleExchangeRequest,
+    SetPasswordRequest,
+    SetPasswordResponse,
     PendingRequest,
     InternalRequestInit,
     ApiError
@@ -243,5 +245,12 @@ export const authClient = {
             body: JSON.stringify(data),
             headers: {Authorization: ''}
         })
+    },
+
+    async setPassword(data: SetPasswordRequest): Promise<ApiResult<SetPasswordResponse>> {
+        return apiFetch<SetPasswordResponse>(`${BASE_URL}/auth/password/set`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
     },
 }

@@ -5,6 +5,8 @@ import {useState} from "react";
 import {authClient} from "@/src/core/api/auth/auth.client";
 import {useAuth} from "@/components/Providers";
 
+const OAUTH_PASSWORD_RECOVERY_KEY = "auth.oauth.password.recovery";
+
 const validateForm = (
     formData: FormData,
     type: "Login" | "Register"
@@ -12,12 +14,20 @@ const validateForm = (
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    const username = formData.get("username") as string | null;
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+
     if (type === "Register") {
         const confirmEmail = formData.get("confirmEmail") as string;
         const confirmPassword = formData.get("confirmPassword") as string;
+        const displayName = formData.get("displayName") as string | null;
         // pre validation browser side
         if (email !== confirmEmail) return "Emails do not match!";
         if (password !== confirmPassword) return "Passwords do not match!";
+        if (username) {
+            if (username.length < 3 || username.length > 24) return "Username must be 3-24 characters";
+            if (!usernameRegex.test(username)) return "Username can only contain letters, numbers and underscores";
+        }
     }
 
     return null;
@@ -38,6 +48,8 @@ export default function AuthModal({
     const {setUser, isAuthenticated} = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [showOAuthHint, setShowOAuthHint] = useState(false);
+    const [oauthRecoveryPassword, setOauthRecoveryPassword] = useState<string | null>(null);
     const [googleLoading, setGoogleLoading] = useState(false);
     if (!isOpen || isAuthenticated) return null;
 
@@ -47,6 +59,9 @@ export default function AuthModal({
         if (isSubmitting) return; // prevent double submit second guard
 
         setErrorMessage(null);
+        setShowOAuthHint(false);
+        setOauthRecoveryPassword(null);
+        sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
 
         const formData = new FormData(e.currentTarget);
         const error = validateForm(formData, type);
@@ -57,17 +72,27 @@ export default function AuthModal({
 
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
+        const displayName = (formData.get("displayName") as string) ?? undefined;
+        const username = (formData.get("username") as string) ?? undefined;
 
         setIsSubmitting(true);
         try {
             const result = await (type === 'Login'
                 ? authClient.login({ email, password })
-                : authClient.register({ email, password }));
+                : authClient.register({ email, password, displayName, username }));
 
             if (!result.ok) {
                 setErrorMessage(result.error.message);
+                if (
+                    type === 'Login' &&
+                    /invalid credentials|invalid email or password/i.test(result.error.message)
+                ) {
+                    setShowOAuthHint(true);
+                    setOauthRecoveryPassword(password);
+                }
                 return;
             }
+            sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
             sessionStorage.setItem("auth.accessToken", result.data.tokens.accessToken);
             sessionStorage.setItem("auth.refreshToken", result.data.tokens.refreshToken);
             setUser(result.data.user);
@@ -80,7 +105,12 @@ export default function AuthModal({
         }
     };
 
-    const handleGoogleLogin = async () => {
+    const handleGoogleLogin = async (recoveryPassword?: string | null) => {
+        if (recoveryPassword && recoveryPassword.length >= 8) {
+            sessionStorage.setItem(OAUTH_PASSWORD_RECOVERY_KEY, recoveryPassword);
+        } else {
+            sessionStorage.removeItem(OAUTH_PASSWORD_RECOVERY_KEY);
+        }
         setGoogleLoading(true);
         authClient.startGoogleOAuth();
     };
@@ -92,12 +122,27 @@ export default function AuthModal({
                 <button onClick={onClose}
                         className="absolute top-4 right-4 text-zinc-500 hover:text-foreground transition-colors">✕
                 </button>
-
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-black tracking-tight">{type}</h2>
                     {errorMessage && (
                         <div className="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold border border-red-100 dark:border-red-800">
                             {errorMessage}
+                            {showOAuthHint && (
+                                <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-800/60 text-left">
+                                    <p className="font-semibold text-red-700 dark:text-red-300">
+                                        This email may be linked to Google OAuth.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleGoogleLogin(oauthRecoveryPassword)}
+                                        disabled={googleLoading}
+                                        data-testid="oauth-recovery-button"
+                                        className="mt-2 text-sm font-bold underline underline-offset-4"
+                                    >
+                                        {googleLoading ? 'Connecting...' : 'Continue with Google'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                     <p className="text-sm text-zinc-500 mt-2">
@@ -111,9 +156,17 @@ export default function AuthModal({
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
 
                     {type === 'Register' && (
-                        <input name="confirmEmail" type="email" placeholder="Confirm Email Address" required disabled={isSubmitting}
+                           <input name="confirmEmail" type="email" placeholder="Confirm Email Address" required disabled={isSubmitting}
                                className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
                     )}
+                          {type === 'Register' && (
+                           <input name="displayName" type="text" placeholder="Display Name (optional)" disabled={isSubmitting}
+                               className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
+                          )}
+                          {type === 'Register' && (
+                           <input name="username" type="text" placeholder="Username (3-24 chars)" disabled={isSubmitting}
+                               className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
+                          )}
                     {/* Password Input */}
                     <input name="password" type="password" placeholder="Password" autoComplete={type === 'Login' ? "current-password" : "new-password"} required disabled={isSubmitting}
                            className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"/>
@@ -140,7 +193,7 @@ export default function AuthModal({
                 </form>
 
                 <button
-                    onClick={handleGoogleLogin}
+                    onClick={() => handleGoogleLogin()}
                     type="button"
                     disabled={googleLoading}
                     className="w-full mt-4 flex items-center justify-center gap-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-xl font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all"

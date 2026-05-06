@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Stats Service
+  version: 0.1.0
+  description: Internal stats service contract used by the BFF.
+servers:
+  - url: http://stats-service:3004
+    description: Docker internal network address used by BFF
+tags:
+  - name: Health
+    description: Service health endpoints
+  - name: Stats
+    description: Read-only player and match statistics
+paths:
+  /internal/stats/health:
+    get:
+      tags: [Health]
+      summary: Stats service health
+      operationId: getInternalStatsHealth
+      security: []
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /internal/stats/health/db:
+    get:
+      tags: [Health]
+      summary: Stats database health
+      operationId: getInternalStatsDatabaseHealth
+      security: []
+      responses:
+        "200":
+          description: Database health status
+          content:
+            application/json:
+              schema:
+                type: object
+  /internal/stats/user:
+    get:
+      tags: [Stats]
+      summary: List player stats
+      operationId: listInternalPlayerStats
+      security: []
+      responses:
+        "200":
+          description: Player stats list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /internal/stats/user/{userId}:
+    get:
+      tags: [Stats]
+      summary: Get player stats by user id
+      operationId: getInternalPlayerStatsByUserId
+      security: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Player stats payload
+          content:
+            application/json:
+              schema:
+                type: object
+  /internal/stats/user/{userId}/matches:
+    get:
+      tags: [Stats]
+      summary: Get player match history by user id
+      operationId: getInternalPlayerMatchesByUserId
+      security: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match history list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /internal/stats/match:
+    get:
+      tags: [Stats]
+      summary: List matches
+      operationId: listInternalMatches
+      security: []
+      responses:
+        "200":
+          description: Matches list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /internal/stats/match/{matchId}:
+    get:
+      tags: [Stats]
+      summary: Get match by id
+      operationId: getInternalMatchById
+      security: []
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match payload
+          content:
+            application/json:
+              schema:
+                type: object
+  /internal/stats/match/{matchId}/members:
+    get:
+      tags: [Stats]
+      summary: Get match members
+      operationId: getInternalMatchMembers
+      security: []
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match members list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+      required:
+        - code
+        - message

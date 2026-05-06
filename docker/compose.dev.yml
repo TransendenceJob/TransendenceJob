@@ -206,6 +206,7 @@ services:
     working_dir: /app
     environment:
       NODE_ENV: development
+      NPM_CI_ON_START: "true"
       PORT: ${STATS_INTERNAL_PORT:-3000}
       # PORT: asdasd
       DB_HOST: postgres_stats
@@ -223,7 +224,7 @@ services:
     ports:
       - "${STATS_HOST_PORT:-3004}:${STATS_INTERNAL_PORT:-3000}"
       - "${STATS_DEBUG_HOST_PORT:-9234}:9229"
-    command: ["sh", "-lc", "npm ci && npm run start:debug"]
+    command: ["npm", "run", "start:debug"]
     depends_on:
       postgres_stats:
         condition: service_healthy

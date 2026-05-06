@@ -65,6 +65,13 @@ GET  /public/clans/{clanId}
 GET  /public/users/{userId}
 GET  /public/leaderboard
 
+STATS SERVICE (public via BFF)
+GET  /stats/users/{userId}
+GET  /stats/users/{userId}/matches
+GET  /stats/matches
+GET  /stats/matches/{matchId}
+GET  /stats/matches/{matchId}/members
+
 AUTH SERVICE (internal)
 POST /internal/auth/register
 POST /internal/auth/login

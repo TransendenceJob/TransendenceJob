@@ -25,6 +25,7 @@ type CreatedRegisterData = {
   user: {
     id: string;
     email: string;
+    username: string | null;
     status: string;
     createdAt: Date;
   };
@@ -60,6 +61,7 @@ export class AuthRegisterService {
 
     await this.rateLimit.ensureRegisterAllowed(registerRateLimitInput);
     await this.ensureEmailAvailable(input.email);
+    await this.ensureUsernameAvailable(input.username);
     const passwordHash = await this.passwordHashService.hashPassword(
       input.password,
     );
@@ -75,16 +77,12 @@ export class AuthRegisterService {
 
       await this.cacheRegisteredSession(created, context);
 
-      const issueAccessTokenInput = {
+      const accessToken = await this.tokenIssue.issueAccessToken({
         userId: created.user.id,
         email: created.user.email,
         roles: [DEFAULT_USER_ROLE],
         sessionId: created.session.id,
-      } satisfies Parameters<AuthTokenIssueService['issueAccessToken']>[0];
-
-      const accessToken = await this.tokenIssue.issueAccessToken(
-        issueAccessTokenInput,
-      );
+      });
 
       return this.buildRegisterResponse(
         created,
@@ -92,7 +90,12 @@ export class AuthRegisterService {
         accessToken,
       );
     } catch (error) {
-      if (this.isEmailUniqueViolation(error)) {
+      if (this.isUniqueViolation(error)) {
+        const target = this.getUniqueViolationTarget(error);
+        if (target === 'username') {
+          throw new ConflictException('Username already exists');
+        }
+
         throw new ConflictException('Email already exists');
       }
 
@@ -107,16 +110,28 @@ export class AuthRegisterService {
     }
   }
 
+  private async ensureUsernameAvailable(username?: string): Promise<void> {
+    if (!username) {
+      return;
+    }
+
+    const existingUser = await this.users.findByUsername(username);
+    if (existingUser) {
+      throw new ConflictException('Username already exists');
+    }
+  }
+
   private async createRegisteredUser(
     input: RegisterRequestDto,
     passwordHash: string,
     refreshPair: { refreshTokenHash: string; expiresAt: Date },
     context: RegisterContext,
   ): Promise<CreatedRegisterData> {
-    return await this.prisma.$transaction(async (db) => {
+    return this.prisma.$transaction(async (db) => {
       const user = await this.users.createLocalUser(
         {
           email: input.email,
+          username: input.username ?? null,
           passwordHash,
         },
         db,
@@ -133,7 +148,7 @@ export class AuthRegisterService {
           expiresAt: refreshPair.expiresAt,
           ipAddress: context.ip ?? undefined,
           userAgent: context.userAgent ?? undefined,
-        } satisfies Parameters<SessionRepository['createSession']>[0],
+        },
         db,
       );
 
@@ -149,14 +164,15 @@ export class AuthRegisterService {
             requestId: context.requestId ?? null,
             serviceName: context.serviceName ?? null,
           },
-        } satisfies Parameters<AuditLogRepository['createEvent']>[0],
+        },
         db,
       );
 
-      const createdRegisterData = {
+      return {
         user: {
           id: activeUser.id,
           email: activeUser.email,
+          username: activeUser.username ?? null,
           status: activeUser.status,
           createdAt: activeUser.createdAt,
         },
@@ -166,8 +182,6 @@ export class AuthRegisterService {
           revokedAt: null,
         },
       } satisfies CreatedRegisterData;
-
-      return createdRegisterData;
     });
   }
 
@@ -175,7 +189,7 @@ export class AuthRegisterService {
     created: CreatedRegisterData,
     context: RegisterContext,
   ): Promise<void> {
-    const cacheSessionInput = {
+    await this.sessionCache.cacheSession({
       session: {
         id: created.session.id,
         expiresAt: created.session.expiresAt,
@@ -187,9 +201,7 @@ export class AuthRegisterService {
       roles: [DEFAULT_USER_ROLE],
       requestId: context.requestId,
       serviceName: context.serviceName,
-    } satisfies Parameters<AuthSessionCacheService['cacheSession']>[0];
-
-    await this.sessionCache.cacheSession(cacheSessionInput);
+    });
   }
 
   private buildRegisterResponse(
@@ -197,10 +209,11 @@ export class AuthRegisterService {
     refreshToken: string,
     accessToken: string,
   ): AuthSuccessResponseDto {
-    const authSuccessInput = {
+    return AuthContractMapper.toAuthSuccessResponse({
       user: {
         id: created.user.id,
         email: created.user.email,
+        username: created.user.username,
         status: created.user.status,
         createdAt: created.user.createdAt,
         roles: [{ role: { name: DEFAULT_USER_ROLE } }],
@@ -213,12 +226,10 @@ export class AuthRegisterService {
         expiresIn: this.tokenIssue.accessTokenExpiresInSeconds(),
         tokenType: 'Bearer',
       },
-    } satisfies Parameters<typeof AuthContractMapper.toAuthSuccessResponse>[0];
-
-    return AuthContractMapper.toAuthSuccessResponse(authSuccessInput);
+    });
   }
 
-  private isEmailUniqueViolation(error: unknown): boolean {
+  private isUniqueViolation(error: unknown): boolean {
     if (typeof error !== 'object' || error === null) {
       return false;
     }
@@ -229,10 +240,32 @@ export class AuthRegisterService {
     }
 
     const target = maybeError.meta?.target;
-    if (Array.isArray(target)) {
-      return target.some((entry) => String(entry) === 'email');
+    return Array.isArray(target)
+      ? target.some(
+          (entry) => String(entry) === 'email' || String(entry) === 'username',
+        )
+      : false;
+  }
+
+  private getUniqueViolationTarget(error: unknown): string | null {
+    if (typeof error !== 'object' || error === null) {
+      return null;
     }
 
-    return false;
+    const target = (error as { meta?: { target?: unknown } }).meta?.target;
+    if (!Array.isArray(target)) {
+      return null;
+    }
+
+    const normalizedTarget = target.map((entry) => String(entry));
+    if (normalizedTarget.includes('username')) {
+      return 'username';
+    }
+
+    if (normalizedTarget.includes('email')) {
+      return 'email';
+    }
+
+    return null;
   }
 }

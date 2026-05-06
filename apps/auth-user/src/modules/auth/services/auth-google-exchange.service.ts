@@ -36,6 +36,7 @@ type ExchangeResult = {
   user: {
     id: string;
     email: string;
+    username: string | null;
     status: string;
     createdAt: Date;
   };
@@ -214,6 +215,7 @@ export class AuthGoogleExchangeService {
         user: {
           id: user.id,
           email: user.email,
+          username: user.username ?? null,
           status: user.status,
           createdAt: user.createdAt,
         },
@@ -256,6 +258,7 @@ export class AuthGoogleExchangeService {
       user: {
         id: exchanged.user.id,
         email: exchanged.user.email,
+        username: exchanged.user.username,
         status: exchanged.user.status,
         createdAt: exchanged.user.createdAt,
         roles: exchanged.roleNames.map((roleName) => ({

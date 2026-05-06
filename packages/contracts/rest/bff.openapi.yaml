@@ -5,6 +5,41 @@ info:
 servers:
   - url: https://api.example.com
 paths:
+  /:
+    get:
+      tags:
+        - System
+      summary: BFF service root health probe
+      operationId: getBffRoot
+      responses:
+        "200":
+          description: Service greeting returned by the BFF root controller
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Hello World!
+      security: []
+  /bff/lobby:
+    get:
+      tags:
+        - System
+      summary: Proxy the game lobby health/greeting endpoint
+      operationId: getBffLobby
+      responses:
+        "200":
+          description: Lobby service response body
+          content:
+            text/plain:
+              schema:
+                type: string
+        "502":
+          description: Downstream game service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
   /auth/register:
     post:
       tags:
@@ -106,8 +141,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      security:
-        - BearerAuth: []
+      security: []
       requestBody:
         required: true
         content:
@@ -183,8 +217,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      security:
-        - BearerAuth: []
+      security: []
   /auth/verify:
     get:
       tags:
@@ -204,8 +237,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      security:
-        - BearerAuth: []
+      security: []
+  /auth/google/exchange:
+    post:
+      tags:
+        - Auth
+      summary: Exchange Google credentials for an authenticated BFF session
+      description: Accepts either a Google OAuth authorization code with redirect URI or a Google ID token, then proxies the exchange to the internal auth service.
+      operationId: exchangeGoogleAuthViaBff
+      responses:
+        "200":
+          description: Google exchange successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Google account conflicts with an existing identity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoogleExchangeRequest"
+            examples:
+              idToken:
+                value:
+                  provider: google
+                  idToken: google-id-token
+              authorizationCode:
+                value:
+                  provider: google
+                  authorizationCode: 4/0AQSTgQ...
+                  redirectUri: http://localhost:3000/auth/google/callback
   /auth/google/start:
     get:
       tags:
@@ -305,14 +386,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      security:
-        - BearerAuth: []
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+  /auth/password/set:
+    post:
+      tags:
+        - Auth
+      summary: Set a password for the authenticated account
+      description: Lets an authenticated user create or replace their local password, including users who originally authenticated with Google.
+      operationId: setPasswordViaBff
+      responses:
+        "200":
+          description: Password set successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetPasswordResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPasswordRequest"
   /auth/password/change:
     post:
       summary: Change password
@@ -1981,14 +2100,39 @@ paths:
             type: string
   /admin/users:
     get:
-      summary: Admin list users
+      tags:
+        - Admin
+      summary: Admin search users
+      description: Proxies the internal auth user search endpoint. Requires an admin bearer token.
+      operationId: searchAdminUsersViaBff
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         "200":
-          description: OK
+          description: User search page
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/UserSearchResponse"
         "400":
           description: Bad Request
           content:
@@ -2011,14 +2155,18 @@ paths:
         - BearerAuth: []
   /admin/users/{userId}:
     get:
+      tags:
+        - Admin
       summary: Admin get user
+      description: Returns one auth user as visible to admin tooling.
+      operationId: getAdminUserViaBff
       responses:
         "200":
-          description: OK
+          description: User detail
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/UserDetailResponse"
         "400":
           description: Bad Request
           content:
@@ -2033,6 +2181,12 @@ paths:
                 $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
           content:
             application/json:
               schema:
@@ -2045,15 +2199,20 @@ paths:
           required: true
           schema:
             type: string
-    patch:
-      summary: Admin update user
+  /admin/users/{userId}/disable:
+    post:
+      tags:
+        - Admin
+      summary: Admin disable user
+      description: Disables an auth identity and optionally revokes all sessions.
+      operationId: disableAdminUserViaBff
       responses:
         "200":
-          description: OK
+          description: User disabled
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/UserDisabledResponse"
         "400":
           description: Bad Request
           content:
@@ -2068,6 +2227,12 @@ paths:
                 $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
           content:
             application/json:
               schema:
@@ -2079,7 +2244,111 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: "#/components/schemas/DisableUserRequest"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+  /admin/users/{userId}/enable:
+    post:
+      tags:
+        - Admin
+      summary: Admin enable user
+      description: Re-enables a disabled auth identity.
+      operationId: enableAdminUserViaBff
+      responses:
+        "200":
+          description: User enabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserEnabledResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnableUserRequest"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+  /admin/users/{userId}/role:
+    post:
+      tags:
+        - Admin
+      summary: Admin replace user roles
+      description: Replaces all roles for a user.
+      operationId: setAdminUserRolesViaBff
+      responses:
+        "200":
+          description: Roles updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRolesResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUserRolesRequest"
       parameters:
         - name: userId
           in: path
@@ -2088,14 +2357,18 @@ paths:
             type: string
   /admin/users/{userId}/sessions/revoke:
     post:
-      summary: Admin revoke all sessions
+      tags:
+        - Admin
+      summary: Admin revoke all user sessions
+      description: Revokes every active session for the target user.
+      operationId: revokeAdminUserSessionsViaBff
       responses:
         "200":
-          description: OK
+          description: Sessions revoked
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/RevokeSessionsResponse"
         "400":
           description: Bad Request
           content:
@@ -2110,6 +2383,124 @@ paths:
                 $ref: "#/components/schemas/Error"
         "403":
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeSessionsRequest"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+  /admin/audit:
+    get:
+      tags:
+        - Admin
+      summary: Admin list auth audit logs
+      description: Returns a paged auth audit feed. Requires an admin bearer token.
+      operationId: listAdminAuthAuditViaBff
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: action
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/AuditAction"
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Audit log page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditListResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - BearerAuth: []
+  /admin/users/{userId}/stats:
+    get:
+      tags:
+        - Admin
+      summary: Admin get player stats
+      description: Verifies the caller is an admin, then proxies the stats service player-stats record for this user.
+      operationId: getAdminUserStatsViaBff
+      responses:
+        "200":
+          description: Player stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerStats"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User stats not found
           content:
             application/json:
               schema:
@@ -2122,16 +2513,19 @@ paths:
           required: true
           schema:
             type: string
-  /admin/audit:
-    get:
-      summary: Admin audit log
+    put:
+      tags:
+        - Admin
+      summary: Admin update player stats
+      description: Verifies the caller is an admin, then proxies a partial player-stats update to the stats service.
+      operationId: updateAdminUserStatsViaBff
       responses:
         "200":
-          description: OK
+          description: Updated player stats
           content:
             application/json:
               schema:
-                type: object
+                $ref: "#/components/schemas/PlayerStats"
         "400":
           description: Bad Request
           content:
@@ -2150,8 +2544,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        "404":
+          description: User stats not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlayerStatsRequest"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
   /public/health:
     get:
       summary: Public health
@@ -2314,6 +2726,231 @@ paths:
                 $ref: "#/components/schemas/Error"
       security:
         - ApiKeyAuth: []
+  /stats/users/{userId}:
+    get:
+      tags:
+        - Stats
+      summary: Get player stats
+      description: Proxies the internal stats service player stats endpoint.
+      operationId: getStatsPlayerByUserIdViaBff
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Player stats payload
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Downstream stats service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+  /stats/users/{userId}/matches:
+    get:
+      tags:
+        - Stats
+      summary: Get player match history
+      description: Proxies the internal stats service match history endpoint.
+      operationId: getStatsPlayerMatchesByUserIdViaBff
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match history list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Downstream stats service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+  /stats/matches:
+    get:
+      tags:
+        - Stats
+      summary: List matches
+      description: Proxies the internal stats service matches collection endpoint.
+      operationId: listStatsMatchesViaBff
+      responses:
+        "200":
+          description: Match list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Downstream stats service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+  /stats/matches/{matchId}:
+    get:
+      tags:
+        - Stats
+      summary: Get match by id
+      description: Proxies the internal stats service match details endpoint.
+      operationId: getStatsMatchByIdViaBff
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match details
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Downstream stats service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+  /stats/matches/{matchId}/members:
+    get:
+      tags:
+        - Stats
+      summary: Get match members
+      description: Proxies the internal stats service match members endpoint.
+      operationId: getStatsMatchMembersByMatchIdViaBff
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Match members list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Downstream stats service is unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
 components:
   securitySchemes:
     BearerAuth:
@@ -2350,19 +2987,18 @@ components:
           example: StrongPassword123!
         displayName:
           type: string
-          minLength: 1
-          maxLength: 100
+          minLength: 2
+          maxLength: 32
           example: Stefan
         username:
           type: string
           minLength: 3
-          maxLength: 30
+          maxLength: 24
+          pattern: "^[a-zA-Z0-9_]+$"
           example: theochiper
       required:
         - email
         - password
-        - displayName
-        - username
     LoginRequest:
       type: object
       properties:
@@ -2377,6 +3013,29 @@ components:
       required:
         - email
         - password
+    GoogleExchangeRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [google]
+        authorizationCode:
+          type: string
+          description: OAuth authorization code received by the browser callback flow.
+        idToken:
+          type: string
+          description: Google ID token for direct token exchange.
+        redirectUri:
+          type: string
+          format: uri
+      required:
+        - provider
+      oneOf:
+        - required:
+            - authorizationCode
+            - redirectUri
+        - required:
+            - idToken
     LogoutRequest:
       type: object
       properties:
@@ -2396,6 +3055,34 @@ components:
           type: string
       required:
         - refreshToken
+    SetPasswordRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+      required:
+        - password
+    UserStatus:
+      type: string
+      enum: [active, disabled, pending]
+    UserRole:
+      type: string
+      enum: [user, moderator, admin]
+    AuthProviderLink:
+      type: object
+      properties:
+        provider:
+          type: string
+          example: google
+        providerUserId:
+          type: string
+          example: google-uid
+      required:
+        - provider
+        - providerUserId
     AuthUser:
       type: object
       properties:
@@ -2407,15 +3094,24 @@ components:
           format: email
         displayName:
           type: string
+          nullable: true
         username:
           type: string
+          nullable: true
         roles:
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/UserRole"
         status:
+          $ref: "#/components/schemas/UserStatus"
+        createdAt:
           type: string
-          enum: [ACTIVE, DISABLED, PENDING_VERIFICATION]
+          format: date-time
+          nullable: true
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthProviderLink"
       required:
         - id
         - email
@@ -2517,6 +3213,14 @@ components:
       required:
         - success
         - revokedSessionIds
+    SetPasswordResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+      required:
+        - success
     VerifyResponse:
       type: object
       properties:
@@ -2554,6 +3258,284 @@ components:
         - user
         - session
         - claims
+    PageInfo:
+      type: object
+      properties:
+        nextCursor:
+          type: string
+          nullable: true
+        hasNextPage:
+          type: boolean
+      required:
+        - hasNextPage
+    UserSearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthUser"
+        pageInfo:
+          $ref: "#/components/schemas/PageInfo"
+      required:
+        - items
+        - pageInfo
+    UserDetailResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/AuthUser"
+      required:
+        - user
+    DisableUserRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 255
+        revokeSessions:
+          type: boolean
+          default: true
+      required:
+        - reason
+    EnableUserRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 255
+    SetUserRolesRequest:
+      type: object
+      properties:
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/UserRole"
+      required:
+        - roles
+    RevokeSessionsRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+    UserDisabledResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        status:
+          $ref: "#/components/schemas/UserStatus"
+        revokedSessions:
+          type: integer
+          minimum: 0
+      required:
+        - userId
+        - status
+        - revokedSessions
+    UserEnabledResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        status:
+          $ref: "#/components/schemas/UserStatus"
+      required:
+        - userId
+        - status
+    UserRolesResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserRole"
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - userId
+        - roles
+        - updatedAt
+    RevokeSessionsResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        revokedSessions:
+          type: integer
+          minimum: 0
+      required:
+        - userId
+        - revokedSessions
+    AuditAction:
+      type: string
+      enum:
+        - REGISTER
+        - LOGIN_SUCCESS
+        - LOGIN_FAILED
+        - LOGOUT
+        - TOKEN_REFRESH
+        - GOOGLE_EXCHANGE
+        - USER_DISABLED
+        - ROLE_UPDATED
+        - SESSIONS_REVOKED
+    AuditLogItem:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+          nullable: true
+        actorUserId:
+          type: string
+          nullable: true
+        action:
+          $ref: "#/components/schemas/AuditAction"
+        ip:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - action
+        - metadata
+        - createdAt
+    AuditListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLogItem"
+        pageInfo:
+          $ref: "#/components/schemas/PageInfo"
+      required:
+        - items
+        - pageInfo
+    UpdatePlayerStatsRequest:
+      type: object
+      properties:
+        matchesWon:
+          type: array
+          items:
+            type: string
+            format: uuid
+        matchesLost:
+          type: array
+          items:
+            type: string
+            format: uuid
+        achievements:
+          type: array
+          items:
+            type: string
+            format: uuid
+        weapons:
+          type: array
+          items:
+            type: string
+            format: uuid
+        matchParticipants:
+          type: array
+          items:
+            type: string
+            format: uuid
+        xp:
+          type: number
+        level:
+          type: number
+        wins:
+          type: number
+        losses:
+          type: number
+        kills:
+          type: number
+        deaths:
+          type: number
+        damageDealt:
+          type: number
+        damageTaken:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      additionalProperties: true
+    PlayerStats:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        matchesWon:
+          type: array
+          items:
+            type: string
+            format: uuid
+        matchesLost:
+          type: array
+          items:
+            type: string
+            format: uuid
+        achievements:
+          type: array
+          items:
+            type: string
+            format: uuid
+        weapons:
+          type: array
+          items:
+            type: string
+            format: uuid
+        matchParticipants:
+          type: array
+          items:
+            type: string
+            format: uuid
+        xp:
+          type: number
+        level:
+          type: number
+        wins:
+          type: number
+        losses:
+          type: number
+        kills:
+          type: number
+        deaths:
+          type: number
+        damageDealt:
+          type: number
+        damageTaken:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      additionalProperties: true
     OAuthStartResponse:
       type: object
       properties:

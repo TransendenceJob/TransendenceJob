@@ -18,6 +18,8 @@ import {
   type RefreshRequestDto,
   type RefreshResponseDto,
   type RegisterRequestDto,
+  type SetPasswordRequestDto,
+  type SetPasswordResponseDto,
   type VerifyResponseDto,
 } from './contracts/dto/auth-contracts.dto';
 import { AuthService } from './auth.service';
@@ -109,6 +111,16 @@ export class AuthController {
     @Headers('x-request-id') requestId?: string,
   ): Promise<RefreshResponseDto> {
     return this.authService.refresh(input, { requestId });
+  }
+
+  @Post('password/set')
+  @HttpCode(200)
+  setPassword(
+    @Body() input: SetPasswordRequestDto,
+    @Headers('x-request-id') requestId?: string,
+    @Headers('authorization') authorization?: string,
+  ): Promise<SetPasswordResponseDto> {
+    return this.authService.setPassword(input, { requestId, authorization });
   }
 
   @Get('verify')

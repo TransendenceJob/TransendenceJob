@@ -522,11 +522,11 @@ describe('AuthService', () => {
       user: {
         id: 'user-1',
         email: 'user@example.com',
+        username: null,
         status: 'active',
         roles: ['user'],
         createdAt: null,
         displayName: null,
-        username: null,
         providers: [{ name: 'google', providerUserId: 'google-uid' }],
       },
       tokens: {

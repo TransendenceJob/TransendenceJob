@@ -229,6 +229,39 @@ describe('authClient', () => {
         });
     });
 
+    describe('setPassword', () => {
+        it('should call password set endpoint with bearer token', async () => {
+            sessionStorage.setItem("auth.accessToken", "oauth-access-token");
+
+            fetchMock().mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: async () => ({ success: true }),
+            } as Response);
+
+            const payload = { password: 'StrongPassword123!' };
+            const result = await authClient.setPassword(payload);
+
+            expect(result).toMatchObject({
+                ok: true,
+                status: 200,
+                data: { success: true }
+            });
+
+            expect(fetch).toHaveBeenCalledWith(
+                expect.stringContaining('/auth/password/set'),
+                expect.objectContaining({
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: expect.objectContaining({
+                        Authorization: 'Bearer oauth-access-token',
+                        'Content-Type': 'application/json',
+                    }),
+                }),
+            );
+        });
+    });
+
     describe('apiFetchWrapper test', () => {
         it("should dedupe refresh calls: only one refresh for multiple http 401 responses", async () => {
             sessionStorage.setItem("auth.refreshToken", "old-refresh-token");

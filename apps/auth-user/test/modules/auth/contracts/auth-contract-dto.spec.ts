@@ -1,9 +1,12 @@
+import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { GoogleExchangeRequestDto } from '../../../../src/modules/auth/contracts/dto/google-exchange-request.dto';
 import { LogoutRequestDto } from '../../../../src/modules/auth/contracts/dto/logout-request.dto';
 import { RegisterRequestDto } from '../../../../src/modules/auth/contracts/dto/register-request.dto';
 import { SetUserRolesRequestDto } from '../../../../src/modules/auth/contracts/dto/set-user-roles-request.dto';
+import { EnableUserRequestDto } from '../../../../src/modules/auth/contracts/dto/enable-user-request.dto';
+import { UserSearchQueryDto } from '../../../../src/modules/auth/contracts/dto/user-search-query.dto';
 import { VerifyQueryDto } from '../../../../src/modules/auth/contracts/dto/verify-query.dto';
 
 describe('Auth Contract DTOs', () => {
@@ -89,6 +92,29 @@ describe('Auth Contract DTOs', () => {
   it('accepts verify query with audience', () => {
     const dto = plainToInstance(VerifyQueryDto, {
       audience: 'transcendence-internal',
+    });
+
+    const errors = validateSync(dto);
+
+    expect(errors).toHaveLength(0);
+  });
+
+  it('accepts admin user search query with pagination', () => {
+    const dto = plainToInstance(UserSearchQueryDto, {
+      query: 'stefan@example.com',
+      cursor: '842e1132-2258-4b04-b2a2-dee603638c93',
+      limit: '25',
+    });
+
+    const errors = validateSync(dto);
+
+    expect(errors).toHaveLength(0);
+    expect(dto.limit).toBe(25);
+  });
+
+  it('accepts optional enable-user reason', () => {
+    const dto = plainToInstance(EnableUserRequestDto, {
+      reason: 'appeal approved',
     });
 
     const errors = validateSync(dto);

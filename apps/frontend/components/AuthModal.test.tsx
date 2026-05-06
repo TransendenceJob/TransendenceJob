@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, describe, it, expect } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import AuthModal from "./AuthModal";
 import { authClient } from "@/src/core/api/auth/auth.client";
 
@@ -17,6 +17,7 @@ vi.mock("@/src/core/api/auth/auth.client", () => ({
     authClient: {
         login: vi.fn(),
         register: vi.fn(),
+        startGoogleOAuth: vi.fn(),
     },
 }));
 
@@ -38,6 +39,11 @@ describe("AuthModal Component", () => {
     const mockOnClose = vi.fn();
     const mockSetType = vi.fn();
 
+    beforeEach(() => {
+        vi.clearAllMocks();
+        sessionStorage.clear();
+    });
+
     it("renders the login form by default", () => {
         render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
         expect(screen.getByText(/Welcome back, You little worm!/i)).toBeInTheDocument();
@@ -54,13 +60,20 @@ describe("AuthModal Component", () => {
 
         fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "new@test.com" } });
         fireEvent.change(screen.getByPlaceholderText("Confirm Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Display Name (optional)"), { target: { value: "Display" } });
+        fireEvent.change(screen.getByPlaceholderText("Username (3-24 chars)"), { target: { value: "newuser" } });
         fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "Pass123!" } });
         fireEvent.change(screen.getByPlaceholderText("Confirm Password"), { target: { value: "Pass123!" } });
 
         fireEvent.click(screen.getByRole("button", { name: /Create Account/i }));
 
         await waitFor(() => {
-            expect(mockRegister).toHaveBeenCalled();
+            expect(mockRegister).toHaveBeenCalledWith(expect.objectContaining({
+                email: 'new@test.com',
+                password: 'Pass123!',
+                username: 'newuser',
+                displayName: 'Display'
+            }));
             expect(mockOnClose).toHaveBeenCalled();
         });
     });
@@ -110,6 +123,28 @@ describe("AuthModal Component", () => {
         fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
 
         expect(await screen.findByText(/Invalid credentials/i)).toBeInTheDocument();
+        expect(await screen.findByText(/linked to Google OAuth/i)).toBeInTheDocument();
+        expect(await screen.findByTestId("oauth-recovery-button")).toBeInTheDocument();
+    });
+
+    it("starts Google OAuth from recovery hint", async () => {
+        (authClient.login as any).mockResolvedValue({
+            ok: false,
+            status: 401,
+            error: { message: "Invalid email or password" }
+        });
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "oauth@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "random-pass" } });
+        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+        const recoveryButton = await screen.findByTestId("oauth-recovery-button");
+        fireEvent.click(recoveryButton);
+
+        expect(authClient.startGoogleOAuth).toHaveBeenCalled();
+        expect(sessionStorage.getItem("auth.oauth.password.recovery")).toBe("random-pass");
     });
 
     it("displays connection error if the API call fails entirely", async () => {

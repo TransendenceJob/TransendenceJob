@@ -10,13 +10,18 @@ import { SetPasswordResponseDto } from '../contracts/dto/set-password-response.d
 import { VerifyResponseDto } from '../contracts/dto/verify-response.dto';
 import { LoginRequestDto } from '../contracts/dto/login-request.dto';
 import { DisableUserRequestDto } from '../contracts/dto/disable-user-request.dto';
+import { EnableUserRequestDto } from '../contracts/dto/enable-user-request.dto';
 import { SetUserRolesRequestDto } from '../contracts/dto/set-user-roles-request.dto';
 import { RevokeSessionsRequestDto } from '../contracts/dto/revoke-sessions-request.dto';
 import { RevokeSessionsResponseDto } from '../contracts/dto/revoke-sessions-response.dto';
 import { AuditQueryDto } from '../contracts/dto/audit-query.dto';
 import { AuditListResponseDto } from '../contracts/dto/audit-list-response.dto';
+import { UserDetailResponseDto } from '../contracts/dto/user-detail-response.dto';
+import { UserSearchQueryDto } from '../contracts/dto/user-search-query.dto';
+import { UserSearchResponseDto } from '../contracts/dto/user-search-response.dto';
 import { GoogleExchangeRequestDto } from '../contracts/dto/google-exchange-request.dto';
 import { UserDisabledResponseDto } from '../contracts/dto/user-disabled-response.dto';
+import { UserEnabledResponseDto } from '../contracts/dto/user-enabled-response.dto';
 import { UserRolesResponseDto } from '../contracts/dto/user-roles-response.dto';
 import {
   AuthRegisterService,
@@ -95,6 +100,28 @@ export class AuthService {
     context: DisableUserContext,
   ): Promise<UserDisabledResponseDto> {
     return this.authAdminService.disableUser(userId, input, context);
+  }
+
+  enableUser(
+    userId: string,
+    input: EnableUserRequestDto,
+    context: DisableUserContext,
+  ): Promise<UserEnabledResponseDto> {
+    return this.authAdminService.enableUser(userId, input, context);
+  }
+
+  searchUsers(
+    input: UserSearchQueryDto,
+    context: DisableUserContext,
+  ): Promise<UserSearchResponseDto> {
+    return this.authAdminService.searchUsers(input, context);
+  }
+
+  getUser(
+    userId: string,
+    context: DisableUserContext,
+  ): Promise<UserDetailResponseDto> {
+    return this.authAdminService.getUser(userId, context);
   }
 
   setUserRoles(

@@ -46,6 +46,7 @@ enum AuditAction {
 model User {
   id                 String               @id @default(uuid()) @db.Uuid
   email              String               @unique @db.VarChar(255)
+  username           String?              @unique @db.VarChar(24)
   passwordHash       String?              @db.Text
   status             UserStatus           @default(PENDING_VERIFICATION)
   createdAt          DateTime             @default(now())

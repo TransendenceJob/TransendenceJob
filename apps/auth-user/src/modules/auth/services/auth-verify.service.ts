@@ -17,6 +17,7 @@ type VerifiedSession = {
   user: {
     id: string;
     email: string;
+    username: string | null;
     status: string;
     createdAt: Date;
     disabledAt: Date | null;
@@ -82,6 +83,7 @@ export class AuthVerifyService {
       user: {
         id: session.user.id,
         email: session.user.email,
+        username: session.user.username,
         status: session.user.status,
         createdAt: session.user.createdAt,
         roles: roles.map((roleName) => ({

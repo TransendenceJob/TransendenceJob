@@ -26,6 +26,7 @@ type LoginResult = {
   user: {
     id: string;
     email: string;
+    username: string | null;
     status: string;
     createdAt: Date;
     roles: string[];
@@ -129,6 +130,7 @@ export class AuthLoginService {
             user: {
               id: user.id,
               email: user.email,
+              username: user.username ?? null,
               status: user.status,
               createdAt: user.createdAt,
               roles,
@@ -176,6 +178,7 @@ export class AuthLoginService {
         user: {
           id: loggedIn.user.id,
           email: loggedIn.user.email,
+          username: loggedIn.user.username,
           status: loggedIn.user.status,
           createdAt: loggedIn.user.createdAt,
           roles: loggedIn.user.roles.map((roleName) => ({

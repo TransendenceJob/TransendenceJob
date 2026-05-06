@@ -34,7 +34,7 @@ COPY . .
 
 ENV NODE_ENV=production
 ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5436/placeholder?schema=public
-RUN npx prisma generate && npm run build
+RUN ./node_modules/.bin/prisma generate && npm run build
 
 # ---------- production ----------
 FROM node:20-alpine AS production

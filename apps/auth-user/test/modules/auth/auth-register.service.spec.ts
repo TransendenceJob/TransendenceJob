@@ -15,6 +15,7 @@ describe('AuthRegisterService', () => {
   const baseInput = {
     email: 'user@example.com',
     password: 'password-123',
+    username: 'player-one',
   };
 
   const baseContext = {
@@ -34,15 +35,18 @@ describe('AuthRegisterService', () => {
 
     const users = {
       findByEmail: jest.fn().mockResolvedValue(null),
+      findByUsername: jest.fn().mockResolvedValue(null),
       createLocalUser: jest.fn().mockResolvedValue({
         id: 'user-1',
         email: baseInput.email,
+        username: baseInput.username,
         status: 'PENDING_VERIFICATION',
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
       }),
       enableUser: jest.fn().mockResolvedValue({
         id: 'user-1',
         email: baseInput.email,
+        username: baseInput.username,
         status: 'ACTIVE',
         createdAt: new Date('2024-01-01T00:00:00.000Z'),
       }),
@@ -135,6 +139,7 @@ describe('AuthRegisterService', () => {
     const response = await service.register(baseInput, baseContext);
 
     expect(response.user.email).toBe(baseInput.email);
+    expect(response.user.username).toBe(baseInput.username);
     expect(response.user.status).toBe('active');
     expect(response.session.id).toBe('session-1');
     expect(response.tokens.refreshToken).toBe('refresh-token');
