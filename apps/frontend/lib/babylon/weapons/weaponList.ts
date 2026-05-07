@@ -1,4 +1,4 @@
-import { AbstractMesh, Scene } from "@babylonjs/core"
+import { Mesh, AbstractMesh, Scene } from "@babylonjs/core"
 import { AssaultRifle } from "./weaponClasses/AssaultRifle"
 import { IWeapon } from "./IWeapon"
 
@@ -8,7 +8,7 @@ import { IWeapon } from "./IWeapon"
  * as well as the scene, which is required for the Weapon Constructor
  */
 type Entry<T> = {
-	instance: new (scene: Scene, meshes: Array<AbstractMesh>) => T,
+	instance: new (mesh: Mesh, childMeshes: Array<AbstractMesh>) => T,
 	fileName: string,
 }
 

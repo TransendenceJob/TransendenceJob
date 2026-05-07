@@ -3,7 +3,6 @@ import { GameState } from '@/shared/state/GameState';
 import { CS_DEV_SetGameState, CS_GetGameState, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { gameData, playerData } from '@/shared/packets/util';
 import { Player } from '../Player';
-import { points } from '../data/vectorData';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
 import { GuiHelper } from '../GuiHelper';
@@ -22,6 +21,7 @@ import { MessageQueue } from '../MessageQueue';
 import { handlePacket } from '../handlePacket';
 import { Turn } from './Turn';
 import { loadGame } from './loading/loadGame';
+import { IWeapon } from '../weapons/IWeapon';
 
 export class StateMachine {
 	private userId: string;
@@ -37,6 +37,7 @@ export class StateMachine {
 	public state: GameState | undefined;
 	public currentState: IState | undefined;
 	public players: Array<Player>;
+	public weapons: Array<IWeapon>;
 	public turn: Turn | undefined;
 	private initialized: boolean = false;
 	public turnOrder: Array<number>;
@@ -58,9 +59,14 @@ export class StateMachine {
 		this.states.set(GameState.AIMING, new AimingState(this));
 		this.states.set(GameState.TURN_END, new TurnEndState(this));
 		this.states.set(GameState.GAME_END, new GameEndState(this));
+
 		// Set when game starts proper
-		this.state = undefined;
+		
+		// Set on Loading
+		this.weapons = [];
+		
 		this.players = [];
+		this.state = undefined;
 		this.currentState = undefined;
 		this.guiHelper = undefined;
 		this.ground = undefined;
@@ -164,6 +170,8 @@ export class StateMachine {
 	 */
 	clearGame() {
 		// Clean Players and their worms
+		this.weapons.forEach(w => w.dispose());
+		this.weapons = [];
 		this.players.forEach(p => p.dispose());
 		this.players = [];
 		this.turn?.dispose()

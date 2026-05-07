@@ -3,7 +3,6 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 // @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { ExampleGun } from '../../weapons/ExampleGun';
 import { Turn } from '../Turn';
 
 export class AimingState implements IState {
@@ -35,8 +34,11 @@ export class AimingState implements IState {
 		const turn = this.machine.turn;
 		if (!turn.chosenWorm)
 			turn.chosenWorm = this.machine.players[0].worms[0];
-		if (!turn.chosenWeapon && turn.chosenWorm)
-			turn.chosenWeapon = new ExampleGun(this.machine.scene, turn);
+		if (!turn.chosenWeapon)
+			turn.chosenWeapon = this.machine.weapons[0];
+		turn.chosenWeapon.show(true);
+		turn.chosenWeapon.mesh.position.x = turn.chosenWorm.mesh.position.x;
+		turn.chosenWeapon.mesh.position.y = turn.chosenWorm.mesh.position.y;
 
 		const aimingActions = this.machine.turn?.chosenWeapon?.aimTypes[0].activate(this.machine.turn);
 		aimingActions?.forEach((a) => {actions.push(a)});

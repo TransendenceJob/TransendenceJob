@@ -82,6 +82,7 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 		// do something
 		return ;
 	}
+	machine.weapons = result.weapons;
 	loadingHelper.send("Imported Weapon Meshes")
 
 	// Finished

@@ -13,6 +13,7 @@ export class RoundStartState implements IState {
 		this.reset()
 
 		// Setup
+		this.machine.turn?.chosenWeapon?.show(true)
 		this.machine.guiHelper?.notifications.add("A new Round has started")
 
 		// Actions

@@ -17,6 +17,7 @@ export class AimingAngle implements IAimType {
 		this.allowedAngleMin = minAngle;
 		this.allowedAngleMax = maxAngle;
 		this.span = span;
+		console.log(`Created Aim Angle with min: ${minAngle}, max: ${maxAngle}, span: ${span}`);
 	}
 
 	activate(turn: Turn): Array<IAction> {
@@ -59,7 +60,13 @@ export class AimingAngle implements IAimType {
 			} else {
 				const relativeAngle = (newAngle - this.allowedAngleMin + 360) % 360;
 				if (relativeAngle <= this.span) {
-					turn.aimAngle = (newAngle + 360) % 360;;
+					turn.aimAngle = (newAngle + 360) % 360;
+				}
+				else if (this.turnLeft) {
+					turn.aimAngle = this.allowedAngleMin;
+				}
+				else if (this.turnRight) {
+					turn.aimAngle = this.allowedAngleMax;
 				}
 			}
 		}));

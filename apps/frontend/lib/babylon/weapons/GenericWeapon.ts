@@ -1,41 +1,21 @@
-import { Vector3, AbstractMesh } from '@babylonjs/core'
+import { AbstractMesh, Mesh } from '@babylonjs/core'
 
 /**
  * Class that lets specific weapons inherit general functions each weapon should have
  */
 export class GenericWeapon {
-	public meshes: Array<AbstractMesh> = [];
-
-	constructor() {}
-
-	getPos() {
-		return (this.meshes[0].position);
-	}
-
-	getRot() {
-		return (this.meshes[0].rotation);
-	}
-
-	setPos(newPos: Vector3) {
-		this.meshes.forEach((mesh) => {
-			mesh.position = newPos.clone();
-		})
-	}
-
-	setRot(rotation: Vector3) {
-		this.meshes.forEach((mesh) => {
-			mesh.rotation = rotation;
-		})
-	}
-
-	setRotZ(angle: number) {
-		this.meshes.forEach((mesh) => {
-			mesh.rotation.z = angle;
+	public mesh: Mesh;
+	public childMeshes: Array<AbstractMesh> = [];
+	
+	show(result: boolean) {
+		this.childMeshes.forEach((mesh) => {
+			mesh.visibility = result;
 		})
 	}
 
 	dispose() {
-		this.meshes.forEach((mesh) => {
+		this.mesh.dispose();
+		this.childMeshes.forEach((mesh) => {
 			mesh.dispose()
 		})
 	}

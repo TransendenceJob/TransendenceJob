@@ -24,9 +24,10 @@ export class Turn {
 	 * @param angle new Rotation for Weapon in degrees
 	 */
 	turnWeapon(angle: number | undefined) {
-		if (!angle || !this.chosenWeapon) 
+		if (angle == undefined || !this.chosenWeapon) 
 			return;
-		this.chosenWeapon.mesh.rotation.z = ((360 - angle) / 180 * Math.PI);
+
+		this.chosenWeapon.mesh.rotation.z = (((360 - angle) / 180 * Math.PI));
 	}
 
 	dispose() {

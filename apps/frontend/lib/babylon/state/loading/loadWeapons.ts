@@ -1,4 +1,5 @@
-import { AbstractMesh, ImportMeshAsync, Scene } from '@babylonjs/core';
+import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Vector3 } from '@babylonjs/core';
+// Might be able to be removed
 import "@babylonjs/loaders/OBJ";
 import { weaponList } from '../../weapons/weaponList';
 import { IWeapon } from '../../weapons/IWeapon';
@@ -30,7 +31,15 @@ export async function loadWeapons(scene: Scene) {
 	for (const entry of weaponList) {
 		try {
 			const meshes = await load(scene, entry.fileName);
-			result.weapons.push(new entry.instance(scene, meshes));
+			const parent = MeshBuilder.CreateBox("unset weapon mesh", {}, scene);
+			parent.visibility = false;
+			// Remove parenting, so meshes can later be put into one custom mesh
+			meshes.forEach((mesh) => {
+				mesh.parent = parent;
+				mesh.visibility = false;
+			})
+			parent.position.z = -0.5;
+			result.weapons.push(new entry.instance(parent, meshes));
 		}
 		catch (e) {
 			result.message = `BABYLON: Error while trying to load weapon ${entry.fileName}`;
