@@ -121,6 +121,43 @@ export interface InternalRequestInit extends RequestInit {
     _retry?: boolean;
 }
 
+/**
+ * --- Admin Management DTOs ---
+ * These types correspond to the /admin endpoints in the BFF
+ */
+
+export interface PageInfoDto {
+    nextCursor?: string | null;
+    hasNextPage: boolean;
+}
+
+export interface UserSearchQueryDto {
+    query?: string;
+    cursor?: string;
+    limit?: number;
+}
+
+export interface UserSearchResponseDto {
+    items: UserAuthView[];
+    pageInfo: PageInfoDto;
+}
+
+export interface DisableUserRequestDto {
+    reason: string;
+    revokeSessions?: boolean;
+}
+
+export interface EnableUserRequestDto {
+    reason?: string;
+}
+
+export interface UpdatePlayerStatsDto {
+    wins?: number;
+    losses?: number;
+    xp?: number;
+    level?: number;
+}
+
 /** * --- Errors ---
  */
 export interface ApiError {
