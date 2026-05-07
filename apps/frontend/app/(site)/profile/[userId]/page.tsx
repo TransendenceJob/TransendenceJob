@@ -52,7 +52,7 @@ export default function ProfilePage() {
 	{ label: "Kills", value: stats?.kills?.toString() ?? "—", color: "text-green-500" },
 	{ label: "Deaths", value: stats?.deaths?.toString() ?? "—", color: "text-red-500" },
 	];
-	console.log("USER STATS: ", stats);
+	//console.log("USER STATS: ", stats);
     return (
         <ProtectedRoute>
         <div className="max-w-4xl mx-auto py-12 px-6">
