@@ -28,7 +28,6 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
         client.loading.msg = 'Finished Loading';
         client.loading.done = true;
       }
-      console.log(`Client finished loading `, client);
       break;
     }
 
@@ -38,6 +37,13 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
         client.loading.msg = data.msg;
         client.loading.failed = true;
       }
+      break;
+    }
+
+    // For getting game state
+    // DUPLICATE
+    case CS_Type.CS_GetGameState: {
+      lobby.sendGameStatePacket();
       break;
     }
 

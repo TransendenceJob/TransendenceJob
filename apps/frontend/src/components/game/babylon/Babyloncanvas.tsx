@@ -94,7 +94,7 @@ export default function BabylonCanvas({
       observer.disconnect();
     };
   }, 
-  [socket, DEBUG]);
+  [socket, DEBUG, userId]);
 
   return <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />;
 }

@@ -13,6 +13,7 @@ import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
 import { translateLobbyState } from '../translateLobbyState';
 import { Client, resetClient } from '../Client';
+import { log } from 'src/lobbies/lobbyUtil/log';
 
 const LOBBY_MAX_SLOTS = 4;
 
@@ -27,7 +28,10 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
     // Client changes their readiness state
     case CS_Type.CS_ReadyChange: {
       const client = lobby.clients.find((client) => client.id == data.userId);
-      if (client) client.ready = data.ready;
+      if (client) {
+        client.ready = data.ready;
+        log(`Client ${client.id} changed ready to: ${client.ready}`);
+      }
       break;
     }
 
@@ -107,8 +111,9 @@ function connectionAttempt(lobby: Lobby, data: CS_ConnectAttempt) {
     ready: false,
   };
   resetClient(new_client);
-  console.log('Client connected: ');
-  console.log(new_client);
+  log(
+    `New Client connected: id:${new_client.id}, name: ${new_client.name}, slot:${new_client.slot}, socketId:${new_client.socketId}`,
+  );
   lobby.clients.push(new_client);
 
   // Mock logic for disconnection of last client CHANGE LATER

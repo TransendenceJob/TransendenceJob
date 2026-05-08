@@ -7,13 +7,6 @@ import { handleGamePackets } from './handleGamePackets';
 import { tickLoading } from './tickLoading';
 import { tickLobby } from './tickLobby';
 
-const DEBUG_OUTPUT = true;
-const log = DEBUG_OUTPUT
-  ? (msg: string) => {
-      console.log('DEBUG: ', msg);
-    }
-  : (msg: string) => {};
-
 /**
  * @brief Handles packages from queue, tries to handle all at once
  * @param lobby Lobby that this is for
@@ -25,14 +18,14 @@ export function handlePackets(lobby: Lobby) {
       // Lobby is in Lobby state
       case LobbyStateEnum.OpenLobby: {
         handleLobbyPackets(lobby, data);
-        tickLobby(lobby, log);
+        tickLobby(lobby);
         break;
       }
 
       // Lobby is in Loading state
       case LobbyStateEnum.Loading: {
         handleLoadingPackets(lobby, data);
-        tickLoading(lobby, log);
+        tickLoading(lobby);
         break;
       }
 

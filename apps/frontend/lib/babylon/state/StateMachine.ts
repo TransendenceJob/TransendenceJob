@@ -24,7 +24,7 @@ import { loadGame } from './loading/loadGame';
 import { IWeapon } from '../weapons/IWeapon';
 
 export class StateMachine {
-	private userId: string;
+	public userId: string;
 	public scene: Scene;
 	public canvas: HTMLCanvasElement;
 	public msgToServer: msgToServerType;

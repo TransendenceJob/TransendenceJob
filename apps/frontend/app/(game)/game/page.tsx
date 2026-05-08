@@ -181,7 +181,8 @@ export default function LobbyPageController() {
     
     const onConnect = () => {
       setIsConnected(true)
-      setSocketId(socket.id);
+      setSocketId(socket.id ? socket.id : "undefined");
+      setUserId(socket.id ? socket.id : "undefined");
     };
     const onDisconnect = () => {
       setIsConnected(false)

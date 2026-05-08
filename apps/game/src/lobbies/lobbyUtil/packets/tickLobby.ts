@@ -1,17 +1,17 @@
 import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
+import { log } from 'src/lobbies/lobbyUtil/log';
 
 /**
  * @brief This should be ran anytime we handled a package
  *        and might need to perform general operations on the Lobby
  * @param lobby Lobby to tick
  */
-export function tickLobby(lobby: Lobby, log: (msg: string) => void) {
+export function tickLobby(lobby: Lobby) {
   if (lobby.clients.length < 1) return;
   let readyCount = 0;
   lobby.clients.forEach((client) => {
     if (client.ready) {
-      log(`Client ${client.id}:${client.name} is now ready`);
       readyCount++;
     }
   });

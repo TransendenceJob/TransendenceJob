@@ -14,6 +14,7 @@ import { LobbyStateEnum } from './lobbyUtil/LobbyStateEnum';
 import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
 import { Client, resetClient } from './lobbyUtil/Client';
+import { log, logType } from './lobbyUtil/log';
 
 /**
  * An Object representing one Lobby, which goes through different states,
@@ -117,7 +118,6 @@ export class Lobby {
    * @param newState New State to set Lobby to
    */
   setState(newState: LobbyStateEnum) {
-    console.log(`Setting to state ${newState}`);
     //if (this.state == newState) return;
     this.state = newState;
 
