@@ -1,6 +1,4 @@
-//@ts-ignore
 import { SC_GenericPacket } from '@/shared/packets/ServerClientPackets'
-// @ts-ignore
 import { Socket } from 'socket.io-client';
 import { StateMachine } from './state/StateMachine';
 
@@ -21,8 +19,8 @@ export class MessageQueue {
 	public updateSocketUi: () => void;
 	public log: (data: string) => void;
 	constructor(lobbyId: number, socket: Socket, state: StateMachine, DEBUG: boolean, log: (data: string) => void) {
-		this.queue = new Array();
-		this.buffer = new Array();
+		this.queue = [];
+		this.buffer = [];
 		this.lobbyId = lobbyId;
 		this.lastSeq = undefined;
 		this.log = log;

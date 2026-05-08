@@ -1,53 +1,19 @@
 import { NullEngine } from 'babylonjs';
-import {
-  CS_Type,
-  CS_GenericPacket,
-} from '@/shared/packets/ClientServerPackets';
+import { CS_GenericPacket } from '@/shared/packets/ClientServerPackets';
 import {
   SC_Type,
   SC_Base,
   SC_GenericStatePacket,
-  SC_DEV_ButtonPress,
   SC_DEV_GameState,
-  SC_ConnectSuccess,
 } from '@/shared/packets/ServerClientPackets';
-import { gameData } from '@/shared/packets/util';
-import { SeqHandler } from './SeqHandler';
-import { Game } from '../game/Game';
-import { MessageQueue } from './MessageQueue';
 import { GameState } from '@/shared/state/GameState';
-import { msgToClientType } from './msgToClientType';
-import { GamePendingState } from 'src/game/gamestate/0GamePendingState';
-
-enum LobbyStateEnum {
-  ClosedLobby = 0,
-  OpenLobby = 1,
-  Loading = 2,
-  Game = 3,
-  EndScreen = 4,
-}
-
-/**
- * Translates Lobby State Enum to corresponding packet type,
- * to put Client into the corresponding state
- * @param state Lobbys State
- * @returns enum/string for Json packet type
- */
-function translateLobbyState(
-  state: LobbyStateEnum,
-): SC_GenericStatePacket['type'] {
-  switch (state) {
-    case LobbyStateEnum.OpenLobby:
-      return SC_Type.SC_StartLobby;
-    case LobbyStateEnum.Loading:
-      return SC_Type.SC_StartLoading;
-    case LobbyStateEnum.Game:
-      return SC_Type.SC_StartGame;
-    case LobbyStateEnum.EndScreen:
-      return SC_Type.SC_GameFinished;
-  }
-  return SC_Type.SC_InvalidState;
-}
+import { Game } from '../game/Game';
+import { SeqHandler } from './lobbyUtil/SeqHandler';
+import { MessageQueue } from './lobbyUtil/MessageQueue';
+import { LobbyStateEnum } from './lobbyUtil/LobbyStateEnum';
+import { handlePackets } from './lobbyUtil/packets/handlePackets';
+import { translateLobbyState } from './lobbyUtil/translateLobbyState';
+import { Client, resetClient } from './lobbyUtil/Client';
 
 /**
  * An Object representing one Lobby, which goes through different states,
@@ -59,13 +25,14 @@ function translateLobbyState(
  * gameServerLoop() triggers events periodically
  */
 export class Lobby {
-  public state: LobbyStateEnum;
   public id: number;
+  public state: LobbyStateEnum;
+  public clients: Array<Client>;
   private engine: NullEngine;
   private emitData: (msg: string) => void;
   private seqHandler: SeqHandler;
-  private game: Game;
-  private queue: MessageQueue;
+  public game: Game;
+  public queue: MessageQueue;
 
   /**
    * On Lobby Creation, call the constructor,
@@ -74,13 +41,15 @@ export class Lobby {
    * @param id unique number identifier for this lobby
    */
   constructor(id: number, emitData: (msg: string) => void) {
-    this.state = LobbyStateEnum.OpenLobby;
-    this.emitData = emitData;
     this.id = id;
+    this.state = LobbyStateEnum.OpenLobby;
+    this.clients = [];
+    this.emitData = emitData;
     this.engine = new NullEngine();
     // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
     this.seqHandler = new SeqHandler(1);
     this.seqHandler.registerPlayer('unused', 0);
+    // Set up game with functionality to send packets to Client
     this.game = new Game(
       this.engine,
       () => {
@@ -89,12 +58,20 @@ export class Lobby {
       // Game needs reference to call Lobbies packet function
       (type, data) => this.msgToClient(type, data),
     );
+    // Set up Queue for reading packets synced
     this.queue = new MessageQueue();
-    this.registerLoop();
+
+    // Register code to execute every frame
+    this.engine.runRenderLoop(() => {
+      handlePackets(this);
+      this.game.tick();
+      this.game.scene.render();
+    });
     console.log(`Created Lobby with ${this.id}`);
   }
 
   /**
+   * @brief This function is used to send packets to the Client in an automated way
    * @note Explanation of this Syntax:
    * The function has to be called with a data type T that has the fields from SC_Base
    * AND a type parameter with an enum value for type,
@@ -103,7 +80,6 @@ export class Lobby {
    * Then we take the rest of the fields of the given interface, except for type,
    * and insert them into the created packet using the spread operator
    * We specify the function returns the specified interface type and return such an object
-   * @brief This function is used to send packets to the Client in an automated way
    */
   public msgToClient<T extends SC_Base & { type: SC_Type }>(
     type: T['type'],
@@ -120,16 +96,8 @@ export class Lobby {
   }
 
   /**
-   * Register code that should be repeatedly executed
+   * @brief Sends packet to Client, telling them in which state the game is
    */
-  private registerLoop() {
-    this.engine.runRenderLoop(() => {
-      this.handlePackets();
-      this.game.tick();
-      this.game.scene.render();
-    });
-  }
-
   public sendGameStatePacket() {
     this.msgToClient<SC_DEV_GameState>(SC_Type.SC_DEV_GameState, {
       gameState: this.game.get(),
@@ -148,13 +116,18 @@ export class Lobby {
    * Change state of Lobby, automatically tells Clients to change as well
    * @param newState New State to set Lobby to
    */
-  private setState(newState: LobbyStateEnum) {
+  setState(newState: LobbyStateEnum) {
     console.log(`Setting to state ${newState}`);
     //if (this.state == newState) return;
     this.state = newState;
 
     // Send Packet telling Client the new Lobby state to load
     this.msgToClient<SC_GenericStatePacket>(translateLobbyState(newState), {});
+
+    // Reset Clients Loading progress and readiness
+    this.clients.forEach((client) => {
+      resetClient(client);
+    });
 
     if (this.state == LobbyStateEnum.Loading) {
       this.game.setState(GameState.GAME_LOADING);
@@ -174,102 +147,8 @@ export class Lobby {
         (type, data) => this.msgToClient(type, data),
       );
       this.state = LobbyStateEnum.OpenLobby;
+      this.clients = [];
     }
-  }
-
-  private handlePackets() {
-    const packetList: Array<CS_GenericPacket> = this.queue.read();
-    packetList.forEach((data: CS_GenericPacket) => {
-      switch (data.type) {
-        // When a Client connects to a game
-        case CS_Type.CS_ConnectAttempt: {
-          this.msgToClient<SC_ConnectSuccess>(SC_Type.SC_ConnectSuccess, {
-            userId: data.userId,
-          });
-
-          // Mock logic for disconnection of last client CHANGE LATER
-          if (this.state == LobbyStateEnum.Game) {
-            this.setState(LobbyStateEnum.EndScreen);
-          }
-
-          const newUser = {
-            userId: data.userId,
-            socketId: data.socketId,
-          };
-          this.game.clients.push(newUser);
-          // Just make a new Game, so we can debug easier. Needs to be CHANGED later on!!
-          this.msgToClient<SC_GenericStatePacket>(
-            translateLobbyState(this.state),
-            {},
-          );
-          break;
-        }
-
-        // DEV mode, should be removed late, Client commands state to be set to Lobby
-        case CS_Type.CS_DEV_StartLobby: {
-          this.setState(LobbyStateEnum.OpenLobby);
-          break;
-        }
-
-        // DEV mode, should be removed late, Client commands state to be set to Loading
-        case CS_Type.CS_DEV_StartLoading: {
-          this.setState(LobbyStateEnum.Loading);
-          break;
-        }
-
-        // DEV mode, should be removed late, Client commands state to be set to Game
-        case CS_Type.CS_DEV_StartGame: {
-          this.setState(LobbyStateEnum.Game);
-          break;
-        }
-
-        // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
-        case CS_Type.CS_DEV_StartEndscreen: {
-          this.setState(LobbyStateEnum.EndScreen);
-          break;
-        }
-
-        // For the button to send to Server, just send back a copy
-        case CS_Type.CS_DEV_ButtonPress: {
-          this.msgToClient<SC_DEV_ButtonPress>(SC_Type.SC_DEV_ButtonPress, {
-            timestamp: data.timestamp,
-            msg: data.message,
-          });
-          break;
-        }
-
-        // For switching game state
-        case CS_Type.CS_DEV_SetGameState: {
-          if (!this.game) return;
-          this.game.setState(data.state);
-          break;
-        }
-
-        // For getting game state
-        case CS_Type.CS_GetGameState: {
-          this.sendGameStatePacket();
-          break;
-        }
-
-        // For when Client progresses Loading
-        case CS_Type.CS_LoadingProgress: {
-          //TODO
-          break;
-        }
-
-        // For when Client finishes Loading
-        case CS_Type.CS_FinishedLoading: {
-          //TODO
-          break;
-        }
-
-        default: {
-          console.log(
-            `Error: Server received packet with unhandled type: ${JSON.stringify(data)}`,
-          );
-        }
-      }
-    });
   }
 
   dispose() {

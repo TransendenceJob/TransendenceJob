@@ -1,4 +1,3 @@
-// @ts-ignore
 import { IAction } from '@babylonjs/core'
 
 export interface IState {

@@ -1,7 +1,6 @@
 import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
-// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction, MeshBuilder } from '@babylonjs/core'
 
 export class TurnEndState implements IState {
@@ -13,11 +12,6 @@ export class TurnEndState implements IState {
 
 		// Setup
 		this.machine.guiHelper?.notifications.add(`Player ${this.machine.players[0].name} ends their turn`);
-		const box_x = new MeshBuilder.CreateBox("box_x", {width: 10, height: 0.01, depth: 0.01}, this.machine.scene);
-		const box_y = new MeshBuilder.CreateBox("box_y", {width: 0.01, height: 10, depth: 0.01}, this.machine.scene);
-		const position = this.machine.turn?.chosenWeapon?.getProjectileSpawnPos();
-		box_x.position = position;
-		box_y.position = position;
 
 		// Actions
 		const actions: Array<IAction> = [];

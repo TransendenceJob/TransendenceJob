@@ -1,4 +1,32 @@
-import { MeshBuilder, Mesh, ActionManager, Scene, Nullable, Observer } from '@babylonjs/core';
+import { MeshBuilder, Mesh, Scene, Nullable, Observer } from '@babylonjs/core';
+
+/**
+ * Creates simple mesh for pointing at a worm by merging simple shapes
+ * Should be replaced later with a proper asset
+ * @param scene Scene to place meshes in
+ * @returns Mesh for Pointer
+ */
+function createMesh(scene: Scene): Mesh {
+	const width = 0.6;
+	const height = 0.15;
+	const length = 1;
+	const angle = (30) / 180 * Math.PI;
+	const right = MeshBuilder.CreateBox("right", {height: height, width: width, depth: 0.1}, scene);
+	right.rotation.z = angle;
+	right.position.x = Math.cos(angle) * width / 2 - Math.sin(angle) * height / 2;
+	right.position.y = Math.sin(angle) * width / 2 + Math.cos(angle) * height / 2;
+	const left = MeshBuilder.CreateBox("left", {height: height, width: width, depth: 0.1}, scene);
+	left.rotation.z = -angle;
+	left.position.x = -Math.cos(-angle) * width / 2 - Math.sin(-angle) * height / 2;
+	left.position.y = -Math.sin(-angle) * width / 2 + Math.cos(-angle) * height / 2;
+	const middle = MeshBuilder.CreateBox("middle", {height: length, width: height, depth: 0.1}, scene);
+	middle.position.y += length / 2 + height;
+	let pointer = Mesh.MergeMeshes([middle, right, left], true, false, undefined, false, false);
+	if (pointer == null)
+		pointer = MeshBuilder.CreateBox("", {}, scene);
+	pointer.name = " Worm Pointer"
+	return (pointer);
+}
 
 export class WormPointer {
 	private sceneRef: Scene;
@@ -15,22 +43,7 @@ export class WormPointer {
 		this.target = target;
 
 		// Create Mesh
-		const width = 0.6;
-		const height = 0.15;
-		const length = 1;
-		const angle = (30) / 180 * Math.PI;
-		const right = MeshBuilder.CreateBox("right", {height: height, width: width, depth: 0.1}, scene);
-		right.rotation.z = angle;
-		right.position.x = Math.cos(angle) * width / 2 - Math.sin(angle) * height / 2;
-		right.position.y = Math.sin(angle) * width / 2 + Math.cos(angle) * height / 2;
-		const left = MeshBuilder.CreateBox("left", {height: height, width: width, depth: 0.1}, scene);
-		left.rotation.z = -angle;
-		left.position.x = -Math.cos(-angle) * width / 2 - Math.sin(-angle) * height / 2;
-		left.position.y = -Math.sin(-angle) * width / 2 + Math.cos(-angle) * height / 2;
-		const middle = MeshBuilder.CreateBox("middle", {height: length, width: height, depth: 0.1}, scene);
-		middle.position.y += length / 2 + height;
-		this.mesh = Mesh.MergeMeshes([middle, right, left], true, false, null, false, false);
-		this.mesh.actionManager = new ActionManager(scene);
+		this.mesh = createMesh(scene);
 		// This makes the mesh render in front of everything else
 		this.mesh.renderingGroupId = 1;
 

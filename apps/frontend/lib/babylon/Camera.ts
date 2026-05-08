@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Scene, Vector3, ArcRotateCamera } from "@babylonjs/core";
 
 export function createCamera(scene: Scene, canvas: HTMLCanvasElement, pos_x: number, pos_y: number, max_distance: number)

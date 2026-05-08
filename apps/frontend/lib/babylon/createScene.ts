@@ -1,4 +1,4 @@
-import { Scene, FreeCamera, Vector3, HemisphericLight, Engine, ActionManager } from "@babylonjs/core";
+import { Scene, Vector3, HemisphericLight, Engine, ActionManager } from "@babylonjs/core";
 import { Socket } from 'socket.io-client';
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
 

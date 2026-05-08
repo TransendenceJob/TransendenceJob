@@ -1,6 +1,4 @@
-// @ts-ignore
 import { Scene, Animation } from '@babylonjs/core';
-// @ts-ignore
 import { AdvancedDynamicTexture, Image } from '@babylonjs/gui';
 
 export function fadeAnimation(scene: Scene, fadeIn: boolean,) {

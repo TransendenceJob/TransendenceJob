@@ -1,5 +1,4 @@
-// @ts-ignore
-import { Mesh, Scene, Vector3, Color3, Scalar, MeshBuilder, StandardMaterial, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Mesh, Scene, Vector3, Color3, MeshBuilder, StandardMaterial, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { wormData } from '@/shared/packets/util';
 import { colors } from '../data/gameData';
 
@@ -13,7 +12,7 @@ function createWorm(scene: Scene, position: Vector3, color: Color3) {
 	const player = MeshBuilder.CreateSphere("sphere", {diameter: 1, segments: 32}, scene);
 	player.position = position;
 
-	var material = new StandardMaterial("material", scene);
+	const material = new StandardMaterial("material", scene);
 	material.emissiveColor = color;
 
 	player.material = material;
@@ -33,7 +32,7 @@ export class Worm {
 	public mesh: Mesh;
 	public id: number;
 	public name: string;
-    private action: ActionManager | undefined = undefined;
+    private action: ExecuteCodeAction | undefined = undefined;
     private clickable: boolean;
     /**
      * 
@@ -63,7 +62,9 @@ export class Worm {
         if (this.initialised)
             return ;
         this.initialised = true;
-        this.action = new ExecuteCodeAction(ActionManager.OnPickUpTrigger, () => {
+        this.action = new ExecuteCodeAction({
+            trigger: ActionManager.OnPickUpTrigger}
+            , () => {
             setterFunction(this);
         })
     }
@@ -98,7 +99,7 @@ export class Worm {
         this.initialised = false;
         this.removeClickable();
         if (this.mesh) {
-            this.mesh.actionManager.dispose();
+            this.mesh.actionManager?.dispose();
             this.mesh.dispose();
         }
     }

@@ -1,4 +1,3 @@
-// @ts-ignore
 import { AdvancedDynamicTexture, TextBlock } from '@babylonjs/gui';
 
 export class SocketStatus {

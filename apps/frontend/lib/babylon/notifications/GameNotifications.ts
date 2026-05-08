@@ -1,6 +1,4 @@
-// @ts-ignore
 import { TextBlock, AdvancedDynamicTexture } from "@babylonjs/gui"
-// @ts-ignore
 import { Scene, ExecuteCodeAction, ActionManager} from '@babylonjs/core'
 
 interface GameNotificationEntry {

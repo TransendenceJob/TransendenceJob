@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Button} from "@babylonjs/gui";
 
 export function setButtonSize(

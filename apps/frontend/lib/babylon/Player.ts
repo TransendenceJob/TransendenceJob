@@ -1,6 +1,6 @@
 import { ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 import { Worm } from './worms/Worm';
-import { playerData, wormData } from '@/shared/game/packets/util';
+import { playerData, wormData } from '@/shared/packets/util';
 
 /**
  * @brief Class representing a Player

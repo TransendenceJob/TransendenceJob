@@ -1,7 +1,6 @@
 import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
-// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 
 export class RoundStartState implements IState {
@@ -13,7 +12,7 @@ export class RoundStartState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.turn?.chosenWeapon?.show(true)
+		this.machine.turn?.chosenWeapon?.show(false)
 		this.machine.guiHelper?.notifications.add("A new Round has started")
 
 		// Actions

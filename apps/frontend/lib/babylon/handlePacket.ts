@@ -1,9 +1,5 @@
-// @ts-ignore
-import { AdvancedDynamicTexture } from '@babylonjs/gui'
-// @ts-ignore
 import { SC_Type, SC_GenericPacket } from "@/shared/packets/ServerClientPackets"
 import { StateMachine } from './state/StateMachine';
-// @ts-ignore
 import { GameState } from '@/shared/state/GameState';
 
 export function handlePacket(data: SC_GenericPacket, state: StateMachine) {

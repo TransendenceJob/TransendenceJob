@@ -43,7 +43,8 @@ export interface CS_Base {
  */
 export interface CS_ConnectAttempt extends CS_Base {
 	type: CS_Type.CS_ConnectAttempt,
-	socketId: string
+	socketId: string,
+	name: string,
 }
 
 /**

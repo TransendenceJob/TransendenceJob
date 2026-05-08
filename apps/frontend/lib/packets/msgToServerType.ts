@@ -1,4 +1,3 @@
-// @ts-ignore
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 /**

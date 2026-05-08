@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Color3 } from "@babylonjs/core";
 
 export const numPlayers = 4;

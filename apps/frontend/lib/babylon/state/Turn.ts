@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Vector2 } from "@babylonjs/core"
 import { Player } from "../Player";
 import { IWeapon } from "../weapons/IWeapon";

@@ -77,6 +77,7 @@ export interface SC_StartLobby extends SC_Base {
  */
 export interface SC_ConnectFail extends SC_Base {
 	type: SC_Type.SC_ConnectFail,
+	userId: string,
 	msg: string,
 }
 
@@ -88,6 +89,7 @@ export interface SC_ConnectFail extends SC_Base {
 export interface SC_ConnectSuccess extends SC_Base {
 	type: SC_Type.SC_ConnectSuccess,
 	userId: string,
+	slot: number
 }
 
 /**

@@ -9,7 +9,7 @@ export class GenericWeapon {
 	
 	show(result: boolean) {
 		this.childMeshes.forEach((mesh) => {
-			mesh.visibility = result;
+			mesh.visibility = result ? 1 : 0;
 		})
 	}
 

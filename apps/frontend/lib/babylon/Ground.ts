@@ -1,5 +1,4 @@
 import { Scene, Vector2, Vector3, Mesh, MeshBuilder, PhysicsAggregate, PhysicsShapeType } from "@babylonjs/core";
-//@ts-ignore
 import earcut from "earcut";
 import { mapData, pointData } from '@/shared/packets/util';
 
@@ -168,7 +167,7 @@ export class Ground
 
 		// Get angles of entrance and middle point
 		const tessalationCount = 20;
-		var startAngle = angle(exploToEntry);
+		let startAngle = angle(exploToEntry);
 		const endAngle = angle(exploToExit);
 		if (endAngle >= Math.PI)
 			startAngle += Math.PI * 2;
@@ -237,7 +236,7 @@ export class Ground
 		// Take intersection fractions, turn them into points, and put them in an array
 		const results = [];
 		const sortedFactors = [fact1, fact2].sort((x, y) => x - y);
-		for (let factor of sortedFactors) {
+		for (const factor of sortedFactors) {
 			if (factor >= -tolerance && factor <= 1 + tolerance) {
 				const clampedFactor = Math.max(0, Math.min(1, factor));
 				results.push(V.scale(clampedFactor).add(point1));

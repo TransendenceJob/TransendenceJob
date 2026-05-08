@@ -1,8 +1,6 @@
 import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
-import { GameState } from '@/shared/state/GameState';
-// @ts-ignore
-import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
+import { IAction } from '@babylonjs/core'
 
 
 /**

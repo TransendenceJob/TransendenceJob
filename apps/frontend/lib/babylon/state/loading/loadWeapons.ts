@@ -1,4 +1,4 @@
-import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Vector3 } from '@babylonjs/core';
+import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Vector3, Mesh } from '@babylonjs/core';
 // Might be able to be removed
 import "@babylonjs/loaders/OBJ";
 import { weaponList } from '../../weapons/weaponList';
@@ -31,13 +31,14 @@ export async function loadWeapons(scene: Scene) {
 	for (const entry of weaponList) {
 		try {
 			const meshes = await load(scene, entry.fileName);
-			const parent = MeshBuilder.CreateBox("unset weapon mesh", {}, scene);
-			parent.visibility = false;
+			const parent: Mesh = MeshBuilder.CreateBox("unset weapon mesh", {}, scene);
+			parent.visibility = 0;
 			// Remove parenting, so meshes can later be put into one custom mesh
 			meshes.forEach((mesh) => {
 				mesh.parent = parent;
-				mesh.visibility = false;
+				mesh.visibility = 0;
 			})
+			// Offset in front of worm model, so gun is visible
 			parent.position.z = -0.5;
 			result.weapons.push(new entry.instance(parent, meshes));
 		}

@@ -1,4 +1,3 @@
-//@ts-ignore
 import { IAction, Scene } from '@babylonjs/core';
 import { Turn } from "../../state/Turn";
 

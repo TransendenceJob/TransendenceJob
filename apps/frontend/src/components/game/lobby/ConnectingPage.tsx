@@ -28,7 +28,8 @@ export default function ConnectingPage({
   useEffect(() => {
     if (isConnected) {
       msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {
-        socketId: socketId
+        socketId: socketId,
+        name: "Player Name from ConnectionPage.tsx"
       });
     }
   }, [isConnected, msgToServer]);

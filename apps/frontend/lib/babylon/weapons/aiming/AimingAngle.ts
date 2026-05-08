@@ -1,7 +1,5 @@
 import { Turn } from "../../state/Turn";
-import { IWeapon } from "../IWeapon";
 import { IAimType } from "./IAimType";
-// @ts-ignore
 import { IAction, ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 
 export class AimingAngle implements IAimType {

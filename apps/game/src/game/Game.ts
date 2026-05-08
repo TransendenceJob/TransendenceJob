@@ -13,7 +13,7 @@ import { MovementState } from './gamestate/6MovementState';
 import { AimingState } from './gamestate/7AimingState';
 import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
-import { msgToClientType } from '../lobbies/msgToClientType';
+import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 
 interface userObject {
   userId: string;

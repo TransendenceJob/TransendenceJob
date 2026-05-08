@@ -1,4 +1,4 @@
-import { Scene, Mesh, AbstractMesh, Vector3 } from '@babylonjs/core'
+import { Mesh, AbstractMesh, Vector3 } from '@babylonjs/core'
 import { AimingAngle } from "../aiming/AimingAngle";
 import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";

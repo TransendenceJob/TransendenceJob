@@ -1,7 +1,6 @@
 import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
-// @ts-ignore
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { WormPointer } from '../../worms/WormPointer';
 
@@ -16,7 +15,7 @@ export class PickWormState implements IState {
 		// Setup
 		this.machine.guiHelper?.notifications.add(`${this.machine.turn?.activePlayer.name} is picking a worm`)
 		this.machine.turn?.activePlayer.wormsClickable(true);
-		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm);
+		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm.mesh);
 		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;
 
 		// Actions
@@ -59,7 +58,7 @@ export class PickWormState implements IState {
 	}
 
 	tick() {
-		if (this.pointer && this.machine.turn && this.pointer.target != this.machine.turn.chosenWorm)
+		if (this.pointer && this.machine.turn && this.pointer.target != this.machine.turn.chosenWorm.mesh)
 			this.pointer.target = this.machine.turn.chosenWorm.mesh;
 
 		if (this.next) {

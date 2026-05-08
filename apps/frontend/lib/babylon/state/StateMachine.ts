@@ -1,7 +1,7 @@
 import { IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '@/shared/state/GameState';
-import { CS_DEV_SetGameState, CS_GetGameState, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
-import { gameData, playerData } from '@/shared/packets/util';
+import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { gameData } from '@/shared/packets/util';
 import { Player } from '../Player';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
 import { Ground } from '../Ground';
