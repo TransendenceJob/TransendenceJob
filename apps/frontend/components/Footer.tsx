@@ -2,10 +2,22 @@
 
 import Link from "next/link";
 import { useAuth } from "@/components/Providers";
+import { useRouter } from "next/navigation";
 
 export default function Footer() {
     const { user } = useAuth();
-    const profileHref = user?.id ? `/profile/${user.id}` : '/login';
+    const router = useRouter();
+
+    const handleProfileClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (user?.id) {
+            router.push(`/profile/${user.id}`);
+            return;
+        }
+
+        const next = encodeURIComponent(`/profile/${user?.id ?? ''}`);
+        router.push(`/?showLogin=true&next=${next}`);
+    };
 
     return (
         <footer className="p-8 border-t border-foreground/10 text-center">
@@ -19,7 +31,7 @@ export default function Footer() {
                 <Link href="/about" className="hover:text-foreground transition">
                     Meet the Team
                 </Link>
-                <Link href={profileHref} className="hover:text-foreground transition">
+                <Link href={user?.id ? `/profile/${user.id}` : '/'} onClick={handleProfileClick} className="hover:text-foreground transition">
                     User profile
                 </Link>
             </div>
