@@ -6,7 +6,7 @@ const baseSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
 
-  AUTH_SERVICE_URL: z.string().url(),
+  AUTH_SERVICE_URL: z.string().url().default('http://auth_service:3000'),
   STATS_SERVICE_URL: z.string().url().default('http://stats_service:3000'),
 
   GOOGLE_CLIENT_ID: z.string().min(1),
