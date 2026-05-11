@@ -33,7 +33,7 @@ interface Params {
  * @param DEBUG boolean wether Debug messages should be printed
  */
 export default function SubPages({
-  state,
+  stateRef,
   msgToServer,
   socket,
   isConnected,

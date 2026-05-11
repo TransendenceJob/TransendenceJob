@@ -1,3 +1,5 @@
+import { SC_Type } from "./ServerClientPackets";
+
 export interface pointData {
 	x: number,
 	y: number,
@@ -42,3 +44,11 @@ export interface gameData {
 	turnOrder: Array<number>;
 	map: mapData;
 }
+
+// For checking if the packet contains data that lobby frontend should take care of
+export const lobbyDataPackets = [
+	SC_Type.SC_LobbyData,
+	SC_Type.SC_ReadyChange,
+	SC_Type.SC_ClientJoin,
+	SC_Type.SC_ClientDisconnect
+];

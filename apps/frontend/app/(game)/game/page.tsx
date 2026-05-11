@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback  } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
 import { SC_Type, SC_GenericPacket, PlayerInLobby } from '@/shared/packets/ServerClientPackets';
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { useAuth } from "@/components/Providers";
+import { lobbyDataPackets } from '@/shared/packets/util';
 
 export interface PlayerSlot {
   userId: string | null;
@@ -15,9 +16,8 @@ export interface PlayerSlot {
   color: string;
 }
 
-const socket: Socket = io("ws://localhost:8080", { transports: ['websocket'] });
-// const DEBUG: boolean = (process.env.NODE_ENV == "development");
-const DEBUG: boolean = true; // always true to testing prod as well
+const DEBUG: boolean = (process.env.NODE_ENV == "development");
+// const DEBUG: boolean = true; // always true to testing prod as well
 const COLORS = ['text-red-600', 'text-blue-600', 'text-emerald-600', 'text-amber-600'];
 
 const updateSlotReadyState = (
@@ -91,29 +91,69 @@ const buildSlotsFromLobbyData = (
 };
 
 export default function LobbyPageController() {
+  const socketRef = useRef<Socket | null>(null);
+
   /** State of the Page */
   const [state, setState] = useState("CONNECTING");
+  const stateRef = useRef(state);
+  useEffect(() => {stateRef.current = state; }, [state]);
+
+  /** number representing to which lobby we are connected */
+  const [lobbyId, setLobbyId] = useState(0);
+  const lobbyIdRef = useRef(lobbyId);
+  useEffect(() => {lobbyIdRef.current = lobbyId; }, [lobbyId])
 
   /** bool whether websocket is connected */
   const [isConnected, setIsConnected] = useState(false);
 
-  /** number representing to which lobby we are connected */
-  /** Since we only have 1 lobby so far, and no way to specify, which to join, this is useless so far */
-  const [lobbyId, setLobbyId] = useState(0);
+  const { user } = useAuth();
 
-  /** Tracks the user of this lobbies id */
-  const [userId, setUserId] = useState("undefined");
+  const client = {
+    id: user ? user.id : "",
+    name: user ? user.username : "",
+    isReady: false,
+  }
 
-  /** Tracks the string that identifies a connection on the socket */
-  const [socketId, setSocketId] = useState("undefined");
+  const [slots, setSlots] = useState<PlayerSlot[]>(
+    [0, 1, 2, 3].map(i => ({
+      userId: null,
+      username: "Empty Slot",
+      isReady: false,
+      color: COLORS[i]
+    }))
+  );
 
-  /**
-   * This will only be executed once on startup, regardless of re-rendering
-   * This is important, because otherwise we keep adding new listeners
-  */
+
+  // Function for simpler packet handling
+  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
+    type: T['type'],
+    data: Omit<T, | 'type' | 'lobbyId' | 'userId'>,
+  ) => {
+    const packet: T = {
+      type: type,
+      lobbyId: lobbyIdRef.current,
+      userId: user ? user.id : "",
+      ...data,
+    } as T;
+    const packet_string = JSON.stringify(packet);
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit('msgToServer', packet_string);
+      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
+    }
+  }, [lobbyIdRef, user]);
+
+
   useEffect(() => {
-    const onConnect = () => setIsConnected(true);
-    const onDisconnect = () => setIsConnected(false);
+    const socket: Socket = io("ws://localhost:8080", { transports: ['websocket'] });
+    socketRef.current = socket;
+    
+    // Create fixed setter functions for binding to evens
+    const onConnect = () => {
+      setIsConnected(true)
+    };
+    const onDisconnect = () => {
+      setIsConnected(false)
+    };
 
     const handleLobbyUpdates = (p: SC_GenericPacket) => {
       switch (p.type) {
@@ -148,49 +188,39 @@ export default function LobbyPageController() {
 
     const msgToClient = (data: string) => {
       //if (DEBUG) console.log("NEXT: Client received packet: ", data);
-      //if (DEBUG) console.log("NEXT: Client received packet: ", data);
-      const dataObj: SC_GenericPacket = JSON.parse(data);
+      const packet: SC_GenericPacket = JSON.parse(data);
+
+      if (!packet || !('type' in packet)) {
+        if (DEBUG) console.error("Frontend received malformed packet:", packet);
+        return;
+      }
 
       // If trying to connect with an invalid ID, dont handle packet
-      if (lobbyId != dataObj.lobbyId)
+      if (lobbyIdRef.current != packet.lobbyId)
         return ;
 
-      // Need this because our discriminated union may not always have type field
-      if (!(dataObj && 'type' in dataObj)) {
-        console.log("ERROR, frontend received packet with missing type")
-        return ;
-      }
+      if (DEBUG) console.log("NEXT: Client received packet: ", packet);
 
-      if (dataObj.type == SC_Type.SC_StartLobby)
+      // Handle state Transitions
+      if (packet.type == SC_Type.SC_StartLobby)
         setState("LOBBY");
-      else if (dataObj.type == SC_Type.SC_StartLoading)
+      else if (packet.type == SC_Type.SC_StartLoading)
         setState("LOADING");
-      else if (dataObj.type == SC_Type.SC_StartGame)
+      else if (packet.type == SC_Type.SC_StartGame)
         setState("GAME");
-      else if (dataObj.type == SC_Type.SC_GameFinished)
+      else if (packet.type == SC_Type.SC_GameFinished)
         setState("ENDSCREEN");
-      else if (dataObj.type == SC_Type.SC_DEV_StartConnecting)
+      else if (packet.type == SC_Type.SC_DEV_StartConnecting)
         setState("CONNECTING");
-      else {
-        //if (DEBUG) console.log("NEXT: Received unhandled package type: ");
+
+      // We process if we are ALREADY in the lobby,
+      // Or if we just received a packet that tells us we are NOW in the lobby
+      const isLobbyDataPacket = lobbyDataPackets.includes(packet.type);
+      if (stateRef.current === "LOBBY" && isLobbyDataPacket) {
+        handleLobbyUpdates(packet);
+      } else {
+        if (DEBUG) console.warn(`[Guard Blocked] Ignored ${packet.type} in state ${stateRef.current}`);
       }
-
-    }
-
-    // Create fixed setter functions for binding to evens
-    
-    const onConnect = () => {
-      setIsConnected(true)
-      setSocketId(socket.id ? socket.id : "undefined");
-      setUserId(socket.id ? socket.id : "undefined");
-    };
-    const onDisconnect = () => {
-      setIsConnected(false)
-    };
-
-    // Check for socket already being connected
-    if (socket.connected) {
-      onConnect();
     }
 
     // Bind functions to events
@@ -205,39 +235,25 @@ export default function LobbyPageController() {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
+      socket.off('msgToClient', msgToClient);
+      socket.disconnect();
+      socketRef.current = null;
     };
-  }, [userId])
-
-  // Function for simpler packet handling
-  const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
-    type: T['type'],
-    data: Omit<T, | 'type' | 'lobbyId' | 'userId'>,
-  ) => {
-    const packet: T = {
-      type: type,
-      lobbyId: lobbyId,
-      userId: userId,
-      ...data,
-    } as T;
-    const packet_string = JSON.stringify(packet);
-    if (socket && socket.connected) {
-      socket.emit('msgToServer', packet_string);
-      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
-    }
-  }, [socket, lobbyId, userId]);
+  }, []);
 
   // JSX element for displaying page
   return (
     <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
       <SocketStatus isConnected={isConnected}/>
-      <SubPages state={state} 
+      <SubPages state={stateRef} 
                 msgToServer={msgToServer} 
-                socket={socket}
+                socket={socketRef}
                 isConnected={isConnected}
-                lobbyId={0}
-                userId={userId}
-                socketId={socketId}
+                lobbyId={lobbyId}
+                user={client}
                 DEBUG={DEBUG}
+                slot={slots}
+                currentUserId={user?.id || ""}
                 />
     </div>
   )

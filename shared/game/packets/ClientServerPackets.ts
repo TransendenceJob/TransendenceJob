@@ -25,6 +25,7 @@ export enum CS_Type {
 	CS_FailedLoading =			"CS_FailedLoading",
 	CS_GetGameState =			"CS_GetGameState",
 	CS_DEV_SetGameState =		"CS_DEV_SetGameState",
+	CS_JoinLobby =				"CS_JoinLobby",
 }
 
 /**

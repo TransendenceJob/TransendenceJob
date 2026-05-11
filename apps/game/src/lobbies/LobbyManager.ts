@@ -68,10 +68,12 @@ export class LobbyManager extends EventEmitter {
    */
   handleDisconnect(lobbyId: number, userId: string) {
     if (this.lobbies[lobbyId]) {
-      this.logger.log(`Directing cleanup: User ${userId} from Lobby ${lobbyId}`);
+      this.logger.log(
+        `Directing cleanup: User ${userId} from Lobby ${lobbyId}`,
+      );
 
       // Call the cleanup function inside the specific Lobby instance
-      this.lobbies[lobbyId].handleDisconnect(userId);
+      //this.lobbies[lobbyId].handleDisconnect(userId);
     }
   }
 }
