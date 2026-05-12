@@ -15,8 +15,13 @@ export default function AdminUserManagement() {
 
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
+        mode: 'default' | 'roles';
         targetUser: UserAuthView | null;
-    }>({ isOpen: false, targetUser: null });
+    }>({
+        isOpen: false,
+        mode: 'default',
+        targetUser: null
+    });
 
     const fetchUsers = useCallback(async (query = '') => {
         console.log("fetching users");
@@ -42,22 +47,35 @@ export default function AdminUserManagement() {
     }, [fetchUsers]);
 
     const handleToggleStatusClick = (user: UserAuthView) => {
-        setModalConfig({ isOpen: true, targetUser: user });
+        setModalConfig({ isOpen: true, mode: "default", targetUser: user });
     };
 
-    const confirmToggleStatus = async (reason?: string) => {
+    const handleEditRolesClick = (user: UserAuthView) => {
+        setModalConfig({ isOpen: true, mode: "roles", targetUser: user });
+    };
+
+    const handleConfirmAction = async (payload: string | string[]) => {
         const user = modalConfig.targetUser;
         if (!user) return;
 
-        const isBanning = user.status === 'active';
-        const result = isBanning
-            ? await authClient.disableUser(user.id, { reason: reason || 'Admin action' })
-            : await authClient.enableUser(user.id, { reason: 'Admin unban' });
+        if (modalConfig.mode === 'roles') {
+            // Handle Role Update
+            const result = await authClient.setUserRoles(user.id, { roles: payload as string[] });
+            if (!result.ok) console.error("Role update failed:", result.error.message);
+        } else {
+            // Handle Status Toggle (Ban/Unban)
+            const isBanning = user.status === 'active';
+            const reason = typeof payload === 'string' ? payload : 'Admin action';
 
-        if (result.ok) {
-            await fetchUsers(searchQuery);
+            const result = isBanning
+                ? await authClient.disableUser(user.id, { reason })
+                : await authClient.enableUser(user.id, { reason: 'Admin unban' });
+
+            if (!result.ok) console.error("Status update failed:", result.error.message);
         }
-        setModalConfig({ isOpen: false, targetUser: null });
+
+        await fetchUsers(searchQuery);
+        setModalConfig({ isOpen: false, mode: 'default', targetUser: null });
     };
 
     return (
@@ -71,17 +89,22 @@ export default function AdminUserManagement() {
             <UserTable
                 users={data?.items || []}
                 isLoading={loading && !hasLoadedOnce}
-                onEditStats={(id) => console.log("Navigate to stats for", id)}
+                onEditStats={(id) => console.log("Stats for", id)}
                 onToggleStatus={handleToggleStatusClick}
+                onEditRoles={handleEditRolesClick}
             />
 
             <AdminActionModal
                 isOpen={modalConfig.isOpen}
-                title={modalConfig.targetUser?.status === 'active' ? 'Disable User' : 'Enable User'}
-                description={`Are you sure you want to ${modalConfig.targetUser?.status === 'active' ? 'disable' : 'enable'} user ${modalConfig.targetUser?.username}?`}
-                requireReason={modalConfig.targetUser?.status === 'active'}
-                onConfirm={confirmToggleStatus}
-                onClose={() => setModalConfig({ isOpen: false, targetUser: null })}
+                mode={modalConfig.mode}
+                title={modalConfig.mode === 'roles' ? 'Manage Roles' : (modalConfig.targetUser?.status === 'active' ? 'Disable User' : 'Enable User')}
+                description={modalConfig.mode === 'roles'
+                    ? `Assign roles for ${modalConfig.targetUser?.username}`
+                    : `Are you sure you want to change the status for ${modalConfig.targetUser?.username}?`}
+                currentRoles={modalConfig.targetUser?.roles || []}
+                requireReason={modalConfig.mode === 'default' && modalConfig.targetUser?.status === 'active'}
+                onConfirm={handleConfirmAction}
+                onClose={() => setModalConfig({ isOpen: false, mode: 'default', targetUser: null })}
             />
         </div>
     );
