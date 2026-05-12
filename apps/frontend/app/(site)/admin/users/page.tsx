@@ -11,6 +11,7 @@ export default function AdminUserManagement() {
     const [data, setData] = useState<UserSearchResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
@@ -18,24 +19,27 @@ export default function AdminUserManagement() {
     }>({ isOpen: false, targetUser: null });
 
     const fetchUsers = useCallback(async (query = '') => {
+        console.log("fetching users");
         setLoading(true);
         const result = await authClient.searchUsers({ query, limit: 10 });
         if (result.ok) {
             setData(result.data);
+            setHasLoadedOnce(true);
         } else {
             console.error("Failed to fetch users:", result.error.message);
         }
         setLoading(false);
     }, []);
 
+    // Initial load has no search input
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        void fetchUsers();
+    }, []);
 
-    const handleSearch = (query: string) => {
+    const handleSearch = useCallback((query: string) => {
         setSearchQuery(query);
-        fetchUsers(query);
-    };
+        void fetchUsers(query);
+    }, [fetchUsers]);
 
     const handleToggleStatusClick = (user: UserAuthView) => {
         setModalConfig({ isOpen: true, targetUser: user });
@@ -51,13 +55,13 @@ export default function AdminUserManagement() {
             : await authClient.enableUser(user.id, { reason: 'Admin unban' });
 
         if (result.ok) {
-            fetchUsers(searchQuery);
+            await fetchUsers(searchQuery);
         }
         setModalConfig({ isOpen: false, targetUser: null });
     };
 
     return (
-        <div className="container mx-auto py-8 px-4">
+        <div className="container mx-auto py-8 px-4 min-h-[80vh]">
             <h1 className="text-2xl font-bold mb-6">User Management</h1>
 
             <div className="mb-6">
@@ -66,7 +70,7 @@ export default function AdminUserManagement() {
 
             <UserTable
                 users={data?.items || []}
-                isLoading={loading}
+                isLoading={loading && !hasLoadedOnce}
                 onEditStats={(id) => console.log("Navigate to stats for", id)}
                 onToggleStatus={handleToggleStatusClick}
             />
