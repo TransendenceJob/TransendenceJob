@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
-import { SC_Type, SC_GenericPacket, PlayerInLobby } from '@/shared/packets/ServerClientPackets';
+import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets';
+import { Client } from "@/shared/packets/Client";
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { useAuth } from "@/components/Providers";
 import { lobbyDataPackets } from '@/shared/packets/util';
+import { GameContext } from '@/src/components/game/lobby/GameContext';
 
 export interface PlayerSlot {
   userId: string | null;
@@ -21,15 +23,15 @@ const DEBUG: boolean = (process.env.NODE_ENV == "development");
 const COLORS = ['text-red-600', 'text-blue-600', 'text-emerald-600', 'text-amber-600'];
 
 const updateSlotReadyState = (
-    slots: PlayerSlot[],
-    userId: string,
-    isReady: boolean
-) =>
-    slots.map(slot =>
-        slot.userId === userId
-            ? { ...slot, isReady }
-            : slot
-    );
+  slots: PlayerSlot[],
+  userId: string,
+  isReady: boolean
+): PlayerSlot[] =>
+  slots.map(slot =>
+      slot.userId === userId
+          ? { ...slot, isReady }
+          : slot
+  );
 
 const addPlayerToSlots = (
     slots: PlayerSlot[],
@@ -37,9 +39,7 @@ const addPlayerToSlots = (
     username?: string
 ): PlayerSlot[] => {
   const newSlots = [...slots];
-
   const emptyIndex = newSlots.findIndex(slot => slot.userId === null);
-
   if (emptyIndex !== -1) {
     newSlots[emptyIndex] = {
       ...newSlots[emptyIndex],
@@ -48,7 +48,6 @@ const addPlayerToSlots = (
       isReady: false,
     };
   }
-
   return newSlots;
 };
 
@@ -63,7 +62,7 @@ const removePlayerFromSlots = (
     );
 
 const buildSlotsFromLobbyData = (
-    players: PlayerInLobby[]
+    players: Client[]
 ): PlayerSlot[] => {
   // reset them before updating
   const refreshedSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
@@ -72,48 +71,44 @@ const buildSlotsFromLobbyData = (
     isReady: false,
     color: COLORS[i],
   }));
-
   // fill slots with data from server
   players.forEach(player => {
-    if (DEBUG) console.log("Processing Player at Index:", player.indexInLobby, "Data:", player);
-    const i = player.indexInLobby;
+    if (DEBUG) console.log("Processing Player at Index:", player.slot, "Data:", player);
+    const i = player.slot;
     if (refreshedSlots[i]) {
       refreshedSlots[i] = {
         ...refreshedSlots[i],
-        userId: player.userId,
-        username: player.userName || `Player ${i + 1}`,
+        userId: player.id,
+        username: player.name || `Player ${i + 1}`,
         isReady: player.ready,
       };
     }
   });
-
   return refreshedSlots;
 };
 
 export default function LobbyPageController() {
+  // Only ref needed, because its only assigned once
   const socketRef = useRef<Socket | null>(null);
 
   /** State of the Page */
+  // Needs ref, because we read it in effect
   const [state, setState] = useState("CONNECTING");
   const stateRef = useRef(state);
   useEffect(() => {stateRef.current = state; }, [state]);
 
   /** number representing to which lobby we are connected */
+  // Needs ref, because we read it in effect
   const [lobbyId, setLobbyId] = useState(0);
   const lobbyIdRef = useRef(lobbyId);
   useEffect(() => {lobbyIdRef.current = lobbyId; }, [lobbyId])
 
   /** bool whether websocket is connected */
+  // Doesnt need reference, because its only written inside effect, and read outside effect
   const [isConnected, setIsConnected] = useState(false);
 
   const { user } = useAuth();
-
-  const client = {
-    id: user ? user.id : "",
-    name: user ? user.username : "",
-    isReady: false,
-  }
-
+  
   const [slots, setSlots] = useState<PlayerSlot[]>(
     [0, 1, 2, 3].map(i => ({
       userId: null,
@@ -123,7 +118,6 @@ export default function LobbyPageController() {
     }))
   );
 
-
   // Function for simpler packet handling
   const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
     type: T['type'],
@@ -131,7 +125,7 @@ export default function LobbyPageController() {
   ) => {
     const packet: T = {
       type: type,
-      lobbyId: lobbyIdRef.current,
+      lobbyId: lobbyId,
       userId: user ? user.id : "",
       ...data,
     } as T;
@@ -140,7 +134,7 @@ export default function LobbyPageController() {
       socketRef.current.emit('msgToServer', packet_string);
       if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
     }
-  }, [lobbyIdRef, user]);
+  }, [lobbyId, user]);
 
 
   useEffect(() => {
@@ -243,18 +237,62 @@ export default function LobbyPageController() {
 
   // JSX element for displaying page
   return (
-    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
-      <SocketStatus isConnected={isConnected}/>
-      <SubPages state={stateRef} 
-                msgToServer={msgToServer} 
-                socket={socketRef}
-                isConnected={isConnected}
-                lobbyId={lobbyId}
-                user={client}
-                DEBUG={DEBUG}
-                slot={slots}
-                currentUserId={user?.id || ""}
-                />
-    </div>
+    <GameContext.Provider value={{
+      state, stateRef, setState,
+      lobbyId, lobbyIdRef, setLobbyId,
+      slots,
+      isConnected,
+      msgToServer,
+      socketRef: socketRef,
+      userId: user?.id ?? "",
+      DEBUG
+    }}>
+      <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
+        <SocketStatus isConnected={isConnected}/>
+        <SubPages/>
+      </div>
+    </GameContext.Provider>
   )
 }
+
+/*
+  Explanation of useStates, references and linking
+  const [var, setVar] = useState("CONNECTING");
+  Creates a variables, which is essentially read-only, 
+  and can be used in callbacks and useEffects as dependency,
+  so they are rerendered, once the underlying value of var changes.
+  This actual changing of var is done via the setter function setVart(),
+  which triggers the rerenders, which receive the updated value
+
+  const varRef = useRef(var);
+  Creates a Reference, that can be changed and accessed anywhere,
+  its essentially a pointer, with its original value set to whatever var is.
+  Note, that there is no link between varRef and var, 
+  except for them initally having the same value.
+
+  useEffect(() => {stateRef.current = state; }, [state]);
+  Creates an event, which updates the value stored in our reference,
+  whenever we call the setState() function.
+
+  We are left with a reference, that can access the newest value of var,
+  however, it cannot properly change what is stored in var.
+  We also have var and setVar() which you can use to make a component rerender,
+  dependent on the changing of var
+
+  We use this functionality, by setting up a useEffect,
+  that only ever runs once, in order to set up the listener once.
+  This means that we cannot rerender this component,
+  or we would duplicate listeners.
+  Thats why inside there, we only READ the "varRef" and stateId,
+  by getting the value from the reference.
+  The actual setting is done with "setVar()", which triggers the above useEffect,
+  updating the reference to be properly set as well.
+
+  In simple terms:
+  Inside the useEffect:
+    Set Variables with the setter function (setVar()),
+    Read Variables from the reference (varRef)
+  Everywhere else:
+    Set with setter function (setVar()),
+    read from either var or reference
+*/

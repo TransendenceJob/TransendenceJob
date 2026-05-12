@@ -6,25 +6,10 @@ import { Socket } from 'socket.io-client';
 
 import { createScene } from "@/lib/babylon/createScene";
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
+import { useGameContext } from '../lobby/GameContext';
 
-interface Params {
-  msgToServer: msgToServerType,
-  socket: Socket,
-  lobbyId: number,
-  userId: string,
-  socketId: string,
-  DEBUG: boolean,
-}
-
-
-export default function BabylonCanvas({
-  msgToServer, 
-  socket, 
-  lobbyId,
-  userId,
-  socketId,
-  DEBUG,
-}: Params) {
+export default function BabylonCanvas() {
+  const {lobbyId, socketRef, msgToServer, userId, DEBUG} = useGameContext();
 
   // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -68,7 +53,7 @@ export default function BabylonCanvas({
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
 
-    createScene(canvas, engine, socket, msgRef.current, lobbyId, userId, socketId, DEBUG).then(({scene, resizeUi, cleanup}) => {
+    createScene(canvas, engine, socketRef.current, msgRef.current, lobbyId, userId, DEBUG).then(({scene, resizeUi, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanup?.();
@@ -94,7 +79,7 @@ export default function BabylonCanvas({
       observer.disconnect();
     };
   }, 
-  [socket, DEBUG, userId]);
+  [socketRef.current, DEBUG, userId]);
 
   return <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />;
 }

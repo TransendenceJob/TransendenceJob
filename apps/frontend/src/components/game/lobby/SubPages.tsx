@@ -10,18 +10,7 @@ import {PlayerSlot} from "@/app/(game)/game/page";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-interface Params {
-  state: string,
-  msgToServer: msgToServerType,
-  slots: PlayerSlot[];
-  socket: Socket,
-  isConnected: boolean,
-  lobbyId: number,
-  userId: string,
-  socketId: string,
-  DEBUG: boolean,
-  currentUserId: string
-}
+import { useGameContext } from './GameContext';
 
 /**
  * Component that serves different Components,
@@ -32,18 +21,8 @@ interface Params {
  * @param isConnected boolean, wether socket connection is established
  * @param DEBUG boolean wether Debug messages should be printed
  */
-export default function SubPages({
-  stateRef,
-  msgToServer,
-  socket,
-  isConnected,
-  lobbyId,
-  userId,
-  socketId,
-  DEBUG,
-  slots,
-  currentUserId
-}: Params) {
+export default function SubPages() {
+  const { isConnected, state } = useGameContext();
   return (
     <>
     {/* Game always exists, but not always displayed */}
@@ -53,17 +32,12 @@ export default function SubPages({
       visibility: state === 'GAME' ? 'visible' : 'hidden',
       width: "100%", height: "100%"
     }}>
-      <BabylonCanvas msgToServer={msgToServer}
-                      socket={socket}
-                      lobbyId={lobbyId}
-                      userId={userId}
-                      socketId={socketId}
-                      DEBUG={DEBUG}/>
+      {isConnected && <BabylonCanvas/>}
     </div>
-    {state === 'CONNECTING' && <ConnectingPage msgToServer={msgToServer} isConnected={isConnected} socketId={socketId}/>}
-    {state === 'LOBBY' && <LobbyPage msgToServer={msgToServer}/>}
-    {state === 'LOADING' && <LoadingPage msgToServer={msgToServer}/>}
-    {state === 'ENDSCREEN' && <EndPage msgToServer={msgToServer}/>}
+    {state === 'CONNECTING' && <ConnectingPage/>}
+    {state === 'LOBBY' && <LobbyPage/>}
+    {state === 'LOADING' && <LoadingPage/>}
+    {state === 'ENDSCREEN' && <EndPage/>}
     {state === 'ERROR' && <ErrorPage/>}
     </>
   )

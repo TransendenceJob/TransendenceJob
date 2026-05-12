@@ -31,11 +31,14 @@ export class EventSocket
     // this.logger.log(`Message received: ${payload}`);
     // Handle Event
 
+
+    // Should move this down lower, below the type check probably
     const data = JSON.parse(payload);
     // we need to be able to associate a user to a specific socket so we can identify him when he disconnects
     if (data.type === 'CS_JoinLobby') {
       client.data.userId = data.userId;
       client.data.lobbyId = data.lobbyId;
+      console.log(`Registered client ${client.id} with name: ${data.userName} id: ${data.userId} for lobby ${data.lobbyId}`);
     }
     this.lobbyManager.msgToServer(payload);
   }

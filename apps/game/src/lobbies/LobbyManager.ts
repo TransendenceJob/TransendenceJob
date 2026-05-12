@@ -73,7 +73,7 @@ export class LobbyManager extends EventEmitter {
       );
 
       // Call the cleanup function inside the specific Lobby instance
-      //this.lobbies[lobbyId].handleDisconnect(userId);
+      this.lobbies[lobbyId].handleDisconnect(userId);
     }
   }
 }

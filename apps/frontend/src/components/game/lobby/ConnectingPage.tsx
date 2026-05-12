@@ -5,6 +5,8 @@ import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets
 
 import type { msgToServerType } from '@/lib/packets/msgToServerType';
 
+import { useGameContext } from './GameContext';
+
 interface Params {
   msgToServer: msgToServerType,
   isConnected: boolean,
@@ -20,15 +22,12 @@ interface Params {
  * @note Putting the Code for sending in a useEffect with our params as arguments,
  * makes it so the function is only called initially and whenever one of the params changes
  */
-export default function ConnectingPage({
-  msgToServer,
-  isConnected,
-  socketId
-}: Params) {
+export default function ConnectingPage() {
+  const {msgToServer, isConnected} = useGameContext();
   useEffect(() => {
     if (isConnected) {
       msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {
-        socketId: socketId,
+        socketId: "abcedefghi",
         name: "Player Name from ConnectionPage.tsx"
       });
     }

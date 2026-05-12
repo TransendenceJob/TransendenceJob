@@ -4,7 +4,7 @@ import {
 } from '@/shared/packets/ClientServerPackets';
 import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
-import { Client } from '../Client';
+import { Client } from '@/shared/packets/Client';
 
 export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
   // Get Index for player this package might reference

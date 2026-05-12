@@ -14,7 +14,6 @@ export async function createScene(
 	msgToServer: msgToServerType, 
 	lobbyId: number,
 	userId: string,
-	socketId: string,
 	DEBUG: boolean, 
 ) {
 	const scene = new Scene(engine);

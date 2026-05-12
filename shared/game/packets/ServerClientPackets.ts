@@ -11,6 +11,7 @@
 */
 
 import { gameData } from './util';
+import { Client } from './Client';
 
 export enum SC_Type {
 	SC_DEV_StartConnecting =	"SC_DEV_StartConnecting",
@@ -114,22 +115,7 @@ export interface SC_ClientDisconnect extends SC_Base {
 export interface SC_ClientJoin extends SC_Base {
 	type: SC_Type.SC_ClientJoin,
 	userId: string,
-}
-
-/**
- * NOT A PACKET, just utility
- * Represents 1 filled player slot in the lobby
- * @param userId unique number to identify the user with
- * @param userName Name from the database
- * @param indexInLobby Position that this player occupies in the lobby
- * @param ready whether the player is ready or not
- */
-export interface PlayerInLobby {
-	userId: string,
-	name: string,
-	indexInLobby: number,
-	ready: boolean,
-	seq: Array<number>,
+	userName: string,
 }
 
 /**
@@ -141,7 +127,7 @@ export interface PlayerInLobby {
 export interface SC_LobbyData extends SC_Base {
 	type: SC_Type.SC_LobbyData,
 	userId: string,
-	lobbyData: Array<PlayerInLobby>,
+	lobbyData: Array<Client>,
 }
 
 /**
