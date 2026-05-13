@@ -1,18 +1,17 @@
 import {
-  CS_ConnectAttempt,
   CS_GenericPacket,
   CS_Type,
-  CS_JoinLobby
+  CS_JoinLobby,
 } from '@/shared/packets/ClientServerPackets';
 import {
   SC_ConnectFail,
-  SC_ConnectSuccess,
   SC_GenericStatePacket,
   SC_Type,
   SC_LobbyData,
-  SC_ReadyChange
+  SC_ReadyChange,
+  SC_ConnectSuccess,
 } from '@/shared/packets/ServerClientPackets';
-import { Client, makeClient, resetClient } from '@/shared/packets/Client';
+import { Client, COLORS, generateClient } from '@/shared/packets/Client';
 import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
 import { translateLobbyState } from '../translateLobbyState';
@@ -29,7 +28,7 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
       break;
     }
     */
-    
+
     case CS_Type.CS_JoinLobby: {
       connectionAttempt(lobby, data);
       break;
@@ -38,11 +37,13 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
     // Client changes their readiness state
     case CS_Type.CS_ReadyChange: {
       const client = lobby.clients.find((client) => client.id == data.userId);
-      if (!client)
-        return ;
+      if (!client) return;
       client.ready = data.ready;
       log(`Client ${client.id} changed ready to: ${client.ready}`);
-      lobby.msgToClient<SC_ReadyChange>(SC_Type.SC_ReadyChange, {userId: client.id, ready: data.ready});
+      lobby.msgToClient<SC_ReadyChange>(SC_Type.SC_ReadyChange, {
+        userId: client.id,
+        ready: data.ready,
+      });
       break;
     }
 
@@ -68,6 +69,22 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
  * @param data packet with data
  */
 function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
+  console.log('Calling Connection Attempt');
+  // This is just a temporary solution, for when the server is in the game state,
+  // and all players have left, which sets it back to the Lobby,
+  // because we do not have logic for the server to automatically reset itself on last disconnect
+  // Needs to be CHANGED later on!!
+  if (lobby.state == LobbyStateEnum.Game) {
+    console.log(
+      'Invoking Dev Mode Logic, resetting Game back to Lobby, because Client wants to join midgame',
+    );
+    lobby.setState(LobbyStateEnum.EndScreen);
+    lobby.msgToClient<SC_GenericStatePacket>(
+      translateLobbyState(lobby.state),
+      {},
+    );
+  }
+
   // Check if Client tries to double connect
   if (lobby.clients.find((client) => client.id == data.userId) != undefined) {
     lobby.msgToClient<SC_ConnectFail>(SC_Type.SC_ConnectFail, {
@@ -86,42 +103,30 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
     return;
   }
 
-
   // Add the new Client to Lobby
-  const new_client: Client = makeClient(data.userId, data.userName, lobby.clients);
+  let slot = 0;
+  const takenSlots = new Set(lobby.clients.map((client) => client.slot));
+  while (takenSlots.has(slot)) {
+    slot++;
+  }
+  const new_client: Client = generateClient(
+    data.userId,
+    data.userName,
+    slot,
+    COLORS[slot],
+  );
   lobby.clients.push(new_client);
   log(
     `New Client connected: id:${new_client.id}, name: ${new_client.name}, slot:${new_client.slot}`,
   );
 
   // Confirm Connection success
-  /*
   lobby.msgToClient<SC_ConnectSuccess>(SC_Type.SC_ConnectSuccess, {
     userId: data.userId,
-    slot: slot,
   });
-  */
-  
-  // Create SC_LobbyData packet to sync the frontend
-  lobby.msgToClient<SC_LobbyData>(
-    SC_Type.SC_LobbyData,
-    {
-      userId: data.userId,
-      lobbyData: lobby.clients
-    }
-  );
-  lobby.clients.push(new_client);
 
-  // This is just a temporary solution, for when the server is in the game state, 
-  // and all players have left, which sets it back to the Lobby,
-  // because we do not have logic for the server to automatically reset itself on last disconnect
-  // Needs to be CHANGED later on!!
-  console.log("Invoking Dev Mode Logic, resetting Game back to Lobby, because Client wants to join midgame");
-  if (lobby.state == LobbyStateEnum.Game) {
-    lobby.setState(LobbyStateEnum.EndScreen);
-  }
-  lobby.msgToClient<SC_GenericStatePacket>(
-    translateLobbyState(lobby.state),
-    {},
-  );
+  // Create SC_LobbyData packet to sync the frontend
+  lobby.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
+    lobbyData: lobby.clients,
+  });
 }

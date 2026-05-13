@@ -1,3 +1,9 @@
+
+/**
+ * Colors for a Client Slot
+ */
+export const COLORS = ['text-red-600', 'text-blue-600', 'text-emerald-600', 'text-amber-600'];
+
 /**
  * @param progress number from 0-100 represents percentage how much client has loaded
  * @param msg Message field for what last step of loading was, or for error messages
@@ -23,32 +29,45 @@ export interface Client {
   id: string;
   name: string;
   slot: number;
+  color: string;
   ready: boolean;
   loading: LoadingStatus;
+}
+
+export function newLoading() {
+	const result: LoadingStatus = {
+		progress: 0,
+		msg: "",
+		done: false,
+		failed: false,
+	}
+	return (result);
+}
+
+export function newClient(slot: number, color: string): Client {
+	const client: Client = {
+		id: "",
+		name: "Empty Slot",
+		slot: slot,
+		color: color,
+		ready: false,
+		loading: newLoading(),
+	}
+	return (client)
 }
 
 /**
  * Creates a new entry for a Client and returns it
  * @warning Expects there to be a valid position for the Client in the list
  */
-export function makeClient(id: string, name: string, clients: Array<Client>): Client {
-	const takenSlots = new Set(clients.map((client) => client.slot));
-	let slot = 0;
-	while (takenSlots.has(slot)) {
-		slot++;
-	}
-
+export function generateClient(id: string, name: string, slot: number, color: string): Client {
 	const new_client: Client = {
 		id: id,
 		name: name,
 		slot: slot,
+		color: color,
 		ready: false,
-		loading: {
-			progress: 0,
-			msg: 'Starting Loading',
-			done: false,
-			failed: false,
-		}
+		loading: newLoading()
 	}
 	return (new_client)
 }
@@ -58,8 +77,5 @@ export function makeClient(id: string, name: string, clients: Array<Client>): Cl
  */
 export function resetClient(client: Client) {
   client.ready = false;
-  client.loading.progress = 0;
-  client.loading.msg = 'Starting Loading';
-  client.loading.done = false;
-  client.loading.failed = false;
+  client.loading = newLoading();
 }

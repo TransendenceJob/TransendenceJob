@@ -1,17 +1,7 @@
-// @ts-ignore
 import { useEffect } from 'react';
-// @ts-ignore
-import { CS_ConnectAttempt, CS_Type } from '@/shared/packets/ClientServerPackets';
-
-import type { msgToServerType } from '@/lib/packets/msgToServerType';
+import { CS_JoinLobby, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 import { useGameContext } from './GameContext';
-
-interface Params {
-  msgToServer: msgToServerType,
-  isConnected: boolean,
-  socketId: string,
-}
 
 /**
  * Component for page, that the user gets served in the beginning
@@ -23,18 +13,32 @@ interface Params {
  * makes it so the function is only called initially and whenever one of the params changes
  */
 export default function ConnectingPage() {
-  const {msgToServer, isConnected} = useGameContext();
+  const {msgToServer, isConnected, userId, userName, DEBUG} = useGameContext();
   useEffect(() => {
-    if (isConnected) {
-      msgToServer<CS_ConnectAttempt>(CS_Type.CS_ConnectAttempt, {
-        socketId: "abcedefghi",
-        name: "Player Name from ConnectionPage.tsx"
-      });
+    if (!isConnected || userId == "" || userName == "") {
+      return ;
     }
-  }, [isConnected, msgToServer]);
+    if (DEBUG) console.log("Sending JoinLobby request for user:", userId);
+    msgToServer<CS_JoinLobby>(CS_Type.CS_JoinLobby, {
+      userName: userName ?? ""
+    });
+  }, [isConnected, msgToServer, userId, userName, DEBUG]);
+  if (!isConnected) {
+    return (
+      <div>
+        <h1 className="text-purple-500">Waiting for Game Server to boot...</h1>
+      </div>
+    );
+  }
+  if (userId == "" || userName == "") {
+    return (
+      <div>
+        <h1 className="text-red-500">Invalid User ID and Username, cannot connect</h1>
+      </div>
+    );
+  }
   return (
     <div>
-      <h1 className="text-purple-500">Connecting to Game Server...</h1>
-    </div>
-  );
+      <h1 className="text-red-500">Connecting to Game Server...</h1>
+    </div>);
 }

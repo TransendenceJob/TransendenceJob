@@ -90,11 +90,10 @@ export interface SC_ConnectFail extends SC_Base {
 export interface SC_ConnectSuccess extends SC_Base {
 	type: SC_Type.SC_ConnectSuccess,
 	userId: string,
-	slot: number
 }
 
 /**
- * Sent to all clients when a new player disconnects the lobby,
+ * Sent to all clients when a player disconnects the lobby,
  * to inform Client to un-render player
  * @param userId Id to identify the disconnecting player
  */
@@ -114,8 +113,7 @@ export interface SC_ClientDisconnect extends SC_Base {
  */
 export interface SC_ClientJoin extends SC_Base {
 	type: SC_Type.SC_ClientJoin,
-	userId: string,
-	userName: string,
+	clientData: Client;
 }
 
 /**
@@ -126,7 +124,6 @@ export interface SC_ClientJoin extends SC_Base {
  */
 export interface SC_LobbyData extends SC_Base {
 	type: SC_Type.SC_LobbyData,
-	userId: string,
 	lobbyData: Array<Client>,
 }
 

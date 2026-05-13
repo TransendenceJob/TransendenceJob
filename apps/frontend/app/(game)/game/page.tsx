@@ -1,90 +1,63 @@
 "use client";
 
-import { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
 import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets';
-import { Client } from "@/shared/packets/Client";
+import { Client, makeClient, newClient, COLORS } from "@/shared/packets/Client";
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { useAuth } from "@/components/Providers";
 import { lobbyDataPackets } from '@/shared/packets/util';
 import { GameContext } from '@/src/components/game/lobby/GameContext';
 
-export interface PlayerSlot {
-  userId: string | null;
-  username: string;
-  isReady: boolean;
-  color: string;
-}
 
 const DEBUG: boolean = (process.env.NODE_ENV == "development");
 // const DEBUG: boolean = true; // always true to testing prod as well
-const COLORS = ['text-red-600', 'text-blue-600', 'text-emerald-600', 'text-amber-600'];
 
 const updateSlotReadyState = (
-  slots: PlayerSlot[],
+  slots: Client[],
   userId: string,
   isReady: boolean
-): PlayerSlot[] =>
+): Client[] =>
   slots.map(slot =>
-      slot.userId === userId
-          ? { ...slot, isReady }
+      slot.id === userId
+          ? { ...slot, ready: isReady }
           : slot
   );
 
 const addPlayerToSlots = (
-    slots: PlayerSlot[],
-    userId: string,
-    username?: string
-): PlayerSlot[] => {
+    slots: Client[],
+    newClient: Client,
+): Client[] => {
   const newSlots = [...slots];
-  const emptyIndex = newSlots.findIndex(slot => slot.userId === null);
-  if (emptyIndex !== -1) {
-    newSlots[emptyIndex] = {
-      ...newSlots[emptyIndex],
-      userId,
-      username: username || "New Recruit",
-      isReady: false,
-    };
-  }
+  newSlots.push(newClient);
   return newSlots;
 };
 
 const removePlayerFromSlots = (
-    slots: PlayerSlot[],
+    slots: Client[],
     userId: string
-): PlayerSlot[] =>
-    slots.map(slot =>
-        slot.userId === userId
-            ? { ...slot, userId: null, username: "Empty Slot", isReady: false }
-            : slot
-    );
+): Client[] => {
+  const newSlots: Client[] = [];
+  slots.forEach(slot => {
+    if (slot.id != userId)
+      newSlots.push(slot);
+  });
+  return (newSlots);
+}
 
 const buildSlotsFromLobbyData = (
     players: Client[]
-): PlayerSlot[] => {
+): Client[] => {
   // reset them before updating
-  const refreshedSlots: PlayerSlot[] = [0, 1, 2, 3].map(i => ({
-    userId: null,
-    username: "Empty Slot",
-    isReady: false,
-    color: COLORS[i],
-  }));
+  const newSlots: Client[] = [];
   // fill slots with data from server
   players.forEach(player => {
     if (DEBUG) console.log("Processing Player at Index:", player.slot, "Data:", player);
-    const i = player.slot;
-    if (refreshedSlots[i]) {
-      refreshedSlots[i] = {
-        ...refreshedSlots[i],
-        userId: player.id,
-        username: player.name || `Player ${i + 1}`,
-        isReady: player.ready,
-      };
-    }
+    newSlots.push(player);
   });
-  return refreshedSlots;
+  return newSlots;
 };
 
 export default function LobbyPageController() {
@@ -95,7 +68,9 @@ export default function LobbyPageController() {
   // Needs ref, because we read it in effect
   const [state, setState] = useState("CONNECTING");
   const stateRef = useRef(state);
-  useEffect(() => {stateRef.current = state; }, [state]);
+  useEffect(() => {
+    console.log(`Updating state from ${stateRef.current} to ${state}`);
+    stateRef.current = state; }, [state]);
 
   /** number representing to which lobby we are connected */
   // Needs ref, because we read it in effect
@@ -109,14 +84,14 @@ export default function LobbyPageController() {
 
   const { user } = useAuth();
   
-  const [slots, setSlots] = useState<PlayerSlot[]>(
-    [0, 1, 2, 3].map(i => ({
-      userId: null,
-      username: "Empty Slot",
-      isReady: false,
-      color: COLORS[i]
-    }))
+  const [slots, setSlots] = useState<Client[]>(
+    [0, 1, 2, 3].map(i => (newClient(i, COLORS[i])))
   );
+
+  const updateState = (newState: string) => {
+    stateRef.current = newState;
+    setState(newState);
+  }
 
   // Function for simpler packet handling
   const msgToServer = useCallback(<T extends CS_Base & { type: CS_Type }>(
@@ -126,7 +101,7 @@ export default function LobbyPageController() {
     const packet: T = {
       type: type,
       lobbyId: lobbyId,
-      userId: user ? user.id : "",
+      userId: user?.id ?? "",
       ...data,
     } as T;
     const packet_string = JSON.stringify(packet);
@@ -153,27 +128,27 @@ export default function LobbyPageController() {
       switch (p.type) {
         case SC_Type.SC_ReadyChange:
           setSlots(prev =>
-              updateSlotReadyState(prev, p.userId, p.ready)
+            updateSlotReadyState(prev, p.userId, p.ready)
           );
           break;
 
         case SC_Type.SC_ClientJoin:
           setSlots(prev =>
-              addPlayerToSlots(prev, p.userId, p.userName)
+            addPlayerToSlots(prev, p.clientData)
           );
-          if (DEBUG) console.log("Player joined:", p.userId);
+          if (DEBUG) console.log("Player joined:", p.clientData.id);
           break;
 
         case SC_Type.SC_ClientDisconnect:
+          if (DEBUG) console.log("Player left:", p.userId);
           setSlots(prev =>
-              removePlayerFromSlots(prev, p.userId)
+            removePlayerFromSlots(prev, p.userId)
           );
           break;
 
         case SC_Type.SC_LobbyData: {
           // If the server provides a lobbyId, sync it here
           if (p.lobbyId !== undefined) setLobbyId(p.lobbyId);
-
           setSlots(buildSlotsFromLobbyData(p.lobbyData));
           break;
         }
@@ -196,23 +171,31 @@ export default function LobbyPageController() {
       if (DEBUG) console.log("NEXT: Client received packet: ", packet);
 
       // Handle state Transitions
-      if (packet.type == SC_Type.SC_StartLobby)
-        setState("LOBBY");
+      let packetHandled = true;
+      if (packet.type == SC_Type.SC_ConnectSuccess) {
+        // Seperated, so this still counts as "handled"
+        if (packet.userId == user?.id)
+          updateState("LOBBY");
+      }
+      else if (packet.type == SC_Type.SC_StartLobby)
+        updateState("LOBBY");
       else if (packet.type == SC_Type.SC_StartLoading)
-        setState("LOADING");
+        updateState("LOADING");
       else if (packet.type == SC_Type.SC_StartGame)
-        setState("GAME");
+        updateState("GAME");
       else if (packet.type == SC_Type.SC_GameFinished)
-        setState("ENDSCREEN");
+        updateState("ENDSCREEN");
       else if (packet.type == SC_Type.SC_DEV_StartConnecting)
-        setState("CONNECTING");
+        updateState("CONNECTING");
+      else
+        packetHandled = false;
 
       // We process if we are ALREADY in the lobby,
       // Or if we just received a packet that tells us we are NOW in the lobby
       const isLobbyDataPacket = lobbyDataPackets.includes(packet.type);
       if (stateRef.current === "LOBBY" && isLobbyDataPacket) {
         handleLobbyUpdates(packet);
-      } else {
+      } else if (!packetHandled){
         if (DEBUG) console.warn(`[Guard Blocked] Ignored ${packet.type} in state ${stateRef.current}`);
       }
     }
@@ -245,6 +228,7 @@ export default function LobbyPageController() {
       msgToServer,
       socketRef: socketRef,
       userId: user?.id ?? "",
+      userName: user?.username ?? "",
       DEBUG
     }}>
       <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 

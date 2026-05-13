@@ -16,6 +16,7 @@ export interface GameContextType {
 	msgToServer: msgToServerType;
 	socketRef: RefObject<Socket | null>;
 	userId: string;
+	userName: string;
 	DEBUG: boolean;
 }
 

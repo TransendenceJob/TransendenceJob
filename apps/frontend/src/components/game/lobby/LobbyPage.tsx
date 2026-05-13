@@ -1,31 +1,298 @@
-import { CS_DEV_StartLoading, CS_ReadyChange, CS_Type } from '@/shared/packets/ClientServerPackets';
+"use client";
 
-import type { msgToServerType } from '@/lib/packets/msgToServerType';
-import { PlayerSlot } from "@/app/(game)/game/page";
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+import { CS_DEV_StartLoading, CS_Type } from '@/shared/packets/ClientServerPackets';
 
 import { useGameContext } from './GameContext';
+import { Client } from '@/shared/packets/Client';
 /**
  * Component for page, where the Clients may connect to a Lobby,
  * switch their readines and potentiallyh alter some settings
  * @param msgToServer function for sending packet to server
  */
 export default function LobbyPage() {
-  const { msgToServer } = useGameContext();
+  const { msgToServer, slots, userId } = useGameContext();
+
+  const [feed, setFeed] = useState<{id: number, msg: string}[]>([]);
+  const feedCounter = useRef(0);
+
+  const readyCount = slots.filter(p => p.ready).length;
+  const allReady = readyCount === 4;
+  
+  const addFeedEvent = (msg: string) => {
+    setFeed(prev => {
+      if (prev.length > 0 && prev[prev.length - 1].msg === msg) return prev;
+      feedCounter.current += 1;
+      return [
+        ...prev,
+        { id: feedCounter.current, msg }
+      ].slice(-5);
+    });
+  };
+
+  const truncateName = (name: string, max: number = 10) => {
+      return name.length > max ? `${name.substring(0, max)}...` : name;
+  };
+
+  // 1. We use a ref here, kinda like a container to prevent completly rerender when changes arrives
+  const prevPlayersRef = useRef<Client[]>(slots);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+      if (isFirstRender.current) {
+          isFirstRender.current = false;
+          prevPlayersRef.current = slots;
+          return;
+      }
+      slots.forEach((player, index) => {
+          const prevPlayer = prevPlayersRef.current[index];
+
+          const displayName = player.name ? truncateName(player.name, 20) : "Unknown";
+          const prevDisplayName = prevPlayer?.name ? truncateName(prevPlayer.name, 20) : "Unknown";
+
+          // Case A: A new player joined an empty slot
+          if (player.id && !prevPlayer?.id) {
+              addFeedEvent(`${displayName} >> CONNECTED_NODE_0${index + 1}`);
+          }
+          // Case B: A player left
+          else if (!player.id && prevPlayer?.id) {
+              addFeedEvent(`${prevDisplayName} >> DISCONNECTED`);
+          }
+          // Case C: Readiness changed
+          else if (player.id && prevPlayer && player.ready !== prevPlayer.ready) {
+              const status = player.ready ? 'READY_CONFIRMED' : 'STANDBY_MODE';
+              addFeedEvent(`${displayName} >> ${status}`);
+          }
+      });
+
+      prevPlayersRef.current = slots;
+  }, [slots]);
+
+const togglePlayerReady = (player: Client) => {
+    console.log("Checking permission:");
+    console.log("Player ID in slot:", player.id);
+    console.log("My currentUserId:", userId);
+    if (!player.id || player.id !== userId) {
+        console.warn("You can't toggle someone else's ready status!");
+        return;
+    }
+
+    msgToServer(CS_Type.CS_ReadyChange, {
+        userId: userId,
+        ready: !player.ready
+    });
+};
+
   return (
-    <div>
-      <h1 className="text-green-500">Lobby</h1>
-      <button className="border-2 border-solid rounded-xl bg-slate-700  w-30 h-10" onClick={
-        () => {
-          msgToServer<CS_DEV_StartLoading>(CS_Type.CS_DEV_StartLoading, {});
-        }
-        }>Load Assets</button>
-        <button className="border-2 border-solid rounded-xl bg-slate-700  w-30 h-10" onClick={
-        () => {
-          msgToServer<CS_ReadyChange>(CS_Type.CS_ReadyChange, {
-            ready: true
-          });
-        }
-        }>Ready</button>
-    </div>
+      <div className="flex flex-col min-h-screen bg-zinc-50 text-zinc-900 font-sans selection:bg-blue-100">
+          <main className="flex-grow max-w-6xl mx-auto w-full px-6 py-12 flex flex-col justify-center">
+
+              <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+                  <div className="space-y-2">
+                      <motion.h2
+                          initial={{opacity: 0, x: -20}}
+                          animate={{opacity: 1, x: 0}}
+                          className="text-5xl font-black tracking-tighter uppercase text-zinc-900"
+                      >
+                          Tactical <span className="text-blue-600">Lobby</span>
+                      </motion.h2>
+                      <p className="text-zinc-500 font-mono text-xs uppercase tracking-[0.3em] font-bold">
+                          Status: Awaiting Squad Confirmation
+                      </p>
+                  </div>
+
+                  {/* LIVE ACTIVITY FEED */}
+                  <div
+                      className="w-full md:w-96 min-h-[110px] overflow-hidden relative bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm">
+                      <div className="absolute top-2 right-4 flex gap-1.5 items-center">
+          <span className="relative flex h-2 w-2">
+            <span
+                className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+          </span>
+                          <span className="text-[9px] font-mono text-blue-600 font-black uppercase tracking-tighter">
+            Live_Feed_Active
+          </span>
+                      </div>
+
+                      <div className="flex flex-col gap-2 mt-4">
+                          <AnimatePresence mode="popLayout">
+                              {feed.length === 0 && (
+                                  <motion.span
+                                      initial={{opacity: 0}}
+                                      animate={{opacity: 1}}
+                                      className="text-[11px] font-mono text-zinc-300 italic"
+                                  >
+                                      Waiting for squad input...
+                                  </motion.span>
+                              )}
+                              {feed.map((event) => (
+                                  <motion.div
+                                      key={event.id}
+                                      initial={{opacity: 0, y: 10}}
+                                      animate={{opacity: 1, y: 0}}
+                                      exit={{opacity: 0, y: -10}}
+                                      transition={{type: "spring", damping: 20, stiffness: 300}}
+                                      className="text-[11px] font-mono text-zinc-500 flex items-center gap-3 whitespace-nowrap"
+                                  >
+                <span className="text-zinc-300 font-bold">
+                  [{new Date().toLocaleTimeString([], {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })}]
+                </span>
+                                      <span className="text-zinc-800 font-bold tracking-tight">
+                  {event.msg}
+                </span>
+                                  </motion.div>
+                              ))}
+                          </AnimatePresence>
+                      </div>
+                  </div>
+              </div>
+
+              {/* PLAYER CARDS */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {slots.map((player: Client, index) => {
+                      // Check if this card belongs to the local user
+                      const isMe = player.id === userId;
+                      const isEmpty = !player.id;
+
+                      return (
+                          <motion.div
+                              key={player.id || `empty-${index}`} // use fall back index number for empty slots
+                              whileHover={!isEmpty ? {y: -6} : {}}
+                              transition={{type: "spring", stiffness: 150}}
+                              className="relative"
+                          >
+                              <div className={`relative z-10 aspect-[3/4.5] rounded-[2rem] border-2 transition-all duration-700 flex flex-col p-7
+              ${isEmpty ? 'border-dashed border-zinc-200 bg-transparent shadow-none' : 'border-solid shadow-sm'}
+              ${isMe ? 'ring-4 ring-blue-600/20' : ''}
+              ${player.ready ? 'border-zinc-900 bg-white shadow-2xl shadow-zinc-200' : 'border-zinc-200 bg-white'}
+            `}>
+
+                                  <div className="flex justify-between items-center mb-10">
+                <span
+                    className={`font-mono text-[10px] font-black tracking-widest uppercase ${isEmpty ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                  Node_0{index + 1}
+                </span>
+                                      {!isEmpty && (
+                                          <>
+                                              {isMe ? (
+                                                  <span
+                                                      className="bg-blue-600 text-white text-[9px] px-2 py-0.5 rounded-full font-black tracking-tighter">YOU</span>
+                                              ) : (
+                                                  <div
+                                                      className={`w-3 h-3 rounded-full transition-all duration-700 ${player.ready ? 'bg-blue-600' : 'bg-zinc-200'}`}/>
+                                              )}
+                                          </>
+                                      )}
+                                  </div>
+
+                                  <div className={`flex-grow flex flex-col items-center justify-center gap-4 rounded-[1.5rem] transition-all duration-700 w-full px-4
+                ${isEmpty ? 'bg-zinc-50/30' : player.ready ? 'bg-blue-50/50' : 'bg-zinc-50'}
+              `}>
+                <span
+                    title={isEmpty ? '' : player.name} // Mouse over for truncated names
+                    className={`text-2xl font-black uppercase tracking-tight transition-colors duration-500 truncate w-full text-center
+      ${isEmpty ? 'text-zinc-200' : player.ready ? player.color : 'text-zinc-400'}
+  `}>
+                  {isEmpty ? '---' : player.name}
+                </span>
+
+                                      {!isEmpty && player.ready && (
+                                          <motion.div initial={{scale: 0}} animate={{scale: 1}}
+                                                      className="px-3 py-1 bg-zinc-900 rounded-full">
+                    <span className="text-[8px] font-mono text-white font-bold uppercase tracking-widest">
+                      {isMe ? 'You are Ready' : 'Active'}
+                    </span>
+                                          </motion.div>
+                                      )}
+                                  </div>
+
+                                  <button
+                                      disabled={isEmpty || !isMe}
+                                      onClick={() => togglePlayerReady(player)}
+                                      className={`mt-10 w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all
+                  ${isMe ? 'active:scale-95 cursor-pointer' : 'cursor-default'}
+                  ${isEmpty
+                                          ? 'bg-transparent border border-zinc-100 text-zinc-200'
+                                          : player.ready
+                                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 hover:bg-blue-700'
+                                              : isMe
+                                                  ? 'bg-zinc-900 text-white hover:bg-black'
+                                                  : 'bg-zinc-100 text-zinc-400'}
+                `}
+                                  >
+                                      {isEmpty ? 'Awaiting...' : player.ready ? 'Confirmed' : isMe ? 'Initialize' : 'Standby'}
+                                  </button>
+                              </div>
+                          </motion.div>
+                      );
+                  })}
+              </div>
+
+              {/* System Status */}
+              <div className="mt-20 flex flex-col items-center">
+                  <div
+                      className="w-full max-w-md bg-white border border-zinc-200 rounded-full p-1.5 mb-6 flex gap-1 shadow-inner">
+                      {slots.map((p, index) => (
+                          <div
+                              key={p.id || `bar-${index}`}
+                              className={`flex-grow h-3 rounded-full transition-all duration-1000 ease-out ${p.ready ? 'bg-blue-600 shadow-sm' : 'bg-zinc-100'}`}
+                          />
+                      ))}
+                  </div>
+
+                  <AnimatePresence mode="wait">
+                      {allReady ? (
+                          <motion.div
+                              key="launch"
+                              initial={{opacity: 0, scale: 0.9}}
+                              animate={{opacity: 1, scale: 1}}
+                              className="flex flex-col items-center gap-3"
+                          >
+                              <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping"/>
+                                  <h3 className="text-3xl font-black tracking-tighter text-zinc-900 uppercase italic">
+                                      Initializing Launch Sequence
+                                  </h3>
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-ping"/>
+                              </div>
+                              <span
+                                  className="font-mono text-[10px] text-zinc-400 uppercase tracking-[0.5em] font-bold">
+              All systems are running normal
+            </span>
+                          </motion.div>
+                      ) : (
+                          <motion.div
+                              key="wait-status"
+                              initial={{opacity: 0}}
+                              animate={{opacity: 1}}
+                              className="flex flex-col items-center gap-1"
+                          >
+            <span className="text-zinc-400 font-mono text-[10px] uppercase tracking-[0.3em] font-bold">
+              Readiness: {readyCount} / {slots.length} Squad Members
+            </span>
+                          </motion.div>
+                      )}
+                  </AnimatePresence>
+              </div>
+          </main>
+
+          <div className="p-6">
+              <button
+                  className="border-2 border-solid rounded-xl bg-slate-700  w-30 h-10" onClick={
+                  () => {
+                      msgToServer<CS_DEV_StartLoading>(CS_Type.CS_DEV_StartLoading, {});
+                  }
+              }>Load Assets
+              </button>
+          </div>
+      </div>
   );
 }

@@ -1,8 +1,4 @@
-// @ts-ignore
 import { CS_DEV_StartGame, CS_Type } from '@/shared/packets/ClientServerPackets';
-
-import type { msgToServerType } from '@/lib/packets/msgToServerType';
-
 
 import { useGameContext } from './GameContext';
 /**
