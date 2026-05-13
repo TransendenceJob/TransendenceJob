@@ -69,12 +69,11 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
  * @param data packet with data
  */
 function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
-  console.log('Calling Connection Attempt');
-  // This is just a temporary solution, for when the server is in the game state,
-  // and all players have left, which sets it back to the Lobby,
+  // This is just a temporary solution, for when all players have left,
+  // which sets it back to the Lobby,
   // because we do not have logic for the server to automatically reset itself on last disconnect
   // Needs to be CHANGED later on!!
-  if (lobby.state == LobbyStateEnum.Game) {
+  if (lobby.state != LobbyStateEnum.OpenLobby) {
     console.log(
       'Invoking Dev Mode Logic, resetting Game back to Lobby, because Client wants to join midgame',
     );
@@ -95,7 +94,7 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
   }
 
   // Check if enough slots are open, if not, then reject
-  if (lobby.clients.length > LOBBY_MAX_SLOTS) {
+  if (lobby.clients.length + 1 > LOBBY_MAX_SLOTS) {
     lobby.msgToClient<SC_ConnectFail>(SC_Type.SC_ConnectFail, {
       userId: data.userId,
       msg: `Cannot join full Lobby (${lobby.clients.length}/${LOBBY_MAX_SLOTS})`,

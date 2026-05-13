@@ -17,6 +17,7 @@ export interface GameContextType {
 	socketRef: RefObject<Socket | null>;
 	userId: string;
 	userName: string;
+	errorMsg: string;
 	DEBUG: boolean;
 }
 

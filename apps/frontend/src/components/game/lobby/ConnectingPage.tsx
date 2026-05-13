@@ -13,7 +13,7 @@ import { useGameContext } from './GameContext';
  * makes it so the function is only called initially and whenever one of the params changes
  */
 export default function ConnectingPage() {
-  const {msgToServer, isConnected, userId, userName, DEBUG} = useGameContext();
+  const {msgToServer, isConnected, userId, userName, DEBUG, errorMsg} = useGameContext();
   useEffect(() => {
     if (!isConnected || userId == "" || userName == "") {
       return ;
@@ -23,6 +23,13 @@ export default function ConnectingPage() {
       userName: userName ?? ""
     });
   }, [isConnected, msgToServer, userId, userName, DEBUG]);
+  if (errorMsg != "") {
+    return (
+      <div>
+        <h1 className="text-red-500">{errorMsg}</h1>
+      </div>
+    );
+  }
   if (!isConnected) {
     return (
       <div>

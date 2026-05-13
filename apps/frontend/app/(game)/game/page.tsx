@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 import SubPages from '@/src/components/game/lobby/SubPages';
 import SocketStatus from '@/src/components/game/lobby/SocketStatus';
 import { SC_Type, SC_GenericPacket } from '@/shared/packets/ServerClientPackets';
-import { Client, makeClient, newClient, COLORS } from "@/shared/packets/Client";
+import { Client, newClient, COLORS } from "@/shared/packets/Client";
 import { CS_Base, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { useAuth } from "@/components/Providers";
 import { lobbyDataPackets } from '@/shared/packets/util';
@@ -71,6 +71,9 @@ export default function LobbyPageController() {
   useEffect(() => {
     console.log(`Updating state from ${stateRef.current} to ${state}`);
     stateRef.current = state; }, [state]);
+
+  /** Used during failed loading and connecting */
+  const [errorMsg, setErrorMsg] = useState("");
 
   /** number representing to which lobby we are connected */
   // Needs ref, because we read it in effect
@@ -177,6 +180,11 @@ export default function LobbyPageController() {
         if (packet.userId == user?.id)
           updateState("LOBBY");
       }
+      else if (packet.type == SC_Type.SC_ConnectFail) {
+        // Seperated, so this still counts as "handled"
+        if (packet.userId == user?.id)
+          setErrorMsg(packet.msg);
+      }
       else if (packet.type == SC_Type.SC_StartLobby)
         updateState("LOBBY");
       else if (packet.type == SC_Type.SC_StartLoading)
@@ -189,6 +197,7 @@ export default function LobbyPageController() {
         updateState("CONNECTING");
       else
         packetHandled = false;
+
 
       // We process if we are ALREADY in the lobby,
       // Or if we just received a packet that tells us we are NOW in the lobby
@@ -228,7 +237,16 @@ export default function LobbyPageController() {
       msgToServer,
       socketRef: socketRef,
       userId: user?.id ?? "",
-      userName: user?.username ?? "",
+      // Try to use the Display Name,
+      // if no name, fall back to "Unnamed Player", 
+      // if no id, fall back to "" (will cause connection to be rejected)
+      userName: 
+        user?.username ?
+          user.username :
+            user?.id ?
+            `Unnamed Player ${user?.id.substring(0, 6)}` :
+            "",
+      errorMsg,
       DEBUG
     }}>
       <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
