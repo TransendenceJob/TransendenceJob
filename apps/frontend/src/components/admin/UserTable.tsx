@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {JSX} from 'react';
 
 import {UserAuthView} from "@/src/core/api/auth/auth.types";
 
@@ -10,8 +10,9 @@ interface UserTableProps {
     onEditRoles: (user: UserAuthView) => void;
 }
 
-export const UserTable: React.FC<UserTableProps> = (
-    {users, isLoading, onEditStats, onToggleStatus, onEditRoles }) => {
+export function UserTable(
+    {users, isLoading, onEditStats, onToggleStatus, onEditRoles
+    }: UserTableProps): JSX.Element | null {
 
     return (
         <div className="relative overflow-hidden rounded-lg border border-gray-200 shadow-sm min-h-[400px] bg-white">

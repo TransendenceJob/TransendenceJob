@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {JSX, useState, useEffect, useRef } from 'react';
 
 interface UserSearchFormProps {
     onSearch: (query: string) => void;
 }
 
-export const UserSearchForm: React.FC<UserSearchFormProps> = ({ onSearch }) => {
+export function UserSearchForm({ onSearch }: UserSearchFormProps): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
     const isInitialRender = useRef(true);
 
@@ -13,6 +13,7 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({ onSearch }) => {
             isInitialRender.current = false;
             return;
         }
+
         // Wait 500ms after the user stops typing before searching
         const delayDebounceTimeout = setTimeout(() => {
             onSearch(searchTerm);
@@ -40,4 +41,4 @@ export const UserSearchForm: React.FC<UserSearchFormProps> = ({ onSearch }) => {
             <p className="mt-2 text-xs text-gray-500">Searching by username, email, or ID...</p>
         </div>
     );
-};
+}

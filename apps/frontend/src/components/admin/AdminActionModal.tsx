@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {JSX, useEffect, useState} from 'react';
 
 interface AdminModalProps {
     isOpen: boolean;
@@ -11,9 +11,10 @@ interface AdminModalProps {
     onClose: () => void;
 }
 
-export const AdminActionModal: React.FC<AdminModalProps> = (
+export function AdminActionModal(
     {isOpen, title, description, requireReason, mode = 'default', currentRoles = [], onConfirm, onClose
-}) => {
+    }: AdminModalProps): JSX.Element | null { // expect a React ui or when fail render nothing
+
     const [reason, setReason] = useState('');
     const availableRoles = ['admin', 'user'];
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -103,4 +104,4 @@ export const AdminActionModal: React.FC<AdminModalProps> = (
             </div>
         </div>
     );
-};
+}

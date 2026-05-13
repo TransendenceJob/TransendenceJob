@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation"; //used for placeholder
+import {useRouter } from "next/navigation"; //used for placeholder
 import {useState} from "react";
 import {authClient} from "@/src/core/api/auth/auth.client";
 import {useAuth} from "@/components/Providers";
