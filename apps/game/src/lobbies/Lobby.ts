@@ -7,6 +7,7 @@ import {
   SC_DEV_GameState,
   SC_LobbyData,
   SC_ClientDisconnect,
+  SC_FailedLoading,
 } from '@/shared/packets/ServerClientPackets';
 import { Client, resetClient } from '@/shared/packets/Client';
 import { GameState } from '@/shared/state/GameState';
@@ -159,10 +160,6 @@ export class Lobby {
    * @param userId ID of the player who disconnected
    */
   public handleDisconnect(userId: string) {
-    // Currently handle disconnection logic if we are currently in the lobby state but could also be used for game disconnects later on
-    if (this.state != LobbyStateEnum.OpenLobby) {
-      return;
-    }
     // Find player to disconnect
     const playerIndex = this.clients.findIndex((p) => p.id === userId);
     if (playerIndex == -1) {
@@ -170,14 +167,28 @@ export class Lobby {
     }
     // Remove the player from the lobby list
     this.clients.splice(playerIndex, 1);
-    this.msgToClient<SC_ClientDisconnect>(SC_Type.SC_ClientDisconnect, {
-      userId: userId,
-    });
-    // Sending Disconnect should be enough on its own to disconnect a player,
-    // this is just insurance to keep lobbies synced
-    this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
-      lobbyData: this.clients,
-    });
+
+    switch (this.state) {
+      case (LobbyStateEnum.OpenLobby) : {
+        this.msgToClient<SC_ClientDisconnect>(SC_Type.SC_ClientDisconnect, {
+          userId: userId,
+        });
+        // Sending Disconnect should be enough on its own to disconnect a player,
+        // this is just insurance to keep lobbies synced
+        this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
+          lobbyData: this.clients,
+        });
+        break ;
+      }
+
+      case (LobbyStateEnum.Loading) : {
+        this.msgToClient<SC_FailedLoading>(SC_Type.SC_FailedLoading, {
+          userId: userId,
+          msg: `Failed Loading, Client ${userId} disconnected`,
+        });
+        break ;
+      }
+    } 
   }
 
   dispose() {
