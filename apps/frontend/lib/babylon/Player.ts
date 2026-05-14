@@ -13,7 +13,7 @@ import { playerData, wormData } from '@/shared/packets/util';
  * @function dispose Cleans up object
  */
 export class Player {
-	public readonly id: number;
+	public readonly id: string;
 	public readonly name: string;
 	public worms: Array<Worm>;
 	private clickableAction: ExecuteCodeAction;

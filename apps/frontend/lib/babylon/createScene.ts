@@ -1,11 +1,13 @@
 import { Scene, Vector3, HemisphericLight, Engine, ActionManager } from "@babylonjs/core";
 import { Socket } from 'socket.io-client';
 import { HavokPlugin } from "@babylonjs/core/Physics/v2/Plugins/havokPlugin";
+import { RefObject } from 'react';
 
 import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
 import { StateMachine } from './state/StateMachine';
 import { MessageQueue } from './MessageQueue';
+import { Client } from "@/shared/packets/Client";
 
 export async function createScene(
 	canvas: HTMLCanvasElement, 
@@ -14,6 +16,7 @@ export async function createScene(
 	msgToServer: msgToServerType, 
 	lobbyId: number,
 	userId: string,
+	slotRef: RefObject<Array<Client>>,
 	DEBUG: boolean, 
 ) {
 	const scene = new Scene(engine);

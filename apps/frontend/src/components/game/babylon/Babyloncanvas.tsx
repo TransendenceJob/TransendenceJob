@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import { Engine, Scene } from "@babylonjs/core" ;
 import { Socket } from 'socket.io-client';
+import { Client } from '@/shared/packets/Client';
 
 
 import { createScene } from "@/lib/babylon/createScene";
@@ -14,8 +15,8 @@ export default function BabylonCanvas() {
   // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<Engine | null>(null);
-  const cleanupRef = useRef<() => void | undefined>(undefined)
-  const resizeUiRef = useRef<() => void | undefined>(undefined)
+  const cleanupRef = useRef<() => void | undefined>(undefined);
+  const resizeUiRef = useRef<() => void | undefined>(undefined);
 
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting

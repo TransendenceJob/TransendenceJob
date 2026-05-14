@@ -24,7 +24,7 @@ export interface wormData {
  * @param worms Array of data to create the worms for that player
  */
 export interface playerData {
-	id: number,
+	id: string,
 	slot: number,
 	name: string,
 	worms: Array<wormData>

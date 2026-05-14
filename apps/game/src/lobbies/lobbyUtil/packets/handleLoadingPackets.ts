@@ -5,6 +5,7 @@ import {
 import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
 import { Client } from '@/shared/packets/Client';
+import { log } from 'src/lobbies/lobbyUtil/log';
 
 export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
   // Get Index for player this package might reference
@@ -15,19 +16,33 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
   switch (data.type) {
     // For when Client progresses Loading
     case CS_Type.CS_LoadingProgress: {
-      if (client) {
-        client.loading.progress = data.percentage;
-        client.loading.msg = data.msg;
+      if (!client) {
+        break ;
       }
+      // DEV MODE ONLY
+      if (data.percentage == 80) {
+        log(`Error: Custom Intentional Loading Error`);
+        client.loading.failed = true;
+        client.loading.msg = `Error: Loading custom error`;
+      }
+      if (client.loading.progress > data.percentage) {
+        log(`Error: ${data.userId} reports invalid loading progress ${client.loading.progress}=>${data.percentage}`);
+        client.loading.failed = true;
+        client.loading.msg = `Error: Loading progress went from ${client.loading.progress} down to ${data.percentage}`;
+        break ;
+      }
+      client.loading.progress = data.percentage;
+      client.loading.msg = data.msg;
       break;
     }
 
     // For when Client finishes Loading
     case CS_Type.CS_FinishedLoading: {
-      if (client) {
-        client.loading.msg = 'Finished Loading';
-        client.loading.done = true;
-      }
+      if (!client)
+        break ;
+      log(`Client ${client.id}:${client.name} is done with loading`);
+      client.loading.msg = 'Finished Loading';
+      client.loading.done = true;
       break;
     }
 
@@ -36,6 +51,8 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
       if (client) {
         client.loading.msg = data.msg;
         client.loading.failed = true;
+        log(`Client ${client.id}:${client.name} failed loading`);
+
       }
       break;
     }

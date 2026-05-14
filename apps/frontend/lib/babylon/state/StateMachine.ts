@@ -22,6 +22,8 @@ import { handlePacket } from '../handlePacket';
 import { Turn } from './Turn';
 import { loadGame } from './loading/loadGame';
 import { IWeapon } from '../weapons/IWeapon';
+import { RefObject } from 'react';
+import { Client } from '@/shared/packets/Client';
 
 export class StateMachine {
 	public userId: string;
@@ -64,7 +66,6 @@ export class StateMachine {
 		
 		// Set on Loading
 		this.weapons = [];
-		
 		this.players = [];
 		this.state = undefined;
 		this.currentState = undefined;
@@ -127,7 +128,7 @@ export class StateMachine {
 		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
-		this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
+		//this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
 	}
 
 	/**

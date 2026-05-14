@@ -38,13 +38,14 @@ export class EventSocket
     if (data.type === 'CS_JoinLobby') {
       client.data.userId = data.userId;
       client.data.lobbyId = data.lobbyId;
-      console.log(`Registered client ${client.id} with name: ${data.userName} id: ${data.userId} for lobby ${data.lobbyId}`);
+      this.logger.log(`Registered client ${client.id} with name: ${data.userName} id: ${data.userId} for lobby ${data.lobbyId}`);
     }
     this.lobbyManager.msgToServer(payload);
   }
 
   afterInit() {
     this.logger.log('Websocket Backend initiated');
+    // If this complains about 'on' not existing in LobbyManager, ignore it, its a vscode issue
     this.lobbyManager.on('dataToEmit', (payload: string) => {
       this.server.emit('msgToClient', payload);
     });
@@ -57,7 +58,7 @@ export class EventSocket
     const lobbyId = client.data?.lobbyId;
 
     if (userId && lobbyId !== undefined) {
-      this.logger.log(`Cleaning up user ${userId} from lobby ${lobbyId}`);
+      this.logger.log(`Unregistering client ${userId} from lobby ${lobbyId}`);
       this.lobbyManager.handleDisconnect(lobbyId, userId);
     }
   }

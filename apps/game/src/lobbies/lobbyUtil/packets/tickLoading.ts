@@ -17,12 +17,10 @@ export function tickLoading(lobby: Lobby) {
   let finishedLoadingCount = 0;
   lobby.clients.forEach((client) => {
     if (client.loading.failed) {
-      log(`Client ${client.id}:${client.name} failed loading`);
-      // TODO Handle Loading Failure
+      // TODO Add Failure handling
       return;
     }
     if (client.loading.done) {
-      log(`Client ${client.id}:${client.name} is done with loading`);
       finishedLoadingCount++;
     }
   });
@@ -30,4 +28,5 @@ export function tickLoading(lobby: Lobby) {
     log('All Clients finished loading');
     lobby.setState(LobbyStateEnum.Game);
   }
+  // Handle Timeout, if Client makes no progress
 }

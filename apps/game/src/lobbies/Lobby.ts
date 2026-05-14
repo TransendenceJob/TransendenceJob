@@ -18,6 +18,21 @@ import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
 import { log, logType } from './lobbyUtil/log';
 
+
+function newGame(lobby: Lobby) {
+  return (
+    new Game(
+      lobby.engine,
+      () => lobby.clients,
+      () => {
+        lobby.sendGameStatePacket();
+      },
+      // Game needs reference to call Lobbies packet function
+      (type, data) => lobby.msgToClient(type, data),
+    )
+  );
+}
+
 /**
  * An Object representing one Lobby, which goes through different states,
  * as our game progresses
@@ -31,7 +46,7 @@ export class Lobby {
   public id: number;
   public state: LobbyStateEnum;
   public clients: Array<Client>;
-  private engine: NullEngine;
+  public engine: NullEngine;
   private emitData: (msg: string) => void;
   private seqHandler: SeqHandler;
   public game: Game;
@@ -53,14 +68,7 @@ export class Lobby {
     this.seqHandler = new SeqHandler(1);
     this.seqHandler.registerPlayer('unused', 0);
     // Set up game with functionality to send packets to Client
-    this.game = new Game(
-      this.engine,
-      () => {
-        this.sendGameStatePacket();
-      },
-      // Game needs reference to call Lobbies packet function
-      (type, data) => this.msgToClient(type, data),
-    );
+    this.game = newGame(this);
     // Set up Queue for reading packets synced
     this.queue = new MessageQueue();
 
@@ -140,14 +148,7 @@ export class Lobby {
     // When Game ends, restart with new Game
     if (this.state == LobbyStateEnum.EndScreen) {
       this.game.dispose();
-      this.game = new Game(
-        this.engine,
-        () => {
-          this.sendGameStatePacket();
-        },
-        // Game needs reference to call Lobbies packet function
-        (type, data) => this.msgToClient(type, data),
-      );
+      this.game = newGame(this);
       this.state = LobbyStateEnum.OpenLobby;
       this.clients = [];
     }

@@ -14,8 +14,9 @@ import { AimingState } from './gamestate/7AimingState';
 import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
+import { Client } from '@/shared/packets/Client';
 
-interface userObject {
+interface player {
   userId: string;
   //userName: string;
   //slot: number;
@@ -32,11 +33,12 @@ export class Game {
   public state: GameState;
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
-  public clients: Array<userObject>;
+  public clients: Array<Client>;
 
   // Connstructor
   constructor(
     engine: NullEngine,
+    getClients: () => Array<Client>,
     sendStatePacket: () => void,
     sendPacket: msgToClientType,
   ) {
@@ -52,7 +54,7 @@ export class Game {
     );
     this.sendState = sendStatePacket;
     this.sendPacket = sendPacket;
-    this.clients = new Array<userObject>();
+    this.clients = getClients();
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));
@@ -74,7 +76,7 @@ export class Game {
     // Get class object and its functions from Map with GameState Enum and object
     // Call init of that one
     this.currentState.exit();
-    this.state = newState;
+    this.state = newState;  
     const newStateObj = this.stateMap.get(newState);
     this.currentState = newStateObj ? newStateObj : new GamePendingState(this);
     this.currentState.enter();
