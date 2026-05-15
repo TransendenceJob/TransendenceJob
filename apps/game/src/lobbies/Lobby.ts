@@ -18,6 +18,7 @@ import { LobbyStateEnum } from './lobbyUtil/LobbyStateEnum';
 import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
 import { log, logType } from './lobbyUtil/log';
+import { clientFailedLoading } from './lobbyUtil/packets/clientFailedLoading';
 
 function newGame(lobby: Lobby) {
   return new Game(
@@ -162,6 +163,10 @@ export class Lobby {
     if (playerIndex == -1) {
       return;
     }
+    const clientId = this.clients[playerIndex].id;
+
+    // Remove the player from the lobby list
+    this.clients.splice(playerIndex, 1);
 
     switch (this.state) {
       case LobbyStateEnum.OpenLobby: {
@@ -173,16 +178,25 @@ export class Lobby {
         this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
           lobbyData: this.clients,
         });
-        // Remove the player from the lobby list
-        this.clients.splice(playerIndex, 1);
         break;
       }
 
+      // On Disconnection during Loading, complain about player to Clients and go back to Lobby
       case LobbyStateEnum.Loading: {
-        this.clients[playerIndex].loading.failed = true;
-        this.clients[playerIndex].loading.msg =
-          `Failed Loading, Client ${userId} disconnected`;
+        clientFailedLoading(
+          this,
+          clientId,
+          `Failed Loading, Client ${userId} disconnected`,
+        );
         break;
+      }
+
+      // When Disconnection happens during Game, skip to end (which resets Lobby)
+      case LobbyStateEnum.Game: {
+        if (this.clients.length == 0) {
+          log(`Last Client ${clientId} disconnected, restarting game`);
+          this.setState(LobbyStateEnum.EndScreen);
+        }
       }
     }
   }
