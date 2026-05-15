@@ -8,6 +8,7 @@ import {
   SC_DEV_ButtonPress,
   SC_Type,
 } from '@/shared/packets/ServerClientPackets';
+import { GameState } from '@/shared/state/GameState';
 
 export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
   switch (data.type) {
@@ -26,10 +27,19 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       break;
     }
 
-    // For switching game state
+    // DEV MODE ONLY, Remove this later, the client should not be able to force anything
+    // For when Client forces server to change state
     case CS_Type.CS_DEV_SetGameState: {
       if (!lobby.game) return;
       lobby.game.setState(data.state);
+      break;
+    }
+
+    // When Client tells server that it thinks the server should change state
+    case CS_Type.CS_RequestChangeGameState: {
+      // TODO: Add logic to verify, which user Requests a state change, and if its valid
+      if (!lobby.game) return;
+      lobby.game.setState(data.state as GameState);
       break;
     }
 

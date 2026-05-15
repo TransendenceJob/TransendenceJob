@@ -26,6 +26,7 @@ export enum CS_Type {
 	CS_GetGameState =			"CS_GetGameState",
 	CS_DEV_SetGameState =		"CS_DEV_SetGameState",
 	CS_JoinLobby =				"CS_JoinLobby",
+	CS_RequestChangeGameState =	"CS_RequestChangeGameState",
 }
 
 /**
@@ -114,6 +115,11 @@ export interface CS_DEV_StartLoading extends CS_Base {
 
 // GAME =======================================================================
 
+export interface CS_RequestChangeGameState extends CS_Base {
+	type: CS_Type.CS_RequestChangeGameState,
+	state: number,
+}
+
 /**
  * DEV MODE, delete later
  * For pressing the example button in the scene
@@ -164,5 +170,5 @@ export type CS_GenericPacket =
 			CS_DEV_StartLobby | CS_LoadingProgress |
 			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
 			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen |
-			CS_GetGameState | CS_DEV_SetGameState
+			CS_GetGameState | CS_DEV_SetGameState | CS_RequestChangeGameState
 			;

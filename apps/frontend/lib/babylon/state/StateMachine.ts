@@ -1,6 +1,6 @@
 import { IAction, Scene, ActionManager } from '@babylonjs/core';
 import { GameState } from '@/shared/state/GameState';
-import { CS_DEV_SetGameState, CS_GetGameState, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { CS_DEV_SetGameState, CS_GetGameState, CS_RequestChangeGameState, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { gameData } from '@/shared/packets/util';
 import { Player } from '../Player';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
@@ -184,7 +184,20 @@ export class StateMachine {
 		this.ground = undefined;
 	}
 
-	sendStatePacket(state: GameState) {
+	/**
+	 * Sends Request to server, to please change the state to something else
+	 * @param state State to set it to
+	 */
+	sendRequestStatePacket(state: GameState) {
+		this.msgToServer<CS_RequestChangeGameState>(CS_Type.CS_RequestChangeGameState, {state: state});
+	}
+
+	/**
+	 * REMOVE THIS LATER! This only exists to help with development
+	 * Forcefully changes server to something else
+	 * @param state State to set it to
+	 */
+	sendForceStatePacket(state: GameState) {
 		this.msgToServer<CS_DEV_SetGameState>(CS_Type.CS_DEV_SetGameState, {state: state});
 	}
 

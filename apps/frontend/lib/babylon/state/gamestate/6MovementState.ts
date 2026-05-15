@@ -29,7 +29,7 @@ export class MovementState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.AIMING);
+			this.machine.sendRequestStatePacket(GameState.AIMING);
 		}
 	}
 

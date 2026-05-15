@@ -16,7 +16,6 @@ export async function createScene(
 	msgToServer: msgToServerType, 
 	lobbyId: number,
 	userId: string,
-	slotRef: RefObject<Array<Client>>,
 	DEBUG: boolean, 
 ) {
 	const scene = new Scene(engine);

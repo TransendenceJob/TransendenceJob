@@ -31,7 +31,7 @@ export class TurnStartState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.PICK_WORM);
+			this.machine.sendForceStatePacket(GameState.PICK_WORM);
 		}
 	}
 

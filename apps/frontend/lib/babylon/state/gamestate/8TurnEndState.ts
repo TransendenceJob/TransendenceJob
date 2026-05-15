@@ -35,7 +35,7 @@ export class TurnEndState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.GAME_END);
+			this.machine.sendForceStatePacket(GameState.GAME_END);
 		}
 	}
 

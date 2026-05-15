@@ -16,13 +16,6 @@ import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 import { Client } from '@/shared/packets/Client';
 
-interface player {
-  userId: string;
-  //userName: string;
-  //slot: number;
-  socketId: string;
-}
-
 export class Game {
   // Member properties
   private engine: NullEngine;
@@ -75,8 +68,9 @@ export class Game {
   setState(newState: GameState) {
     // Get class object and its functions from Map with GameState Enum and object
     // Call init of that one
+    console.log('Calling setState with', newState);
     this.currentState.exit();
-    this.state = newState;  
+    this.state = newState;
     const newStateObj = this.stateMap.get(newState);
     this.currentState = newStateObj ? newStateObj : new GamePendingState(this);
     this.currentState.enter();

@@ -30,7 +30,7 @@ export class RoundStartState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.TURN_START);
+			this.machine.sendForceStatePacket(GameState.TURN_START);
 		}
 	}
 

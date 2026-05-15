@@ -62,7 +62,7 @@ export class PickWormState implements IState {
 			this.pointer.target = this.machine.turn.chosenWorm.mesh;
 
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.MOVEMENT);
+			this.machine.sendRequestStatePacket(GameState.MOVEMENT);
 		}
 	}
 

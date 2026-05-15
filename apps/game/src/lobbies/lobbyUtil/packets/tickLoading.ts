@@ -6,7 +6,6 @@ import {
   SC_LobbyData,
   SC_Type,
 } from '@/shared/packets/ServerClientPackets';
-import { resetClient } from '@/shared/packets/Client';
 
 /**
  * @brief This should be ran anytime we handled a package

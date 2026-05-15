@@ -19,13 +19,6 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
       if (!client) {
         break;
       }
-      // DEV MODE ONLY
-      if (data.percentage == 80) {
-        log(`Error: Custom Intentional Loading Error`);
-        client.loading.failed = true;
-        client.loading.msg = `Error: Loading custom error`;
-        break;
-      }
       if (client.loading.progress > data.percentage) {
         log(
           `Error: ${data.userId} reports invalid loading progress ${client.loading.progress}=>${data.percentage}`,

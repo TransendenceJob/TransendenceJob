@@ -24,7 +24,7 @@ export class GamePendingState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.GAME_LOADING);
+			this.machine.sendForceStatePacket(GameState.GAME_LOADING);
 		}
 	}
 

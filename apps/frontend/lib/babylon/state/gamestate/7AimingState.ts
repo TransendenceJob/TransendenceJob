@@ -47,7 +47,7 @@ export class AimingState implements IState {
 
 	tick() {
 		if (this.next) {
-			this.machine.sendStatePacket(GameState.TURN_END);
+			this.machine.sendRequestStatePacket(GameState.TURN_END);
 		}
 		this.machine.turn?.turnWeapon(this.machine.turn?.aimAngle);
 	}
