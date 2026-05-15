@@ -17,19 +17,22 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
     // For when Client progresses Loading
     case CS_Type.CS_LoadingProgress: {
       if (!client) {
-        break ;
+        break;
       }
       // DEV MODE ONLY
       if (data.percentage == 80) {
         log(`Error: Custom Intentional Loading Error`);
         client.loading.failed = true;
         client.loading.msg = `Error: Loading custom error`;
+        break;
       }
       if (client.loading.progress > data.percentage) {
-        log(`Error: ${data.userId} reports invalid loading progress ${client.loading.progress}=>${data.percentage}`);
+        log(
+          `Error: ${data.userId} reports invalid loading progress ${client.loading.progress}=>${data.percentage}`,
+        );
         client.loading.failed = true;
         client.loading.msg = `Error: Loading progress went from ${client.loading.progress} down to ${data.percentage}`;
-        break ;
+        break;
       }
       client.loading.progress = data.percentage;
       client.loading.msg = data.msg;
@@ -38,8 +41,7 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
 
     // For when Client finishes Loading
     case CS_Type.CS_FinishedLoading: {
-      if (!client)
-        break ;
+      if (!client) break;
       log(`Client ${client.id}:${client.name} is done with loading`);
       client.loading.msg = 'Finished Loading';
       client.loading.done = true;
@@ -52,7 +54,6 @@ export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
         client.loading.msg = data.msg;
         client.loading.failed = true;
         log(`Client ${client.id}:${client.name} failed loading`);
-
       }
       break;
     }

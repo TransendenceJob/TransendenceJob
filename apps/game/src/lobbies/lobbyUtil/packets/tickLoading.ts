@@ -1,7 +1,12 @@
 import { Lobby } from 'src/lobbies/Lobby';
 import { LobbyStateEnum } from '../LobbyStateEnum';
 import { log } from 'src/lobbies/lobbyUtil/log';
-import { SC_FailedLoading, SC_Type } from '@/shared/packets/ServerClientPackets';
+import {
+  SC_FailedLoading,
+  SC_LobbyData,
+  SC_Type,
+} from '@/shared/packets/ServerClientPackets';
+import { resetClient } from '@/shared/packets/Client';
 
 /**
  * @brief This should be ran anytime we handled a package
@@ -17,14 +22,18 @@ export function tickLoading(lobby: Lobby) {
   }
   let finishedLoadingCount = 0;
   lobby.clients.forEach((client) => {
-    // If Client has failed loading, send package to stop Loading
+    // If Client has failed loading, send error data packet, go back to lobby, reset and sync client data
     if (client.loading.failed) {
       lobby.msgToClient<SC_FailedLoading>(SC_Type.SC_FailedLoading, {
         userId: client.id,
         msg: client.loading.msg,
       });
-      // experimental change, no clue if this will just work
-      lobby.setState(LobbyStateEnum.OpenLobby );
+      // Resets Clients Loading/Readiness and tells them to go back to Lobby state
+      lobby.setState(LobbyStateEnum.OpenLobby);
+      // Syncs Clients to be updates properly
+      lobby.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
+        lobbyData: lobby.clients,
+      });
       return;
     }
     if (client.loading.done) {

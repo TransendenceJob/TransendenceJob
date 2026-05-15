@@ -205,7 +205,7 @@ export default function LobbyPageController() {
       if (stateRef.current === "LOBBY" && isLobbyDataPacket) {
         handleLobbyUpdates(packet);
       } else if (!packetHandled){
-        if (DEBUG) console.warn(`[Guard Blocked] Ignored ${packet.type} in state ${stateRef.current}`);
+        if (DEBUG) console.warn(`[Frontend Page] Ignored: ${packet.type} in state ${stateRef.current}`);
       }
     }
 

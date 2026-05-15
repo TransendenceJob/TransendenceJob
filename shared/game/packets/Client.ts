@@ -74,8 +74,10 @@ export function generateClient(id: string, name: string, slot: number, color: st
 
 /**
  * Sets a Clients data back to scratch, except for identifiers
+ * @returns that Client
  */
-export function resetClient(client: Client) {
+export function resetClient(client: Client): Client {
   client.ready = false;
   client.loading = newLoading();
+  return (client);
 }

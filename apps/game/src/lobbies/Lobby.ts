@@ -19,18 +19,15 @@ import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
 import { log, logType } from './lobbyUtil/log';
 
-
 function newGame(lobby: Lobby) {
-  return (
-    new Game(
-      lobby.engine,
-      () => lobby.clients,
-      () => {
-        lobby.sendGameStatePacket();
-      },
-      // Game needs reference to call Lobbies packet function
-      (type, data) => lobby.msgToClient(type, data),
-    )
+  return new Game(
+    lobby.engine,
+    () => lobby.clients,
+    () => {
+      lobby.sendGameStatePacket();
+    },
+    // Game needs reference to call Lobbies packet function
+    (type, data) => lobby.msgToClient(type, data),
   );
 }
 
@@ -165,11 +162,9 @@ export class Lobby {
     if (playerIndex == -1) {
       return;
     }
-    // Remove the player from the lobby list
-    this.clients.splice(playerIndex, 1);
 
     switch (this.state) {
-      case (LobbyStateEnum.OpenLobby) : {
+      case LobbyStateEnum.OpenLobby: {
         this.msgToClient<SC_ClientDisconnect>(SC_Type.SC_ClientDisconnect, {
           userId: userId,
         });
@@ -178,17 +173,18 @@ export class Lobby {
         this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
           lobbyData: this.clients,
         });
-        break ;
+        // Remove the player from the lobby list
+        this.clients.splice(playerIndex, 1);
+        break;
       }
 
-      case (LobbyStateEnum.Loading) : {
-        this.msgToClient<SC_FailedLoading>(SC_Type.SC_FailedLoading, {
-          userId: userId,
-          msg: `Failed Loading, Client ${userId} disconnected`,
-        });
-        break ;
+      case LobbyStateEnum.Loading: {
+        this.clients[playerIndex].loading.failed = true;
+        this.clients[playerIndex].loading.msg =
+          `Failed Loading, Client ${userId} disconnected`;
+        break;
       }
-    } 
+    }
   }
 
   dispose() {
