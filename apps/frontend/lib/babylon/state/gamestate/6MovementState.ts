@@ -17,7 +17,11 @@ export class MovementState implements IState {
 		// Actions
 		const actions: Array<IAction> = [];
 
-		// DEV TOOL skip to next state manually by pressing Space
+		// For inactive players, dont allow picking worms
+		if (!this.machine.isActiveUser())
+			return (actions)
+
+		// Confirm movement to be done
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
@@ -28,8 +32,9 @@ export class MovementState implements IState {
 	}
 
 	tick() {
-		if (this.next) {
+		if (this.next && this.machine.isActiveUser()) {
 			this.machine.sendRequestStatePacket(GameState.AIMING);
+			this.next = false;
 		}
 	}
 

@@ -11,6 +11,18 @@ export class TurnStartState implements IState {
     // Setup
     console.log('Turn starts');
 
+    // Choose next active player
+    const clients = this.game.lobby.clients;
+    const oldClientIndex = clients.findIndex(
+      (client) => client.id == this.game.activeClient.id,
+    );
+    // 0 -> 1
+    // 1 -> 2
+    // 2 -> 0
+    //
+    this.game.activeClient = clients[(oldClientIndex + 1) % clients.length];
+    console.log(`New Clients Turn: ${this.game.activeClient.name}`);
+
     // Tell Clients to move to next state
     this.game.sendState();
   }

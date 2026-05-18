@@ -15,6 +15,7 @@ import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 import { Lobby } from 'src/lobbies/Lobby';
+import { Client, newClient } from '@/shared/packets/Client';
 
 export class Game {
   // Member properties
@@ -27,6 +28,8 @@ export class Game {
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
   public lobby: Lobby;
+  public turnOrder: Array<number>;
+  public activeClient: Client;
 
   // Connstructor
   constructor(lobby: Lobby) {
@@ -61,6 +64,9 @@ export class Game {
     this.stateMap.set(GameState.GAME_END, new GameEndState(this));
     this.currentState = new GamePendingState(this);
     this.currentState.enter();
+    this.turnOrder = [];
+    // Should never be used, but needs to be initialised
+    this.activeClient = newClient(0, '');
   }
 
   // Setter

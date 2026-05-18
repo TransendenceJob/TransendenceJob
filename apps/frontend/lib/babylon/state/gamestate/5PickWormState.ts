@@ -14,14 +14,20 @@ export class PickWormState implements IState {
 
 		// Setup
 		this.machine.guiHelper?.notifications.add(`${this.machine.turn?.activePlayer.name} is picking a worm`)
-		this.machine.turn?.activePlayer.wormsClickable(true);
 		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm.mesh);
 		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;
-
+		
 		// Actions
 		const actions: Array<IAction> = [];
 
-		// DEV TOOL skip to next state manually by pressing Space
+		// For inactive players, dont allow picking worms
+		if (!this.machine.isActiveUser())
+			return (actions)
+
+		// Allow worms to be chosen by clicking on their mesh
+		this.machine.turn?.activePlayer.wormsClickable(true);
+
+		// Confirming chosen Worm
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
@@ -34,13 +40,13 @@ export class PickWormState implements IState {
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "d"
 		}, () => {
-			this.getNextWorm();
+			this.getNextWorm(true);
 		}));
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "a"
 		}, () => {
-			this.getNextWorm();
+			this.getNextWorm(false);
 		}));
 
 		return (actions);
@@ -50,19 +56,19 @@ export class PickWormState implements IState {
 	 * Moves the active player to the next worm
 	 * @returns 
 	 */
-	private getNextWorm() {
+	private getNextWorm(forward: boolean) {
 		if (!this.machine.turn)
 			return ;
-		const next_worm = this.machine.turn.activePlayer.getNextWorm(false, this.machine.turn.chosenWorm);
-			this.machine.turn.chosenWorm = next_worm;
+		const next_worm = this.machine.turn.activePlayer.getNextWorm(forward, this.machine.turn.chosenWorm);
+		this.machine.turn.chosenWorm = next_worm;
 	}
 
 	tick() {
 		if (this.pointer && this.machine.turn && this.pointer.target != this.machine.turn.chosenWorm.mesh)
 			this.pointer.target = this.machine.turn.chosenWorm.mesh;
-
-		if (this.next) {
+		if (this.next && this.machine.isActiveUser()) {
 			this.machine.sendRequestStatePacket(GameState.MOVEMENT);
+			this.next = false;
 		}
 	}
 

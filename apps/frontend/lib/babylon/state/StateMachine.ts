@@ -199,6 +199,15 @@ export class StateMachine {
 		this.msgToServer<CS_DEV_SetGameState>(CS_Type.CS_DEV_SetGameState, {state: state});
 	}
 
+	/**
+	 * @returns bool wether current player is the active player this turn
+	 */
+	isActiveUser() : boolean {
+		if (this.turn && this.turn.activePlayerId == this.userId) 
+			return true;
+		return false;
+	}
+
 	dispose() {
 		this.log("Clearing old Game")
 		this.clearGame();

@@ -19,7 +19,11 @@ export class AimingState implements IState {
 		// Actions
 		const actions: Array<IAction> = [];
 
-		// DEV TOOL skip to next state manually by pressing Space
+		// For inactive players, dont allow picking worms
+		if (!this.machine.isActiveUser())
+			return (actions)
+
+		// Confirm Aiming to be done
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
@@ -46,8 +50,9 @@ export class AimingState implements IState {
 	}
 
 	tick() {
-		if (this.next) {
+		if (this.machine.isActiveUser() && this.next) {
 			this.machine.sendRequestStatePacket(GameState.TURN_END);
+			this.next = false;
 		}
 		this.machine.turn?.turnWeapon(this.machine.turn?.aimAngle);
 	}
