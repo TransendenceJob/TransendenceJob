@@ -7,7 +7,6 @@ import {
   SC_DEV_GameState,
   SC_LobbyData,
   SC_ClientDisconnect,
-  SC_FailedLoading,
 } from '@/shared/packets/ServerClientPackets';
 import { Client, resetClient } from '@/shared/packets/Client';
 import { GameState } from '@/shared/state/GameState';
@@ -17,19 +16,11 @@ import { MessageQueue } from './lobbyUtil/MessageQueue';
 import { LobbyStateEnum } from './lobbyUtil/LobbyStateEnum';
 import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
-import { log, logType } from './lobbyUtil/log';
+import { log } from './lobbyUtil/log';
 import { clientFailedLoading } from './lobbyUtil/packets/clientFailedLoading';
 
 function newGame(lobby: Lobby) {
-  return new Game(
-    lobby.engine,
-    () => lobby.clients,
-    () => {
-      lobby.sendGameStatePacket();
-    },
-    // Game needs reference to call Lobbies packet function
-    (type, data) => lobby.msgToClient(type, data),
-  );
+  return new Game(lobby);
 }
 
 /**

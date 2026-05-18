@@ -54,7 +54,7 @@ export default function BabylonCanvas() {
     const resize = () => engine.resize();
     window.addEventListener("resize", resize);
 
-    createScene(canvas, engine, socketRef.current, msgRef.current, lobbyId, userId, DEBUG).then(({scene, resizeUi, cleanup}) => {
+    createScene(canvas, engine, socketRef, msgRef.current, lobbyId, userId, DEBUG).then(({scene, resizeUi, cleanup}) => {
       // Since its an async function, if the engine is disposed after scene Creation, dispose scene
       if (engine.isDisposed) {
         cleanup?.();
@@ -80,7 +80,7 @@ export default function BabylonCanvas() {
       observer.disconnect();
     };
   }, 
-  [socketRef.current, DEBUG, userId]);
+  [DEBUG, userId]);
 
   return <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />;
 }

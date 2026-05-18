@@ -3,8 +3,8 @@ import { AbstractMesh, Mesh } from '@babylonjs/core'
 /**
  * Class that lets specific weapons inherit general functions each weapon should have
  */
-export class GenericWeapon {
-	public mesh: Mesh;
+export abstract class GenericWeapon {
+	public mesh!: Mesh;
 	public childMeshes: Array<AbstractMesh> = [];
 	
 	show(result: boolean) {

@@ -5,7 +5,7 @@ import { Worm } from "../worms/Worm";
 
 
 export class Turn {
-	public activePlayerId: number = -1;
+	public activePlayerId: string = "";
 	public activePlayer: Player;
 	public chosenWorm: Worm;
 	public chosenWeapon: IWeapon | undefined = undefined;

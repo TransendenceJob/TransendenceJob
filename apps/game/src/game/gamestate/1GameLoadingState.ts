@@ -16,7 +16,9 @@ export class GameLoadingState implements IState {
     this.game.sendState();
 
     // Sends Information for each player to load the game
-    this.game.sendPacket(SC_Type.SC_GameData, { data: generateGameData(this.game.clients) });
+    this.game.sendPacket(SC_Type.SC_GameData, {
+      data: generateGameData(this.game.lobby.clients),
+    });
   }
 
   tick() {}

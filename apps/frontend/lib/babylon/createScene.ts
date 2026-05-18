@@ -12,7 +12,7 @@ import { Client } from "@/shared/packets/Client";
 export async function createScene(
 	canvas: HTMLCanvasElement, 
 	engine: Engine, 
-	socket: Socket, 
+	socketRef: RefObject<Socket | null>,
 	msgToServer: msgToServerType, 
 	lobbyId: number,
 	userId: string,
@@ -20,6 +20,14 @@ export async function createScene(
 ) {
 	const scene = new Scene(engine);
 	scene.actionManager = new ActionManager(scene);
+
+	if (socketRef.current == null)
+		return ({
+			scene: scene,
+			resizeUi: () => {},
+			cleanup: () => {},
+		});
+	const socket: Socket = socketRef.current;
 	const camera = createCamera(scene, canvas, 0, 0, 62);
 	const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
 	light.intensity = 0.7;

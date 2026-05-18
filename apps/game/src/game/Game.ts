@@ -14,7 +14,7 @@ import { AimingState } from './gamestate/7AimingState';
 import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
-import { Client } from '@/shared/packets/Client';
+import { Lobby } from 'src/lobbies/Lobby';
 
 export class Game {
   // Member properties
@@ -26,16 +26,11 @@ export class Game {
   public state: GameState;
   private stateMap: Map<GameState, IState>;
   private currentState: IState;
-  public clients: Array<Client>;
+  public lobby: Lobby;
 
   // Connstructor
-  constructor(
-    engine: NullEngine,
-    getClients: () => Array<Client>,
-    sendStatePacket: () => void,
-    sendPacket: msgToClientType,
-  ) {
-    this.engine = engine;
+  constructor(lobby: Lobby) {
+    this.engine = lobby.engine;
     this.scene = new Scene(this.engine);
     this.camera = new ArcRotateCamera(
       'Camera',
@@ -45,9 +40,13 @@ export class Game {
       Vector3.Zero(),
       this.scene,
     );
-    this.sendState = sendStatePacket;
-    this.sendPacket = sendPacket;
-    this.clients = getClients();
+    this.sendState = () => {
+      lobby.sendGameStatePacket();
+    };
+    this.sendPacket = (type, data) => {
+      lobby.msgToClient(type, data);
+    };
+    this.lobby = lobby;
     this.state = GameState.GAME_PENDING;
     this.stateMap = new Map();
     this.stateMap.set(GameState.GAME_PENDING, new GamePendingState(this));

@@ -91,6 +91,13 @@ server {
     }
 
     # -------------------------------
+    # Game asset files
+    # -------------------------------
+    location /assets {
+        root /usr/share/nginx/html
+    }
+
+    # -------------------------------
     # Health check endpoint
     # -------------------------------
     location /health {

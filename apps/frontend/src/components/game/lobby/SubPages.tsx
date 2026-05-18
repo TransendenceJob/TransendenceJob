@@ -1,14 +1,9 @@
-import { Socket } from 'socket.io-client';
 import LobbyPage from '@/src/components/game/lobby/LobbyPage';
 import LoadingPage from '@/src/components/game/lobby/LoadingPage';
 import BabylonCanvas from "@/src/components/game/babylon/Babyloncanvas";
 import EndPage from "@/src/components/game/lobby/EndPage";
 import ErrorPage from '@/src/components/game/lobby/ErrorPage';
 import ConnectingPage from '@/src/components/game/lobby/ConnectingPage';
-import type { msgToServerType } from '@/lib/packets/msgToServerType';
-import {PlayerSlot} from "@/app/(game)/game/page";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 import { useGameContext } from './GameContext';
 

@@ -32,6 +32,9 @@ services:
       - frontend
       - bff
       - game_service
+    build:
+      context: ../apps/nginx
+      dockerfile: Dockerfile
     networks: [ backend ]
     logging:
       driver: "json-file"
@@ -347,6 +350,7 @@ services:
       - game_service_dist:/app/dist:ro
       - ../shared/game:/app/shared:ro
       - nginx_maps:/app/generated/maps
+      - nginx_game_assets:/app/assets
     command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
       game_service_build:
@@ -378,3 +382,4 @@ volumes:
   social_service_node_modules:
   stats_service_dist:
   stats_service_node_modules:
+  nginx_game_assets:

@@ -1,6 +1,6 @@
 import { StateMachine } from "../StateMachine";
 import { gameData, playerData } from '@/shared/packets/util';
-import { CS_FinishedLoading, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { CS_FailedLoading, CS_FinishedLoading, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { Ground } from "../../Ground";
 import { Player } from "../../Player";
 import { Worm } from "../../worms/Worm";
@@ -79,7 +79,9 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 
 	const result: loadingWeaponResult = await loadWeapons(machine.scene);
 	if (!result.success) {
-		// do something
+		machine.msgToServer<CS_FailedLoading>(CS_Type.CS_FailedLoading, {
+			msg: result.message,
+		})
 		return ;
 	}
 	machine.weapons = result.weapons;

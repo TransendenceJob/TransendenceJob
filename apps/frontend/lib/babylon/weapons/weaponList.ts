@@ -1,4 +1,4 @@
-import { Mesh, AbstractMesh, Scene } from "@babylonjs/core"
+import { Mesh, AbstractMesh } from "@babylonjs/core"
 import { AssaultRifle } from "./weaponClasses/AssaultRifle"
 import { IWeapon } from "./IWeapon"
 
@@ -16,5 +16,5 @@ type Entry<T> = {
  * Stores all the weapons and their file paths.
  */
 export const weaponList: Array<Entry<IWeapon>> = [
-	{instance: AssaultRifle, fileName: "/models/AssaultRifle2_1.obj"},
+	{instance: AssaultRifle, fileName: "/assets/AssaultRifle2_1.obj"},
 ]

@@ -1,8 +1,8 @@
 import { gameData, playerData, wormData } from '@/shared/packets/util';
-import { Vector2, Scalar } from '@babylonjs/core';
+import { Vector2, Scalar } from 'babylonjs';
 import { generateSpawnAreas } from './vectorData';
-import { PLAYER_COUNT, WORMS_PER_PLAYER } from './generateGameData';
-import { Client } from '@/shared/packets/Client'
+import { WORMS_PER_PLAYER } from './generateGameData';
+import { Client } from '@/shared/packets/Client';
 
 class WormSpawner {
   private points: Array<Array<Vector2>>;
@@ -39,6 +39,7 @@ class WormSpawner {
 }
 
 export function spawnPlayers(data: gameData, clients: Array<Client>) {
+  console.log(`Generating Players for ${clients.length} clients`);
   const spawner = new WormSpawner(generateSpawnAreas());
   for (let i = 0; i < clients.length; i++) {
     const new_player: playerData = {

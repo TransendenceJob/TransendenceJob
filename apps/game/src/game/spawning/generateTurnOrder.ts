@@ -21,7 +21,7 @@ function shuffle(array: Array<number>) {
 export function generateTurnOrder(data: gameData) {
   const choices: Array<number> = [];
   data.players.forEach((player) => {
-    choices.push(player.slot as number);
+    choices.push(player.slot);
   });
   shuffle(choices);
   data.turnOrder = choices;

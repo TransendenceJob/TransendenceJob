@@ -16,7 +16,7 @@
     "@babylonjs/loaders": "^8.56.2",
     "earcut": "^3.0.2",
     "framer-motion": "^12.38.0",
-    "next": "16.1.6",
+    "next": "^16.2.6",
     "next-auth": "^5.0.0-beta.30",
     "react": "19.2.3",
     "react-dom": "19.2.3",
