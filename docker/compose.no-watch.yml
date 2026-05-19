@@ -1,0 +1,25 @@
+services:
+  frontend:
+    # Bypasses Next.js --turbo development server watcher
+    # We add "npm run build" before "npm run start" to re-compile your fresh volume changes
+    command: ["sh", "-cx", "npm run build && npm run start -- -H 0.0.0.0 -p ${FRONTEND_INTERNAL_PORT:-3000}"]
+
+  bff:
+    # Bypasses start:debug watcher
+    command: ["npm", "run", "start"]
+
+  auth_service:
+    # Keeps your custom entrypoint shell script but updates the execution command trailing it
+    command: ["npm", "run", "start"]
+
+  social_service:
+    # Bypasses start:debug watcher
+    command: ["npm", "run", "start"]
+
+  stats_service:
+    # Bypasses start:debug watcher
+    command: ["npm", "run", "start"]
+
+  game_service:
+    # Bypasses start:debug watcher
+    command: ["npm", "run", "start"]

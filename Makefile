@@ -48,6 +48,15 @@ up: dev
 dev: check-env
 	$(DC_DEV) up -d --build
 
+# Start the full stack but stack the override configuration file to disable watchers
+dev-no-watch: check-env
+	docker compose --env-file $(ENV_FILE) \
+		-f $(COMPOSE_BASE) \
+		-f $(COMPOSE_DEV) \
+		-f docker/compose.no-watch.yml \
+		--profile dev \
+		up -d --build
+
 prod: check-env
 	$(DC_PROD) up -d --build
 
