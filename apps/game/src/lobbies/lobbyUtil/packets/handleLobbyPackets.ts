@@ -36,7 +36,7 @@ export function handleLobbyPackets(lobby: Lobby, data: CS_GenericPacket) {
 
     // Client changes their readiness state
     case CS_Type.CS_ReadyChange: {
-      const client = lobby.clients.find((client) => client.id == data.userId);
+      const client = lobby.clientManager.get(data.userId);
       if (!client) return;
       client.ready = data.ready;
       log(`Client ${client.id} changed ready to: ${client.ready}`);
@@ -85,7 +85,7 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
   }
 
   // Check if Client tries to double connect
-  if (lobby.clients.find((client) => client.id == data.userId) != undefined) {
+  if (lobby.clientManager.get(data.userId) != undefined) {
     lobby.msgToClient<SC_ConnectFail>(SC_Type.SC_ConnectFail, {
       userId: data.userId,
       msg: `Cannot join, a user with your id is already in that Lobby`,
@@ -94,17 +94,17 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
   }
 
   // Check if enough slots are open, if not, then reject
-  if (lobby.clients.length + 1 > LOBBY_MAX_SLOTS) {
+  if (lobby.clientManager.clients.length + 1 > LOBBY_MAX_SLOTS) {
     lobby.msgToClient<SC_ConnectFail>(SC_Type.SC_ConnectFail, {
       userId: data.userId,
-      msg: `Cannot join full Lobby (${lobby.clients.length}/${LOBBY_MAX_SLOTS})`,
+      msg: `Cannot join full Lobby (${lobby.clientManager.clients.length}/${LOBBY_MAX_SLOTS})`,
     });
     return;
   }
 
   // Add the new Client to Lobby
   let slot = 0;
-  const takenSlots = new Set(lobby.clients.map((client) => client.slot));
+  const takenSlots = new Set(lobby.clientManager.clients.map((client) => client.slot));
   while (takenSlots.has(slot)) {
     slot++;
   }
@@ -114,7 +114,7 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
     slot,
     COLORS[slot],
   );
-  lobby.clients.push(new_client);
+  lobby.clientManager.clients.push(new_client);
   log(
     `New Client connected: id:${new_client.id}, name: ${new_client.name}, slot:${new_client.slot}`,
   );
@@ -126,6 +126,6 @@ function connectionAttempt(lobby: Lobby, data: CS_JoinLobby) {
 
   // Create SC_LobbyData packet to sync the frontend
   lobby.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
-    lobbyData: lobby.clients,
+    lobbyData: lobby.clientManager.clients,
   });
 }

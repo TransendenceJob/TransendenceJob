@@ -3,6 +3,19 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { WormPointer } from '../../worms/WormPointer';
+import { CS_Type, CS_WormChosen } from '@/shared/packets/ClientServerPackets';
+
+/**
+ * Uses Notification system to display custom message based on if this client is active
+ */
+function turnMessage(machine: StateMachine) {
+	if (machine.isActiveUser()) {
+		machine.guiHelper?.notifications.add("Pick a Worm, then confirm with Space");
+	}
+	else {
+		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} is picking a worm`);
+	}
+}
 
 export class PickWormState implements IState {
 	private next: boolean = false;
@@ -13,7 +26,7 @@ export class PickWormState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.guiHelper?.notifications.add(`${this.machine.turn?.activePlayer.name} is picking a worm`)
+		turnMessage(this.machine);
 		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm.mesh);
 		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;
 		
@@ -41,12 +54,18 @@ export class PickWormState implements IState {
 			parameter: "d"
 		}, () => {
 			this.getNextWorm(true);
+			this.machine.msgToServer<CS_WormChosen>(CS_Type.CS_WormChosen, {
+				wormId: this.machine.turn?.chosenWorm.id ?? 0,
+			})
 		}));
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "a"
 		}, () => {
 			this.getNextWorm(false);
+			this.machine.msgToServer<CS_WormChosen>(CS_Type.CS_WormChosen, {
+				wormId: this.machine.turn?.chosenWorm.id ?? 0,
+			})
 		}));
 
 		return (actions);

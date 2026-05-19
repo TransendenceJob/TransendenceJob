@@ -16,22 +16,13 @@ export class GameLoadingState implements IState {
     this.game.sendState();
 
     // Sends Information for each player to load the game
-    const data = generateGameData(this.game.lobby.clients);
+    const data = generateGameData(this.game.lobby.clientManager.clients);
     this.game.sendPacket(SC_Type.SC_GameData, {
       data,
     });
-    // Clients are sorted by their turn oder
-    if (this.game.lobby.clients.length <= 0) return;
-    this.game.lobby.clients.sort(
-      (a, b) =>
-        // find client a's slot numbers position in the turnorder
-        data.turnOrder.findIndex((position) => position == a.slot) -
-        // find client b's slot numbers position in the turnorder
-        data.turnOrder.findIndex((position) => position == b.slot),
-    );
+    
     // Set last player as active, so first player starts, when on Turn Start we move to next player
-    this.game.activeClient =
-      this.game.lobby.clients[this.game.lobby.clients.length - 1];
+    this.game.lobby.clientManager.restart();
   }
 
   tick() {}

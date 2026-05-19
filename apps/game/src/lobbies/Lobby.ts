@@ -18,6 +18,7 @@ import { handlePackets } from './lobbyUtil/packets/handlePackets';
 import { translateLobbyState } from './lobbyUtil/translateLobbyState';
 import { log } from './lobbyUtil/log';
 import { clientFailedLoading } from './lobbyUtil/packets/clientFailedLoading';
+import { ClientManager } from './lobbyUtil/ClientManager';
 
 function newGame(lobby: Lobby) {
   return new Game(lobby);
@@ -35,7 +36,7 @@ function newGame(lobby: Lobby) {
 export class Lobby {
   public id: number;
   public state: LobbyStateEnum;
-  public clients: Array<Client>;
+  public clientManager: ClientManager;
   public engine: NullEngine;
   private emitData: (msg: string) => void;
   private seqHandler: SeqHandler;
@@ -51,7 +52,7 @@ export class Lobby {
   constructor(id: number, emitData: (msg: string) => void) {
     this.id = id;
     this.state = LobbyStateEnum.OpenLobby;
-    this.clients = [];
+    this.clientManager = new ClientManager([]);
     this.emitData = emitData;
     this.engine = new NullEngine();
     // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
@@ -125,9 +126,7 @@ export class Lobby {
     this.msgToClient<SC_GenericStatePacket>(translateLobbyState(newState), {});
 
     // Reset Clients Loading progress and readiness
-    this.clients.forEach((client) => {
-      resetClient(client);
-    });
+    this.clientManager.resetClients();
 
     if (this.state == LobbyStateEnum.Loading) {
       this.game.setState(GameState.GAME_LOADING);
@@ -140,7 +139,7 @@ export class Lobby {
       this.game.dispose();
       this.game = newGame(this);
       this.state = LobbyStateEnum.OpenLobby;
-      this.clients = [];
+      this.clientManager = new ClientManager([]);
     }
   }
 
@@ -150,14 +149,14 @@ export class Lobby {
    */
   public handleDisconnect(userId: string) {
     // Find player to disconnect
-    const playerIndex = this.clients.findIndex((p) => p.id === userId);
+    const playerIndex = this.clientManager.getIndex(userId);
     if (playerIndex == -1) {
       return;
     }
-    const clientId = this.clients[playerIndex].id;
+    const clientId = this.clientManager.clients[playerIndex].id;
 
     // Remove the player from the lobby list
-    this.clients.splice(playerIndex, 1);
+    this.clientManager.remove(userId);
 
     switch (this.state) {
       case LobbyStateEnum.OpenLobby: {
@@ -167,7 +166,7 @@ export class Lobby {
         // Sending Disconnect should be enough on its own to disconnect a player,
         // this is just insurance to keep lobbies synced
         this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
-          lobbyData: this.clients,
+          lobbyData: this.clientManager.clients,
         });
         break;
       }
@@ -184,7 +183,7 @@ export class Lobby {
 
       // When Disconnection happens during Game, skip to end (which resets Lobby)
       case LobbyStateEnum.Game: {
-        if (this.clients.length == 0) {
+        if (this.clientManager.clients.length == 0) {
           log(`Last Client ${clientId} disconnected, restarting game`);
           this.setState(LobbyStateEnum.EndScreen);
         }

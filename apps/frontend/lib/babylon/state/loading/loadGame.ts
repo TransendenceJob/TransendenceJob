@@ -37,7 +37,7 @@ class LoadingHelper {
 export async function loadGame(machine: StateMachine, data: gameData) {
 	console.log("BABYLON: Setting up Game according to given data");
 	if (!data) return ;
-	const LOADING_STEPS = 5;
+	const LOADING_STEPS = 4;
 
 	// Predefine how many times you will call the send() function to report progress
 	const loadingHelper = new LoadingHelper(LOADING_STEPS, (progress: number, msg: string) => {
@@ -58,6 +58,9 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	data.players.forEach((player: playerData) => {
 		machine.players.push(new Player(machine.scene, player));
 	});
+	// Assume first player is active until otherwise specified
+	if (machine.players.length > 0)
+		machine.activePlayerId = machine.players[0].id;
 	loadingHelper.send("Players loaded");
 
 	// Setup up interactions for worms
@@ -72,10 +75,6 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	// Create Ground
 	machine.ground = new Ground(machine.scene, data.map, false);
 	loadingHelper.send("Initialised Worms");
-
-	// Store turn order
-	machine.turnOrder = data.turnOrder;
-	loadingHelper.send("Turn Order loaded");
 
 	const result: loadingWeaponResult = await loadWeapons(machine.scene);
 	if (!result.success) {

@@ -3,6 +3,18 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction, MeshBuilder } from '@babylonjs/core'
 
+/**
+ * Uses Notification system to display custom message based on if this client is active
+ */
+function turnMessage(machine: StateMachine) {
+	if (machine.isActiveUser()) {
+		machine.guiHelper?.notifications.add("Your Turn ends");
+	}
+	else {
+		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} ends their turn`);
+	}
+}
+
 export class TurnEndState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
@@ -11,7 +23,7 @@ export class TurnEndState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.guiHelper?.notifications.add(`Player ${this.machine.players[0].name} ends their turn`);
+		turnMessage(this.machine);
 
 		// Actions
 		const actions: Array<IAction> = [];

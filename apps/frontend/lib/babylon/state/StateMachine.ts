@@ -38,9 +38,9 @@ export class StateMachine {
 	public currentState: IState | undefined;
 	public players: Array<Player>;
 	public weapons: Array<IWeapon>;
+	public activePlayerId: string;
 	public turn: Turn | undefined;
 	private initialized: boolean = false;
-	public turnOrder: Array<number>;
 
 	constructor(canvas: HTMLCanvasElement, scene: Scene, msgToServer: msgToServerType, userId: string, log: (data: string) => void) {
 		// Created once, on Object creation, persist until the end of the canvas
@@ -69,8 +69,8 @@ export class StateMachine {
 		this.currentState = undefined;
 		this.guiHelper = undefined;
 		this.ground = undefined;
+		this.activePlayerId = "";
 		this.turn = undefined;
-		this.turnOrder = [];
 	}
 
 	// Called only once per canvas, when sockets have been set up
@@ -175,7 +175,6 @@ export class StateMachine {
 		this.players = [];
 		this.turn?.dispose()
 		this.turn = undefined;
-		this.turnOrder = [];
 		this.guiHelper?.dispose()
 		this.guiHelper = undefined;
 		this.ground?.dispose();
@@ -206,6 +205,10 @@ export class StateMachine {
 		if (this.turn && this.turn.activePlayerId == this.userId) 
 			return true;
 		return false;
+	}
+
+	getActiveUser() {
+		return (this.players.find((player) => player.id == this.activePlayerId) ?? this.players[0]);
 	}
 
 	dispose() {

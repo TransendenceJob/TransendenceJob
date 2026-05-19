@@ -27,6 +27,7 @@ export enum CS_Type {
 	CS_DEV_SetGameState =		"CS_DEV_SetGameState",
 	CS_JoinLobby =				"CS_JoinLobby",
 	CS_RequestChangeGameState =	"CS_RequestChangeGameState",
+	CS_WormChosen =				"CS_WormChosen",
 }
 
 /**
@@ -156,6 +157,15 @@ export interface CS_DEV_SetGameState extends CS_Base {
 	state: number,
 }
 
+/**
+ * Sent to inform server that a player has chosen a worm
+ * @param wormId identifier for the chosen worm
+ */
+export interface CS_WormChosen extends CS_Base {
+	type: CS_Type.CS_WormChosen,
+	wormId: number,
+}
+
 // ENDSCREEN ==================================================================
 
 /**
@@ -170,5 +180,6 @@ export type CS_GenericPacket =
 			CS_DEV_StartLobby | CS_LoadingProgress |
 			CS_FinishedLoading | CS_FailedLoading | CS_DEV_StartLoading |
 			CS_DEV_ButtonPress | CS_DEV_StartGame | CS_DEV_StartEndscreen |
-			CS_GetGameState | CS_DEV_SetGameState | CS_RequestChangeGameState
+			CS_GetGameState | CS_DEV_SetGameState | CS_RequestChangeGameState |
+			CS_WormChosen
 			;

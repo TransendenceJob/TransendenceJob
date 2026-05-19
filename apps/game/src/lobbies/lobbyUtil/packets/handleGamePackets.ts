@@ -7,6 +7,7 @@ import { LobbyStateEnum } from '../LobbyStateEnum';
 import {
   SC_DEV_ButtonPress,
   SC_Type,
+  SC_WormChosen,
 } from '@/shared/packets/ServerClientPackets';
 import { GameState } from '@/shared/state/GameState';
 
@@ -14,7 +15,7 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
   switch (data.type) {
     // For the button to send to Server, just send back a copy
     case CS_Type.CS_DEV_ButtonPress: {
-      if (lobby.game.activeClient.id != data.userId) break;
+      if (lobby.clientManager.getActive().id != data.userId) break;
       lobby.msgToClient<SC_DEV_ButtonPress>(SC_Type.SC_DEV_ButtonPress, {
         timestamp: data.timestamp,
         msg: data.message,
@@ -38,7 +39,7 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
 
     // When Client tells server that it thinks the server should change state
     case CS_Type.CS_RequestChangeGameState: {
-      if (lobby.game.activeClient.id != data.userId) break;
+      if (lobby.clientManager.getActive().id != data.userId) break;
       // TODO: Add logic to verify, which user Requests a state change, and if its valid
       if (!lobby.game) return;
       lobby.game.setState(data.state as GameState);
@@ -54,6 +55,15 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
     // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
     case CS_Type.CS_DEV_StartEndscreen: {
       lobby.setState(LobbyStateEnum.EndScreen);
+      break;
+    }
+
+    // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
+    case CS_Type.CS_WormChosen: {
+      // TODO should verify and store this, without naively accepting this
+      lobby.msgToClient<SC_WormChosen>(SC_Type.SC_WormChosen, {
+        wormId: data.wormId,
+      })
       break;
     }
 

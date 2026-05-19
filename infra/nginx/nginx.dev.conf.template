@@ -94,7 +94,7 @@ server {
     # Game asset files
     # -------------------------------
     location /assets {
-        root /usr/share/nginx/html
+        root /usr/share/nginx/html;
     }
 
     # -------------------------------

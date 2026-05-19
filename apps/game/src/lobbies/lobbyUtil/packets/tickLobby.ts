@@ -8,16 +8,16 @@ import { log } from 'src/lobbies/lobbyUtil/log';
  * @param lobby Lobby to tick
  */
 export function tickLobby(lobby: Lobby) {
-  if (lobby.clients.length < 1) return;
+  if (lobby.clientManager.clients.length < 1) return;
   let readyCount = 0;
-  lobby.clients.forEach((client) => {
+  lobby.clientManager.clients.forEach((client) => {
     if (client.ready) {
       readyCount++;
     }
   });
   // MIGHT NEED TO CHANGE LATER
   // Currently we start Loading once ALL Clients are ready, not when ALL 4 are ready
-  if (readyCount == lobby.clients.length) {
+  if (readyCount == lobby.clientManager.clients.length) {
     log('All Clients are ready');
     lobby.setState(LobbyStateEnum.Loading);
   }

@@ -9,9 +9,7 @@ import { log } from 'src/lobbies/lobbyUtil/log';
 
 export function handleLoadingPackets(lobby: Lobby, data: CS_GenericPacket) {
   // Get Index for player this package might reference
-  const client: Client | undefined = lobby.clients.find(
-    (client) => client.id == data.userId,
-  );
+  const client: Client | undefined = lobby.clientManager.get(data.userId);
 
   switch (data.type) {
     // For when Client progresses Loading

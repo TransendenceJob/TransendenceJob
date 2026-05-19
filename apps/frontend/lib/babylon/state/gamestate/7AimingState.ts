@@ -4,6 +4,18 @@ import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { Turn } from '../Turn';
 
+/**
+ * Uses Notification system to display custom message based on if this client is active
+ */
+function turnMessage(machine: StateMachine) {
+	if (machine.isActiveUser()) {
+		machine.guiHelper?.notifications.add("Aim your weapon with WASD and the mouse, then confirm with Space");
+	}
+	else {
+		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} is aiming`);
+	}
+}
+
 export class AimingState implements IState {
 	private next: boolean = false;
 	private aimLeft: boolean = false;

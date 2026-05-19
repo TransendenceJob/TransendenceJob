@@ -41,7 +41,6 @@ export interface mapData {
  */
 export interface gameData {
 	players: Array<playerData>
-	turnOrder: Array<number>;
 	map: mapData;
 }
 

@@ -29,7 +29,6 @@ export class Game {
   private currentState: IState;
   public lobby: Lobby;
   public turnOrder: Array<number>;
-  public activeClient: Client;
 
   // Connstructor
   constructor(lobby: Lobby) {
@@ -65,8 +64,6 @@ export class Game {
     this.currentState = new GamePendingState(this);
     this.currentState.enter();
     this.turnOrder = [];
-    // Should never be used, but needs to be initialised
-    this.activeClient = newClient(0, '');
   }
 
   // Setter

@@ -15,6 +15,8 @@ export class RoundStartState implements IState {
 		this.machine.turn?.chosenWeapon?.show(false)
 		this.machine.guiHelper?.notifications.add("A new Round has started")
 
+		this.machine.activePlayerId = this.machine.players[0].id;
+
 		// Actions
 		const actions: Array<IAction> = [];
 

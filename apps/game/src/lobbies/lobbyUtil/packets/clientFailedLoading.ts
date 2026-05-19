@@ -15,6 +15,6 @@ export function clientFailedLoading(lobby: Lobby, id: string, msg: string) {
   lobby.setState(LobbyStateEnum.OpenLobby);
   // Syncs Clients to be updates properly
   lobby.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
-    lobbyData: lobby.clients,
+    lobbyData: lobby.clientManager.clients,
   });
 }

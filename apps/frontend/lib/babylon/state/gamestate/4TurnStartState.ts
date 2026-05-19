@@ -3,6 +3,19 @@ import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { Turn } from '../Turn';
+import { Player } from "../../Player";
+
+/**
+ * Uses Notification system to display custom message based on if this client is active
+ */
+function turnMessage(machine: StateMachine) {
+	if (machine.isActiveUser()) {
+		machine.guiHelper?.notifications.add("It is your Turn");
+	}
+	else {
+		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} starts their Turn`);
+	}
+}
 
 export class TurnStartState implements IState {
 	private next: boolean = false;
@@ -12,9 +25,8 @@ export class TurnStartState implements IState {
 		this.reset()
 
 		// Setup
-		const chosenPlayer = this.machine.players[this.machine.turnOrder[0]];
-		this.machine.guiHelper?.notifications.add(`${chosenPlayer.name} starts their Turn`)
-		this.machine.turn = new Turn(chosenPlayer);
+		this.machine.turn = new Turn(this.machine.getActiveUser());
+		turnMessage(this.machine);
 
 		// Actions
 		const actions: Array<IAction> = [];

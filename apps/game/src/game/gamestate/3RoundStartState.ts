@@ -10,6 +10,7 @@ export class RoundStartState implements IState {
 
     // Setup
     console.log('Round starts');
+    this.game.lobby.clientManager.restart();
 
     // Tell Clients to move to next state
     this.game.sendState();
