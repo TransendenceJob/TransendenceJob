@@ -14,7 +14,7 @@ function mapDataToVector3(data: mapData) {
  * raw angle formula derived from https://wumbo.net/formulas/angle-between-two-vectors-2d/
  * Uses vector(0, 1) to compare against
  * @param Vector
- * @returns Angle in radians, 0 meaning straight up, increasing angle turns clockwise
+ * @returns Angle in radians, 0 meaning straight up, increasing angle turns counter-clockwise
 */
 function angle(target: Vector2) {
 	const raw_angle = Math.atan2(target.x, target.y);
@@ -167,11 +167,12 @@ export class Ground
 
 		// Get angles of entrance and middle point
 		const tessalationCount = 20;
-		let startAngle = angle(exploToEntry);
+		const startAngle = angle(exploToEntry);
 		const endAngle = angle(exploToExit);
-		if (endAngle >= Math.PI)
-			startAngle += Math.PI * 2;
-		const angleDiff = endAngle - startAngle;
+		let angleDiff = endAngle - startAngle;
+		// Adjust so rotation always goes clockwise (meaning rotating INTO the mesh)
+		if (angleDiff > 0)
+			angleDiff -= Math.PI * 2;
 
 		// Divide the shortest path by the steps
 		const angleEachStep = angleDiff  / (tessalationCount);

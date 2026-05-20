@@ -1,6 +1,4 @@
 import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
-
-// Shit happens cause the shared folder is outside of root directory
 import { GameState } from '@/shared/state/GameState';
 import { IState } from './gamestate/IState';
 import { GamePendingState } from './gamestate/0GamePendingState';
@@ -15,7 +13,6 @@ import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 import { Lobby } from 'src/lobbies/Lobby';
-import { Client, newClient } from '@/shared/packets/Client';
 
 export class Game {
   // Member properties
