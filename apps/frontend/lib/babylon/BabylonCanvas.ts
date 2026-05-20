@@ -1,5 +1,3 @@
-// https://playground.babylonjs.com/#M1NNLW#12
-
 export interface mapData {
 	points: Array<Array<pointData>>
 }
@@ -33,6 +31,33 @@ interface IntersectionPoints {
     insertIndex: number,
 }
 
+function createPointMap(vectors: Array<BABYLON.Vector3>, scene: BABYLON.Scene) {
+    const mesh = BABYLON.MeshBuilder.ExtrudePolygon(
+        // Add counting numbers to this
+        "Ground",
+        {
+            shape: vectors,
+            depth: 1,
+        },
+        scene
+    );
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position = new BABYLON.Vector3(0, 0, -1 / 2);
+
+    let physics: BABYLON.PhysicsAggregate | null = null;
+    if (scene.isPhysicsEnabled()) {
+        physics = new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, scene);
+    } else {
+        console.warn("Physics engine is not enabled on the scene. Ground physics aggregate skipped.");
+    }
+    
+    return ({
+        points: vectors,
+        mesh: mesh,
+        physics: physics
+    });
+}
+
 export class Ground
 {
 	private scene: BABYLON.Scene;
@@ -52,30 +77,7 @@ export class Ground
         data.points.forEach((map: Array<pointData>) => {
             if (map.length < 1) 
                 return ;
-            const vectors = Ground.mapDataToVector3(map);
-            const mesh = BABYLON.MeshBuilder.ExtrudePolygon(
-                this.name,
-                {
-                    shape: vectors,
-                    depth: this.depth,
-                },
-                this.scene
-            );
-            mesh.rotation.x = -Math.PI / 2;
-            mesh.position = new BABYLON.Vector3(0, 0, -this.depth / 2);
-
-            let physics: BABYLON.PhysicsAggregate | null = null;
-            if (this.scene.isPhysicsEnabled()) {
-                physics = new BABYLON.PhysicsAggregate(mesh, BABYLON.PhysicsShapeType.MESH, { mass: 0 }, this.scene);
-            } else {
-                console.warn("Physics engine is not enabled on the scene. Ground physics aggregate skipped.");
-            }
-            
-            const newMap = {
-                points: vectors,
-                mesh: mesh,
-                physics: physics
-            }
+            const newMap = createPointMap(Ground.mapDataToVector3(map), this.scene);
             this.maps.push(newMap);
         });
 	}
@@ -178,7 +180,7 @@ export class Ground
             // If this Map was affected, make new mesh
             // otherwise just store old one
             console.log("In the end:", intersectionPoints);
-            const resultingMaps: Array<PointMap> = Ground.handleIntersections(newVectors, intersectionPoints, map);
+            const resultingMaps: Array<PointMap> = this.handleIntersections(newVectors, intersectionPoints, map, explosionPoint, radius);
             resultingMaps.forEach((resultingMap) => {
                 newMaps.push(resultingMap);
             })
@@ -311,18 +313,59 @@ export class Ground
      * If no intersections, just return old map
      * @returns the resulting maps of the intersection calculations
      */
-    private static handleIntersections(
+    private handleIntersections(
         vectors: Array<BABYLON.Vector3>, 
         intersections: Array<IntersectionPoints>,
-        old: PointMap): Array<PointMap> {
+        old: PointMap,
+        explosionPoint: BABYLON.Vector2,
+        radius
+    ): Array<PointMap> {
         const result = new Array<PointMap>();
 
         // If no Intersections happened, simply return old map data
         if (intersections.length == 0)
             return ([old]);
+
+        // For each intersection that happened
         intersections.forEach((intersection) => {
+            
+
+
+            // Prepare vectors for crossproduct
+            const entryPoint = new BABYLON.Vector2(intersection.entry.x, intersection.entry.y);
+            const exitPoint = new BABYLON.Vector2(intersection.exit.x, intersection.exit.y);
+            const exploToEntry = entryPoint.subtract(explosionPoint);
+            const exploToExit = exitPoint.subtract(explosionPoint);
+            console.log("Entry: ", entryPoint, "Exit: ", exitPoint);
+
+            // Get angles of entrance and middle point
+            const tessalationCount = 20;
+            const startAngle = Ground.angle(exploToEntry);
+            const endAngle = Ground.angle(exploToExit);
+            let angleDiff = endAngle - startAngle;
+            if (angleDiff > 0)
+                angleDiff -= Math.PI * 2;
+
+            // Divide the start->end path by the steps
+            const angleEachStep = angleDiff  / (tessalationCount);
+            console.log("StartAngle: ", startAngle / Math.PI * 180, "EndAngle: ", endAngle / Math.PI * 180, "AngleEachStep: ", angleEachStep / Math.PI * 180);
+
+            // Walk along explosions surface, putting tesselationCount points into the newArray
+            const newVectors = vectors.slice(0, intersection.insertIndex);
+            for (let i = 1; i < tessalationCount; i++) {
+                newVectors.push(new BABYLON.Vector3(
+                    -Math.sin(startAngle + angleEachStep * i) * radius + explosionPoint.x,
+                    0, 
+                    Math.cos(startAngle + angleEachStep * i) * radius + explosionPoint.y
+                ));
+            }
+            vectors.slice(intersection.insertIndex).forEach((vec) => {
+                newVectors.push(vec);
+            })
+            vectors = newVectors;
             console.log(`Intersection at  ${intersection.entry}, ${intersection.exit}, index: ${intersection.insertIndex}`);
         })
+        result.push(createPointMap(vectors, this.scene));
         /*
         const newMap = {
             points: map.points,
