@@ -1,4 +1,4 @@
-import { Turn } from "../../state/Turn";
+import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 import { IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 

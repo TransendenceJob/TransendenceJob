@@ -7,7 +7,6 @@ import { createCamera } from "./Camera";
 import { msgToServerType } from "../packets/msgToServerType";
 import { StateMachine } from './state/StateMachine';
 import { MessageQueue } from './MessageQueue';
-import { Client } from "@/shared/packets/Client";
 
 export async function createScene(
 	canvas: HTMLCanvasElement, 

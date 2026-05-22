@@ -1,8 +1,8 @@
-import { IState } from './IState'
+import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { Turn } from '../Turn';
+import { Turn } from '../4_turn_start/Turn';
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -26,7 +26,7 @@ export class AimingState implements IState {
 		this.reset()
 
 		// Setup
-		this.machine.guiHelper?.notifications.add(`Player ${this.machine.players[0].name} is aiming`)
+		turnMessage(this.machine);
 
 		// Actions
 		const actions: Array<IAction> = [];
@@ -56,7 +56,7 @@ export class AimingState implements IState {
 		turn.chosenWeapon.mesh.position.y = turn.chosenWorm.mesh.position.y;
 
 		const aimingActions = this.machine.turn?.chosenWeapon?.aimTypes[0].activate(this.machine.turn);
-		aimingActions?.forEach((a) => {actions.push(a)});
+		aimingActions?.forEach((a: IAction) => {actions.push(a)});
 
 		return (actions);
 	}

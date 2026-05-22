@@ -10,7 +10,7 @@
  * 3) Add the interface name into the union type at the end
 */
 
-import { gameData } from './util';
+import { gameData, pointData } from './util';
 import { Client } from './Client';
 
 export enum SC_Type {
@@ -35,6 +35,7 @@ export enum SC_Type {
 	SC_DEV_GameState =			"SC_DEV_GameState",
 	SC_ActivePlayerChanged =	"SC_ActivePlayerChanged",
 	SC_WormChosen =				"SC_WormChosen",
+	SC_ExplosionOccurs =		"SC_ExplosionOccurs",
 }
 
 /**
@@ -254,6 +255,18 @@ export interface SC_GameData extends SC_Base {
 	data: gameData,
 }
 
+/**
+ * Sent when game is started or loaded so Clients can display game
+ * @param data Data that is needed for game to be loaded
+ */
+export interface SC_ExplosionOccurs extends SC_Base {
+	type: SC_Type.SC_ExplosionOccurs,
+	point: pointData,
+	radius: number,
+}
+
+
+
 // ENDSCREEN ==================================================================
 
 
@@ -264,7 +277,8 @@ export type SC_GenericPacket =
 			SC_StartLoading | SC_FinishedLoading | SC_FailedLoading | 
 			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
 			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState |
-			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen
+			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen |
+			SC_ExplosionOccurs
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |

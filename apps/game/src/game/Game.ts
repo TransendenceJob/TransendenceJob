@@ -13,6 +13,17 @@ import { TurnEndState } from './gamestate/8TurnEndState';
 import { GameEndState } from './gamestate/9GameEndState';
 import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 import { Lobby } from 'src/lobbies/Lobby';
+import { pointData } from '@/shared/packets/util';
+
+// Server still needs a Turn, that tracks:
+// aiming values
+// active player (already tracked elsewhere)
+
+interface aimingData {
+  position: pointData;
+  angle: number;
+  force: number;
+}
 
 export class Game {
   // Member properties
@@ -26,8 +37,9 @@ export class Game {
   private currentState: IState;
   public lobby: Lobby;
   public turnOrder: Array<number>;
+  public aimingData: aimingData;
 
-  // Connstructor
+  // Constructor
   constructor(lobby: Lobby) {
     this.engine = lobby.engine;
     this.scene = new Scene(this.engine);
@@ -61,6 +73,14 @@ export class Game {
     this.currentState = new GamePendingState(this);
     this.currentState.enter();
     this.turnOrder = [];
+    this.aimingData = {
+      position: {
+        x: 0,
+        y: 0,
+      },
+      angle: 0,
+      force: 0,
+    };
   }
 
   // Setter

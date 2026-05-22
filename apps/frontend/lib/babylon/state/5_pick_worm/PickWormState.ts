@@ -1,8 +1,8 @@
-import { IState } from './IState'
+import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { WormPointer } from '../../worms/WormPointer';
+import { WormPointer } from './WormPointer';
 import { CS_Type, CS_WormChosen } from '@/shared/packets/ClientServerPackets';
 
 /**

@@ -1,9 +1,9 @@
-import { StateMachine } from "../StateMachine";
+import { StateMachine } from '../StateMachine';
 import { gameData, playerData } from '@/shared/packets/util';
 import { CS_FailedLoading, CS_FinishedLoading, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
-import { Ground } from "../../Ground";
-import { Player } from "../../Player";
-import { Worm } from "../../worms/Worm";
+import { Ground } from "./Ground";
+import { Player } from "@/lib/babylon/player/Player";
+import { Worm } from "@/lib/babylon/player/Worm";
 import { loadWeapons, loadingWeaponResult } from "./loadWeapons";
 
 /**

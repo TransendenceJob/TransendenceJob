@@ -1,8 +1,8 @@
-import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Vector3, Mesh } from '@babylonjs/core';
+import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Mesh } from '@babylonjs/core';
 // Might be able to be removed
 import "@babylonjs/loaders/OBJ";
-import { weaponList } from '../../weapons/weaponList';
-import { IWeapon } from '../../weapons/IWeapon';
+import { weaponList } from '../7_aiming/weapons/weaponList';
+import { IWeapon } from '../7_aiming/weapons/IWeapon';
 
 async function load(scene: Scene, file: string): Promise<Array<AbstractMesh>> {
 	// May throw exception, should be caught on specific Weapon Creation that calls this in constructor

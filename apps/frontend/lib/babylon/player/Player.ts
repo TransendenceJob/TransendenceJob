@@ -1,5 +1,5 @@
 import { ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
-import { Worm } from './worms/Worm';
+import { Worm } from './Worm';
 import { playerData, wormData } from '@/shared/packets/util';
 
 /**

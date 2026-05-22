@@ -1,4 +1,4 @@
-import { IState } from './IState'
+import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { IAction } from '@babylonjs/core'
 

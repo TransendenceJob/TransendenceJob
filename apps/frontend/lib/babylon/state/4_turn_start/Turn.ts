@@ -1,7 +1,7 @@
 import { Vector2 } from "@babylonjs/core"
-import { Player } from "../Player";
-import { IWeapon } from "../weapons/IWeapon";
-import { Worm } from "../worms/Worm";
+import { Player } from "@/lib/babylon/player/Player";
+import { IWeapon } from "../7_aiming/weapons/IWeapon";
+import { Worm } from "@/lib/babylon/player/Worm";
 
 
 export class Turn {
@@ -9,7 +9,7 @@ export class Turn {
 	public activePlayer: Player;
 	public chosenWorm: Worm;
 	public chosenWeapon: IWeapon | undefined = undefined;
-	public aimOrigin: Vector2 = new Vector2(0, 0);
+	public aimOrigin: Vector2 | undefined = undefined;
 	public aimAngle: number = 0;
 	public aimForce: number = 1;
 	constructor(player: Player) {

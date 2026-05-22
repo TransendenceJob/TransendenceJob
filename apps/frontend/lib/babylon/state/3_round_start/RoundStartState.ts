@@ -1,30 +1,38 @@
-import { IState } from './IState'
+import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 
-export class GamePendingState implements IState {
+export class RoundStartState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
-		console.log('Entered Pending State');
+		console.log('Entered Round Start State');
+		this.reset()
+
+		// Setup
+		this.machine.turn?.chosenWeapon?.show(false)
+		this.machine.guiHelper?.notifications.add("A new Round has started")
+
+		this.machine.activePlayerId = this.machine.players[0].id;
 
 		// Actions
 		const actions: Array<IAction> = [];
+
+		// DEV TOOL skip to next state manually by pressing Space
 		actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
-
-		return (actions);
+		return(actions);
 	}
 
 	tick() {
 		if (this.next) {
-			this.machine.sendForceStatePacket(GameState.GAME_LOADING);
+			this.machine.sendForceStatePacket(GameState.TURN_START);
 		}
 	}
 

@@ -2,10 +2,10 @@ import { AdvancedDynamicTexture, Button} from "@babylonjs/gui";
 import { Scene } from "@babylonjs/core";
 import { CS_Type, CS_DEV_StartEndscreen, CS_DEV_ButtonPress } from "@/shared/packets/ClientServerPackets"
 
-import { setButtonSize, setButtonPos } from './util/guiUtil';
-import type { msgToServerType } from '../packets/msgToServerType';
-import { stateUi } from './state/stateUi';
-import { GameNotifications } from "./notifications/GameNotifications";
+import { setButtonSize, setButtonPos } from '../util/guiUtil';
+import type { msgToServerType } from '@/lib/packets/msgToServerType';
+import { stateUi } from '../state/state_ui/stateUi';
+import { GameNotifications } from "../gui/GameNotifications";
 import { SocketStatus } from "./SocketStatus";
 
 export class GuiHelper {

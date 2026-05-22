@@ -8,8 +8,21 @@ import {
   SC_DEV_ButtonPress,
   SC_Type,
   SC_WormChosen,
+  SC_ExplosionOccurs,
 } from '@/shared/packets/ServerClientPackets';
+import { pointData } from '@/shared/packets/util';
 import { GameState } from '@/shared/state/GameState';
+
+function requestChangeState(
+  lobby: Lobby,
+  userId: string,
+  targetState: GameState,
+) {
+  if (lobby.clientManager.getActive().id != userId) return;
+  // TODO: Add logic to verify, which user Requests a state change, and if its valid
+  if (!lobby.game) return;
+  lobby.game.setState(targetState);
+}
 
 export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
   switch (data.type) {
@@ -39,10 +52,7 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
 
     // When Client tells server that it thinks the server should change state
     case CS_Type.CS_RequestChangeGameState: {
-      if (lobby.clientManager.getActive().id != data.userId) break;
-      // TODO: Add logic to verify, which user Requests a state change, and if its valid
-      if (!lobby.game) return;
-      lobby.game.setState(data.state as GameState);
+      requestChangeState(lobby, data.userId, data.state);
       break;
     }
 
@@ -58,12 +68,29 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       break;
     }
 
-    // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
+    // When worms is locked in
     case CS_Type.CS_WormChosen: {
       // TODO should verify and store this, without naively accepting this
       lobby.msgToClient<SC_WormChosen>(SC_Type.SC_WormChosen, {
         wormId: data.wormId,
-      })
+      });
+      break;
+    }
+
+    // When aiming is locked in
+    case CS_Type.CS_AimingDone: {
+      // Do not allow non-active user to submit data
+      if (lobby.clientManager.getActive().id != data.userId) return;
+      const target = lobby.game.aimingData;
+      target.position = data.position as pointData;
+      target.angle = data.angle as number;
+      target.force = data.force as number;
+      requestChangeState(lobby, data.userId, GameState.TURN_END);
+      // Placeholder logic for projectile handling: Worm fucking explodes
+      lobby.msgToClient<SC_ExplosionOccurs>(SC_Type.SC_ExplosionOccurs, {
+        point: data.position as pointData,
+        radius: 3,
+      });
       break;
     }
 

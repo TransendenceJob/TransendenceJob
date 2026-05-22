@@ -1,5 +1,5 @@
 import { IAction, Scene } from '@babylonjs/core';
-import { Turn } from "../../state/Turn";
+import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 
 export interface IAimType {
 	activate(turn: Turn): Array<IAction>;

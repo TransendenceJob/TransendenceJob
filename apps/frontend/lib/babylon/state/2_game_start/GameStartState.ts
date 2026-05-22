@@ -1,7 +1,7 @@
-import { IState } from './IState'
+import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { IAction } from '@babylonjs/core'
-import { fadeAnimation } from '../../fadeAnimation';
+import { fadeAnimation } from './fadeAnimation';
 
 export class GameStartState implements IState {
 	constructor(private machine: StateMachine) {}

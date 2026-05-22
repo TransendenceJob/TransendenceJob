@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture, Button} from "@babylonjs/gui";
 
-import { setButtonSize, setButtonPos } from '../util/guiUtil';
+import { setButtonSize, setButtonPos } from '../../util/guiUtil';
 import { msgToServerType } from "@/lib/packets/msgToServerType";
 import { CS_Type, CS_DEV_SetGameState } from "@/shared/packets/ClientServerPackets";
 

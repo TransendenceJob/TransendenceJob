@@ -1,6 +1,6 @@
 import { AdvancedDynamicTexture} from "@babylonjs/gui";
 
-import type { msgToServerType } from '../../packets/msgToServerType';
+import type { msgToServerType } from '@/lib/packets/msgToServerType';
 import { setStateButtons } from "./setStateButtons";
 import { setStateText } from "./setStateText";
 

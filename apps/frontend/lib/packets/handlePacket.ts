@@ -1,10 +1,10 @@
 import { SC_Type, SC_GenericPacket } from "@/shared/packets/ServerClientPackets"
-import { StateMachine } from './state/StateMachine';
+import { StateMachine } from '../babylon/state/StateMachine';
 import { GameState } from '@/shared/state/GameState';
 import { Nullable } from "@babylonjs/core";
 import { Control, TextBlock } from "@babylonjs/gui";
-import { Player } from "./Player";
-import { Worm } from './worms/Worm';
+import { Player } from "../babylon/player/Player";
+import { Worm } from '../babylon/player/Worm';
 
 function findWormById(players: Array<Player>, wormId: number): Worm | undefined {
 	let worm: Worm | undefined = undefined;
@@ -40,6 +40,12 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 				state.turn.chosenWorm = target;
 			console.log(`Found worm: `, state.turn?.chosenWorm, target);
 			break ;
+		}
+		case SC_Type.SC_ExplosionOccurs: {
+			console.log("Handling Explosion");
+			if (state.state != GameState.TURN_END)
+				break ;
+			state.ground?.affectTerrain(data.point.x, data.point.y, data.radius);
 		}
 		default : {
 			console.log("BABYLON> Received unhandled type: ", data.type);
