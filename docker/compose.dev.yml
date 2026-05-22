@@ -17,6 +17,9 @@ services:
       - frontend
       - bff
       - game_service
+    build:
+      context: ../apps/nginx
+      dockerfile: Dockerfile
     networks: [backend]
     logging:
       driver: "json-file"

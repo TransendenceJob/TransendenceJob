@@ -20,7 +20,6 @@ export class GameLoadingState implements IState {
     this.game.sendPacket(SC_Type.SC_GameData, {
       data,
     });
-    
     // Set last player as active, so first player starts, when on Turn Start we move to next player
     this.game.lobby.clientManager.restart();
   }

@@ -1,0 +1,7 @@
+A lot of the game still happens clientside,
+which should be moved to the game server.
+
+Such as : 
+choosing a weapon
+Aiming a wweapon
+Where explosions happen

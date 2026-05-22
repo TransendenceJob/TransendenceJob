@@ -1,7 +1,10 @@
 import { IState } from './IState';
 import { Game } from '../Game';
 import { GameState } from '@/shared/state/GameState';
-import { SC_ActivePlayerChanged, SC_Type } from '@/shared/packets/ServerClientPackets';
+import {
+  SC_ActivePlayerChanged,
+  SC_Type,
+} from '@/shared/packets/ServerClientPackets';
 
 export class TurnStartState implements IState {
   constructor(private game: Game) {}
@@ -14,9 +17,12 @@ export class TurnStartState implements IState {
 
     // Choose next active player
     const client = this.game.lobby.clientManager.getNextClient();
-    this.game.sendPacket<SC_ActivePlayerChanged>(SC_Type.SC_ActivePlayerChanged, {
-      activeId: client.id,
-    })
+    this.game.sendPacket<SC_ActivePlayerChanged>(
+      SC_Type.SC_ActivePlayerChanged,
+      {
+        activeId: client.id,
+      },
+    );
     console.log(`New Clients Turn: ${client.name}`);
 
     // Tell Clients to move to next state

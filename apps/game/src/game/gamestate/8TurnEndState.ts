@@ -1,5 +1,6 @@
 import { IState } from './IState';
 import { Game } from '../Game';
+import { GameState } from '@/shared/state/GameState';
 
 export class TurnEndState implements IState {
   constructor(private game: Game) {}
@@ -14,7 +15,9 @@ export class TurnEndState implements IState {
     this.game.sendState();
   }
 
-  tick() {}
+  tick() {
+    this.game.setState(GameState.TURN_START);
+  }
 
   exit() {
     this.reset();

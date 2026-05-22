@@ -1,7 +1,6 @@
 import { IState } from './IState'
 import { StateMachine } from '../StateMachine';
-import { GameState } from '@/shared/state/GameState';
-import { ExecuteCodeAction, ActionManager, IAction, MeshBuilder } from '@babylonjs/core'
+import { IAction } from '@babylonjs/core'
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -16,7 +15,6 @@ function turnMessage(machine: StateMachine) {
 }
 
 export class TurnEndState implements IState {
-	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
 	enter() : Array<IAction> {
@@ -28,14 +26,6 @@ export class TurnEndState implements IState {
 		// Actions
 		const actions: Array<IAction> = [];
 
-		// DEV TOOL skip to next state manually by pressing Space
-		actions.push(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyUpTrigger,
-			parameter: " "
-		}, () => {
-			this.next = true;
-		}));
-
 		// Mock projectile shooting logic
 		const worm = this.machine.turn?.chosenWorm;
 		if (worm) {
@@ -46,9 +36,6 @@ export class TurnEndState implements IState {
 	}
 
 	tick() {
-		if (this.next) {
-			this.machine.sendForceStatePacket(GameState.GAME_END);
-		}
 	}
 
 	exit() {
@@ -58,6 +45,5 @@ export class TurnEndState implements IState {
 	}
 
 	reset(): void {
-		this.next = false;
 	}
 }
