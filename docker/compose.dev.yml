@@ -39,15 +39,15 @@ services:
       PORT: ${FRONTEND_INTERNAL_PORT:-3000}
       BFF_INTERNAL_URL: http://bff:${BFF_INTERNAL_PORT:-3000}
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NODE_OPTIONS: "--max-old-space-size=1024"
     volumes:
       - ../apps/frontend:/app
       - frontend_node_modules:/app/node_modules
       - frontend_next:/app/.next
       - ../shared/game:/app/shared
+      - nginx_game_assets:/app/assets
     ports:
       - "${FRONTEND_HOST_PORT:-3005}:${FRONTEND_INTERNAL_PORT:-3000}"
-    command: ["sh", "-lc", "npm ci && npm run dev -- -H 0.0.0.0 -p ${FRONTEND_INTERNAL_PORT:-3000} --turbo"]
+    command: ["sh", "-lc", "npm ci && npm run dev -- -H 0.0.0.0 -p ${FRONTEND_INTERNAL_PORT:-3000}"]
     networks: [backend]
     logging:
       driver: "json-file"
@@ -300,3 +300,4 @@ volumes:
   social_service_dist:
   stats_service_node_modules:
   stats_service_dist:
+  nginx_game_assets:
