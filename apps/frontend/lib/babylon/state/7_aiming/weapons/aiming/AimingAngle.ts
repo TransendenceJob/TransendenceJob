@@ -17,7 +17,7 @@ export class AimingAngle implements IAimType {
 		this.span = span;
 	}
 
-	activate(turn: Turn): Array<IAction> {
+	activate(turn: Turn, scene: Scene) {
 
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
@@ -68,7 +68,12 @@ export class AimingAngle implements IAimType {
 			}
 		}));
 
-		return (this.actions); 
+		this.actions.forEach(
+			(action) => {
+				if (action) 
+					scene.actionManager.registerAction(action);
+			}
+		);
 	}
 
 	deactivate(scene: Scene) {
