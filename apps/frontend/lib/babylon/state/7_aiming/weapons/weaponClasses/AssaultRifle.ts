@@ -4,6 +4,7 @@ import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
+import { PickPosition } from '../aiming/PickPosition';
 
 const SCALE = 0.2;
 
@@ -40,6 +41,7 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
 			new AimingAngle(this.allowedAngleMin, this.allowedAngleMax, this.span),
+			new PickPosition(),
 		]
 		// This should be calculated in Blender (need to double values from there)
 		// It points to the tip of the nozzle, and is needed to spawn projectiles

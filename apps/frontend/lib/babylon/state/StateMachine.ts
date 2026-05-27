@@ -92,21 +92,29 @@ export class StateMachine {
 	 * @param state new state to set it to 
 	 */
 	setState(state: GameState) {
+		// Exit Old State
 		this.log(`Old state: ${this.state} New State: ${state}`);
 		if (this.state == state) {
 			this.log("Setting to same state, no effects triggered");
 			return ;
 		}
 		this.currentState?.exit();
+
+		// Delete Actions from old state
+		this.scene.actionManager.actions = [];
+
+		// Enter new State
 		this.state = state;
 		let newState: IState | undefined = this.states.get(state)
 		if (newState)
 			this.currentState = newState;
 		else
 			newState = new GamePendingState(this);
-		const actions = this.currentState?.enter();
-		if (actions)
-			this.registerNewActions(actions);
+		this.currentState?.enter();
+
+		// Register Actions that always need to exist
+		if (this.guiHelper)
+			this.scene.actionManager.registerAction(this.guiHelper?.notifications.action)
 	}
 
 	load(data: gameData) {
@@ -127,27 +135,6 @@ export class StateMachine {
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
 		//this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});
-	}
-
-	/**
-	 * Resets the actions that a scene has
-	 * @param actions state-specific list of Actions to add to scene
-	 */
-	registerNewActions(actions: Array<IAction>) {
-		// Clear old actions
-		if (!this.scene.actionManager) {
-			this.scene.actionManager = new ActionManager(this.scene);
-		}
-		this.scene.actionManager.actions = [];
-		
-		// Add actions that always need to exist
-		if (this.guiHelper)
-			this.scene.actionManager.registerAction(this.guiHelper?.notifications.action)
-
-		// Register new ones
-		if (!actions)
-			return ;
-		actions.forEach(action => this.scene.actionManager.registerAction(action));
 	}
 
 	/**

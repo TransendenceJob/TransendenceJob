@@ -22,7 +22,7 @@ export class PickWormState implements IState {
 	private pointer: WormPointer | undefined = undefined;
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		this.reset()
 
 		// Setup
@@ -31,17 +31,17 @@ export class PickWormState implements IState {
 		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;
 		
 		// Actions
-		const actions: Array<IAction> = [];
-
+		const action = this.machine.scene.actionManager;
+		
 		// For inactive players, dont allow picking worms
 		if (!this.machine.isActiveUser())
-			return (actions)
+			return ;
 
 		// Allow worms to be chosen by clicking on their mesh
 		this.machine.turn?.activePlayer.wormsClickable(true);
 
 		// Confirming chosen Worm
-		actions.push(new ExecuteCodeAction({
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
@@ -49,7 +49,7 @@ export class PickWormState implements IState {
 		}));
 
 		// Picking next Worm from list
-		actions.push(new ExecuteCodeAction({
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "d"
 		}, () => {
@@ -58,7 +58,7 @@ export class PickWormState implements IState {
 				wormId: this.machine.turn?.chosenWorm.id ?? 0,
 			})
 		}));
-		actions.push(new ExecuteCodeAction({
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "a"
 		}, () => {
@@ -67,8 +67,6 @@ export class PickWormState implements IState {
 				wormId: this.machine.turn?.chosenWorm.id ?? 0,
 			})
 		}));
-
-		return (actions);
 	}
 
 	/**

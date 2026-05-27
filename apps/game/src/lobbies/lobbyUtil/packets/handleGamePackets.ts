@@ -10,7 +10,6 @@ import {
   SC_WormChosen,
   SC_ExplosionOccurs,
 } from '@/shared/packets/ServerClientPackets';
-import { pointData } from '@/shared/packets/util';
 import { GameState } from '@/shared/state/GameState';
 
 function requestChangeState(
@@ -78,17 +77,17 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
     }
 
     // When aiming is locked in
-    case CS_Type.CS_AimingDone: {
+    case CS_Type.CS_EndAimState: {
       // Do not allow non-active user to submit data
       if (lobby.clientManager.getActive().id != data.userId) return;
       const target = lobby.game.aimingData;
-      target.position = data.position as pointData;
-      target.angle = data.angle as number;
-      target.force = data.force as number;
+      target.position = data.position;
+      target.angle = data.angle;
+      target.force = data.force;
       requestChangeState(lobby, data.userId, GameState.TURN_END);
       // Placeholder logic for projectile handling: Worm fucking explodes
       lobby.msgToClient<SC_ExplosionOccurs>(SC_Type.SC_ExplosionOccurs, {
-        point: data.position as pointData,
+        point: data.position,
         radius: 3,
       });
       break;

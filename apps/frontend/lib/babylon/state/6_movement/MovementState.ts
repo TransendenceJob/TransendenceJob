@@ -20,27 +20,26 @@ export class MovementState implements IState {
 	// Constructor called once pet Canvas
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		this.reset()
 
 		// Setup
 		turnMessage(this.machine);
 
 		// Actions
-		const actions: Array<IAction> = [];
+		const action = this.machine.scene.actionManager;
 
 		// For inactive players, dont allow picking worms
 		if (!this.machine.isActiveUser())
-			return (actions)
+			return ;
 
 		// Confirm movement to be done
-		actions.push(new ExecuteCodeAction({
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
-		return (actions);
 	}
 
 	tick() {

@@ -6,7 +6,7 @@ import { fadeAnimation } from './fadeAnimation';
 export class GameStartState implements IState {
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		console.log('Entered Game start State');
 		this.reset()
 
@@ -16,8 +16,6 @@ export class GameStartState implements IState {
 		fadeAnimation(this.machine.scene, true);
 
 		// Actions
-
-		return([]);
 	}
 
 	tick() {

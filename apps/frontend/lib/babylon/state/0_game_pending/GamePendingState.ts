@@ -7,19 +7,18 @@ export class GamePendingState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		console.log('Entered Pending State');
 
 		// Actions
-		const actions: Array<IAction> = [];
-		actions.push(new ExecuteCodeAction({
+		const action = this.machine.scene.actionManager;
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
 
-		return (actions);
 	}
 
 	tick() {

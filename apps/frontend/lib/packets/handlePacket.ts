@@ -34,11 +34,9 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			break ;
 		}
 		case SC_Type.SC_WormChosen : {
-			console.log(`Trying to find worm ${data.wormId}`);
 			const target = findWormById(state.players, data.wormId);
 			if (state.turn && target != undefined)
 				state.turn.chosenWorm = target;
-			console.log(`Found worm: `, state.turn?.chosenWorm, target);
 			break ;
 		}
 		case SC_Type.SC_ExplosionOccurs: {

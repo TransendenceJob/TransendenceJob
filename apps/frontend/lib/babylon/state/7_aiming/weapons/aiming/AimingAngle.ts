@@ -3,6 +3,7 @@ import { IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 
 export class AimingAngle implements IAimType {
+	private active: boolean = false;
 	private actions: Array<IAction> = [];
 	private turnLeft: boolean = false;
 	private turnRight: boolean = false;
@@ -18,7 +19,9 @@ export class AimingAngle implements IAimType {
 	}
 
 	activate(turn: Turn, scene: Scene) {
-
+		if (this.active)
+			return ;
+		this.active = true;
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyDownTrigger,
@@ -43,7 +46,7 @@ export class AimingAngle implements IAimType {
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnEveryFrameTrigger,
 		}, () => {
-			let newAngle = turn.aimAngle;
+			let newAngle = turn.aiming.angle;
 			if (this.turnRight) {
 				newAngle += this.turnSpeed;
 			}
@@ -53,17 +56,17 @@ export class AimingAngle implements IAimType {
 			
 			// Lock movement when angles arent fully open
 			if (this.allowedAngleMin == 0 && this.allowedAngleMax == 360) {
-				turn.aimAngle = (newAngle + 360) % 360;
+				turn.aiming.angle = (newAngle + 360) % 360;
 			} else {
 				const relativeAngle = (newAngle - this.allowedAngleMin + 360) % 360;
 				if (relativeAngle <= this.span) {
-					turn.aimAngle = (newAngle + 360) % 360;
+					turn.aiming.angle = (newAngle + 360) % 360;
 				}
 				else if (this.turnLeft) {
-					turn.aimAngle = this.allowedAngleMin;
+					turn.aiming.angle = this.allowedAngleMin;
 				}
 				else if (this.turnRight) {
-					turn.aimAngle = this.allowedAngleMax;
+					turn.aiming.angle = this.allowedAngleMax;
 				}
 			}
 		}));
@@ -77,11 +80,17 @@ export class AimingAngle implements IAimType {
 	}
 
 	deactivate(scene: Scene) {
+		if (!this.active)
+			return ;
+		this.active = false;
+		this.turnLeft = false;
+		this.turnRight = false;
 		this.actions.forEach(
 			(action) => {
 				if (action) 
 					scene.actionManager.unregisterAction(action)
 			}
 		);
+		this.actions = [];
 	}
 }

@@ -13,13 +13,11 @@ import { IAction } from '@babylonjs/core'
 export class GameEndState implements IState {
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		this.reset()
 
 		// Setup
 		this.machine.guiHelper?.notifications.add("Game Over");
-
-		return ([]);
 
 	}
 

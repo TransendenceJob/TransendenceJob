@@ -5,7 +5,7 @@ export interface IState {
 	/**
 	 * Called when this state is reached, which happens when the server says so
 	 */
-	enter(): Array<IAction>;
+	enter(): void;
 
 	/**
 	 * Called each frame, after packets have been handled, and before scene is rendered

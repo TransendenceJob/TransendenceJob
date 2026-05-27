@@ -20,24 +20,21 @@ export class TurnStartState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		this.reset()
 
 		// Setup
-		this.machine.turn = new Turn(this.machine.getActiveUser());
+		this.machine.turn = new Turn(this.machine.getActiveUser(), this.machine.scene);
 		turnMessage(this.machine);
 
 		// Actions
-		const actions: Array<IAction> = [];
-
-		// DEV TOOL skip to next state manually by pressing Space
-		actions.push(new ExecuteCodeAction({
+		const action = this.machine.scene.actionManager;
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
-		return (actions);
 	}
 
 	tick() {

@@ -266,7 +266,6 @@ export interface SC_ExplosionOccurs extends SC_Base {
 }
 
 
-
 // ENDSCREEN ==================================================================
 
 

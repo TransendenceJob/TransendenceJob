@@ -7,7 +7,7 @@ export class RoundStartState implements IState {
 	private next: boolean = false;
 	constructor(private machine: StateMachine) {}
 
-	enter() : Array<IAction> {
+	enter() {
 		console.log('Entered Round Start State');
 		this.reset()
 
@@ -18,16 +18,13 @@ export class RoundStartState implements IState {
 		this.machine.activePlayerId = this.machine.players[0].id;
 
 		// Actions
-		const actions: Array<IAction> = [];
-
-		// DEV TOOL skip to next state manually by pressing Space
-		actions.push(new ExecuteCodeAction({
+		const action = this.machine.scene.actionManager;
+		action.registerAction(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: " "
 		}, () => {
 			this.next = true;
 		}));
-		return(actions);
 	}
 
 	tick() {
