@@ -21,7 +21,8 @@ import { pointData } from '@/shared/packets/util';
 
 interface aimingData {
   position: pointData;
-  angle: number;
+  wormAngle: number;
+  targetAngle: number
   force: number;
 }
 
@@ -78,7 +79,8 @@ export class Game {
         x: 0,
         y: 0,
       },
-      angle: 0,
+      wormAngle: 0,
+      targetAngle: 0,
       force: 0,
     };
   }

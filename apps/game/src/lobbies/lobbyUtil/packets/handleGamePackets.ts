@@ -82,7 +82,8 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       if (lobby.clientManager.getActive().id != data.userId) return;
       const target = lobby.game.aimingData;
       target.position = data.position;
-      target.angle = data.angle;
+      target.wormAngle = data.wormAngle;
+      target.targetAngle = data.targetAngle;
       target.force = data.force;
       requestChangeState(lobby, data.userId, GameState.TURN_END);
       // Placeholder logic for projectile handling: Worm fucking explodes

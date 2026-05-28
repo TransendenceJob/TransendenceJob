@@ -1,45 +1,48 @@
-import { Scene, Mesh } from "@babylonjs/core";
+import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
 import { Turn } from "../../../4_turn_start/Turn";
 import { IAimType } from "./IAimType";
 
 export class PickPosition implements IAimType {
-	private trackingFunction: (() => void) | undefined;
+	private actions: Array<() => void>;
 	private active: boolean = false;
 	private marker: Mesh | undefined;
 	private plane: Mesh | undefined;
 	constructor() {
-		this.trackingFunction = undefined;
 		this.marker = undefined;
-		this.plane = undefined
+		this.plane = undefined;
+		this.actions = [];
 	}
 
 	activate(turn: Turn, scene: Scene): void {
 		if (this.active)
 			return ;
 		this.active = true;
-		turn.aiming.seperatedOrigin = true;
+		turn.aiming.seperatedTarget = true;
 
-		this.marker = turn.aiming.originMarker;
-		this.plane = turn.aiming.originPlane;
+		this.marker = turn.aiming.targetMarker;
+		this.plane = turn.aiming.plane;
 		this.marker.visibility = 1;
 		// Credit: https://forum.babylonjs.com/t/vector3-unproject-onto-xz-plane/31056
-		this.trackingFunction = () => {
+		this.actions[0] = () => {
 			if (scene.getFrameId() <= 1)
 				return ;
 			// Generate Point from camera onto plane, to get intersection coordinates in worldspace
 			const pickedPoint = scene.pick(
 				scene.pointerX, 
 				scene.pointerY, 
-				(mesh) => (
+				(mesh: AbstractMesh) => (
 					mesh === this.plane
 				)
 			).pickedPoint;
 			if (pickedPoint && this.marker) {
 				this.marker.position.copyFrom(pickedPoint);
+				turn.aiming.targetDirection.position.copyFrom(pickedPoint);
 			}
 		}
 		this.active = true;
-		scene.registerBeforeRender(this.trackingFunction);
+		this.actions.forEach((action) => {
+			scene.registerBeforeRender(action)
+		});
 	}
 
 	deactivate(scene: Scene): void {
@@ -49,7 +52,8 @@ export class PickPosition implements IAimType {
 		this.active = false;
 		if (this.marker)
 			this.marker.visibility = 0;
-		if (this.trackingFunction)
-			scene.unregisterBeforeRender(this.trackingFunction);
+		this.actions.forEach((action: () => void) => {
+			scene.unregisterBeforeRender(action);
+		})
 	}
 }

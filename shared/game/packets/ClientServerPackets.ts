@@ -171,7 +171,8 @@ export interface CS_WormChosen extends CS_Base {
 
 export interface CS_EndAimState extends CS_Base {
 	type: CS_Type.CS_EndAimState,
-	angle: number,
+	wormAngle: number,
+	targetAngle: number,
 	position: pointData,
 	force: number,
 }

@@ -22,16 +22,17 @@ function sendAimingDone(machine: StateMachine) {
 	if (!machine.turn)
 		return ;
 	const data: aimingHelper = machine.turn.aiming;
-	const pos_x = data.seperatedOrigin ? 
-		data.originMarker.position.x :
+	const pos_x = data.seperatedTarget ? 
+		data.targetMarker.position.x :
 		machine.turn.chosenWeapon?.getProjectileSpawnPos().x ??
 		0;
-	const pos_y = data.seperatedOrigin ? 
-		data.originMarker.position.y : 
+	const pos_y = data.seperatedTarget ? 
+		data.targetMarker.position.y : 
 		machine.turn.chosenWeapon?.getProjectileSpawnPos().y ??
 		0;
 	machine.msgToServer<CS_EndAimState>(CS_Type.CS_EndAimState, {
-		angle: data.angle,
+		wormAngle: data.wormAngle,
+		targetAngle: data.wormAngle,
 		force: data.force,
 		position: {
 			x: pos_x,
@@ -133,9 +134,10 @@ export class AimingState implements IState {
 	switchAimingPhase(newPhase: number) {
 		if (newPhase == 0 && this.machine.turn) {
 			const aiming = this.machine.turn.aiming;
-			aiming.angle = 0;
+			aiming.wormAngle = 0;
+			aiming.targetAngle = 0;
 			aiming.force = 1;
-			aiming.seperatedOrigin = false;
+			aiming.seperatedTarget = false;
 		}
 		this.weapon?.aimTypes[this.aimingPhase].deactivate(this.machine.scene);
 		if (newPhase >= this.phaseCount) {

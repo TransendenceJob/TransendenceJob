@@ -2,6 +2,9 @@ import { MeshBuilder, Scene, Mesh } from "@babylonjs/core"
 import { Player } from "@/lib/babylon/player/Player";
 import { IWeapon } from "../7_aiming/weapons/IWeapon";
 import { Worm } from "@/lib/babylon/player/Worm";
+import { createAimingTargetMesh } from "./createAimingTargetMesh";
+
+const pi2 = Math.PI * 2;
 
 /**
  * @param aimOriginX x origin point of projectile, in worldspace coords
@@ -12,11 +15,13 @@ import { Worm } from "@/lib/babylon/player/Worm";
  * @param aimForce amount of force a projectile will be moved at
  */
 export interface aimingHelper {
-	originMarker: Mesh;
-	originPlane: Mesh;
-	seperatedOrigin: boolean;
-	angle: number;
+	targetAngle: number;
+	targetMarker: Mesh;
+	targetDirection: Mesh;
+	seperatedTarget: boolean;
+	wormAngle: number;
 	force: number;
+	plane: Mesh;
 }
 
 
@@ -43,10 +48,12 @@ export class Turn {
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
 		this.aiming = {
-			originMarker: createAimingMarkerMesh(scene),
-			originPlane: createAimingPlaneMesh(scene),
-			seperatedOrigin: false,
-			angle: 0,
+			targetMarker: createAimingMarkerMesh(scene),
+			plane: createAimingPlaneMesh(scene),
+			targetDirection: createAimingTargetMesh(scene),
+			seperatedTarget: false,
+			targetAngle: 0,
+			wormAngle: 0,
 			force: 1,
 		}
 	}
@@ -67,21 +74,26 @@ export class Turn {
 	turnWeapon() {
 		if (!this.chosenWeapon) 
 			return;
-		console.log("Rotation: ", this.aiming.angle);
-		this.chosenWeapon.mesh.rotation.z = (((360 - this.aiming.angle) / 180 * Math.PI));
+		console.log("Rotation: ", this.aiming.wormAngle);
+		this.chosenWeapon.mesh.rotation.z = ((pi2 - this.aiming.wormAngle));
+		if (this.aiming.targetDirection.visibility == 1)
+			this.aiming.targetDirection.rotation.z = (pi2 - this.aiming.targetAngle);
 	}
 
 	dispose() {
 		this.chosenWeapon?.dispose();
-		this.aiming.originMarker.dispose();
-		this.aiming.originPlane.dispose();
+		this.aiming.targetMarker.dispose();
+		this.aiming.plane.dispose();
+		this.aiming.targetDirection.dispose();
 	}
 
 	end() {
 		this.chosenWeapon?.show(false);
-		this.aiming.seperatedOrigin = false;
-		this.aiming.angle = 0;
+		this.aiming.seperatedTarget = false;
+		this.aiming.wormAngle = 0;
+		this.aiming.targetAngle = 0;
 		this.aiming.force = 1;
-		this.aiming.originMarker.visibility = 0
+		this.aiming.targetDirection.visibility = 0;
+		this.aiming.targetMarker.visibility = 0;
 	}
 }
