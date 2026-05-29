@@ -1,8 +1,14 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
-import { IAimType } from "./IAimType";
+import { activateParam, IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
 
 const pi2 = Math.PI * 2;
+
+export interface aimingAngleParam {
+	minAngle: number, 
+	maxAngle: number, 
+	turnSpeed: number
+}
 
 export class AimingAngle implements IAimType {
 	private active: boolean = false;
@@ -13,17 +19,23 @@ export class AimingAngle implements IAimType {
 	private allowedAngleMin: number;
 	private allowedAngleMax: number;
 	private span: number;
+	private message: string = "Use A and D to rotate the weapon, confirm with Space";
 
-	constructor(minAngle: number, maxAngle: number, span: number) {
-		this.allowedAngleMin = minAngle;
-		this.allowedAngleMax = maxAngle;
-		this.span = span;
+	constructor(data: aimingAngleParam) {
+		this.allowedAngleMin = data.minAngle;
+		this.allowedAngleMax = data.maxAngle;
+		this.span = (data.maxAngle - data.minAngle + pi2) % pi2;;
+		this.turnSpeed = data.turnSpeed;
 	}
 
-	activate(turn: Turn, scene: Scene) {
-		if (this.active)
+	activate(params: activateParam) {
+		if (this.active || params.turn == undefined)
 			return ;
 		this.active = true;
+		params.broadcast(this.message);
+		const turn = params.turn;
+
+
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyDownTrigger,
@@ -33,7 +45,7 @@ export class AimingAngle implements IAimType {
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "a"
 		}, () => { this.turnLeft = false; }));
-		
+
 		// Turn right
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyDownTrigger,
@@ -55,7 +67,7 @@ export class AimingAngle implements IAimType {
 			if (this.turnLeft) {
 				newAngle -= this.turnSpeed;
 			}
-			
+
 			// Lock movement when angles arent fully open
 			if (this.allowedAngleMin == 0 && this.allowedAngleMax == pi2) {
 				turn.aiming.wormAngle = (newAngle + pi2) % pi2;
@@ -71,12 +83,13 @@ export class AimingAngle implements IAimType {
 					turn.aiming.wormAngle = this.allowedAngleMax;
 				}
 			}
+			console.log(`New Angle: ${turn.aiming.wormAngle / Math.PI * 90}`)
 		}));
 
 		this.actions.forEach(
 			(action) => {
 				if (action) 
-					scene.actionManager.registerAction(action);
+					params.scene.actionManager.registerAction(action);
 			}
 		);
 	}

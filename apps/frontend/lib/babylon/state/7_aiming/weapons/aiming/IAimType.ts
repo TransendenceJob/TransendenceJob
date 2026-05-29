@@ -1,8 +1,14 @@
 import { IAction, Scene } from '@babylonjs/core';
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 
+export interface activateParam {
+	turn: Turn | undefined,
+	scene: Scene,
+	broadcast: (msg: string) => void,
+}
+
 export interface IAimType {
-	activate(turn: Turn, scene: Scene): void;
+	activate(data: activateParam): void;
 	deactivate(scene: Scene): void;
 }
 

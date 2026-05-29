@@ -5,6 +5,7 @@ import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { aimingHelper, Turn } from '../4_turn_start/Turn';
 import { IWeapon } from './weapons/IWeapon';
 import { CS_EndAimState, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { activateParam } from './weapons/aiming/IAimType';
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -96,7 +97,12 @@ export class AimingState implements IState {
 		}));
 
 		// Activate the first aiming type for the Weapon
-		this.machine.turn?.chosenWeapon?.aimTypes[0].activate(this.machine.turn, this.machine.scene);
+		console.log("Activating 0");
+		this.machine.turn?.chosenWeapon?.aimTypes[0].activate({
+			scene: this.machine.scene,
+			turn: this.machine.turn,
+			broadcast: this.machine.msgForActive
+		});
 	}
 
 	tick() {
@@ -139,6 +145,7 @@ export class AimingState implements IState {
 			aiming.force = 1;
 			aiming.seperatedTarget = false;
 		}
+		console.log(`Switching from ${this.phaseCount} to ${newPhase}`);
 		this.weapon?.aimTypes[this.aimingPhase].deactivate(this.machine.scene);
 		if (newPhase >= this.phaseCount) {
 			// When finishing last state, go to End of Turn)
@@ -146,7 +153,11 @@ export class AimingState implements IState {
 		}
 		else {
 			if (this.machine.turn)
-				this.weapon?.aimTypes[newPhase].activate(this.machine.turn, this.machine.scene);
+				this.weapon?.aimTypes[newPhase].activate({
+					scene: this.machine.scene,
+					turn: this.machine.turn,
+					broadcast: this.machine.msgForActive
+				});
 			this.aimingPhase = newPhase;
 		}
 	}

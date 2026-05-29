@@ -198,6 +198,16 @@ export class StateMachine {
 		return (this.players.find((player) => player.id == this.activePlayerId) ?? this.players[0]);
 	}
 
+	/**
+	 * Displays a message on the HUD, but only if this is the active Client
+	 * @param msg Message to display
+	 */
+	msgForActive(msg: string) {
+		if (this.guiHelper == undefined || !this.isActiveUser())
+			return ;
+		this.guiHelper.notifications.add(msg);
+	}
+
 	dispose() {
 		this.log("Clearing old Game")
 		this.clearGame();

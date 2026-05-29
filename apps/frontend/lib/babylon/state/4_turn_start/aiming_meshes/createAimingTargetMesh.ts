@@ -19,16 +19,18 @@ function createArrow(scene: Scene): Mesh {
 	let pointer = Mesh.MergeMeshes([middle, right, left], true, false, undefined, false, false);
 	if (pointer == null)
 		pointer = MeshBuilder.CreateBox("", {}, scene);
+	pointer.rotation.z = Math.PI;
+	pointer.bakeCurrentTransformIntoVertices();
 	pointer.name = "Aiming Target Direction Pointer"
 	return (pointer);
 }
 
 export function createAimingTargetMesh(scene: Scene): Mesh {
     const arrow = createArrow(scene);
-    console.log("Creating Aiming Target Mesh with changed pivot Point")
 	const material = new StandardMaterial("material", scene);
 	material.emissiveColor = new Color3(1, 0.25, 0.25);
     arrow.material = material;
     arrow.visibility = 0;
+	arrow.renderingGroupId = 1;
     return (arrow);
 }

@@ -1,34 +1,54 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
-import { IAimType } from "./IAimType";
+import { activateParam, IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Mesh, Scene } from '@babylonjs/core';
 
 const pi2 = Math.PI * 2;
 
+export interface switchTargetAngleParam {
+	snapAngle: number, 
+	minAngle: number, 
+	maxAngle: number, 
+	startAngle: number | undefined
+}
+
+/**
+ * Aiming Type, where the client may use A and D to rotate the target points rotation/direction
+ * Mainly used for air strikes, to switch which direction they are going in
+ */
 export class SwitchTargetAngle implements IAimType {
 	private active: boolean = false;
 	private actions: Array<IAction> = [];
 	private meshRef: Mesh | undefined = undefined;
 	private snapAngle: number;
+	private startAngle: number;
 	private turnLeft: boolean = false;
 	private turnRight: boolean = false;
 	private allowedAngleMin: number;
 	private allowedAngleMax: number;
 	private span: number;
+	private message: string = "Use A and D to switch between angles. Confirm with Space";
 
-	constructor(snapAngle: number, minAngle: number, maxAngle: number, span: number) {
-		this.snapAngle = snapAngle;
-		this.allowedAngleMin = minAngle;
-		this.allowedAngleMax = maxAngle;
-		this.span = span;
+	constructor(data: switchTargetAngleParam) {
+		this.snapAngle = data.snapAngle;
+		this.allowedAngleMin = data.minAngle;
+		this.allowedAngleMax = data.maxAngle;
+		this.span = (data.maxAngle - data.minAngle + pi2) % pi2;
+		this.startAngle = data.startAngle ?? 0;
 	}
 
-	activate(turn: Turn, scene: Scene) {
-		if (this.active)
+
+	activate(params: activateParam) {
+		if (this.active || params.turn == undefined)
 			return ;
 		this.active = true;
-		// Turn leftx
+		params.broadcast(this.message);
+		const turn = params.turn;
+
+		turn.aiming.targetAngle = this.startAngle;
 		this.meshRef = turn.aiming.targetDirection;
 		this.meshRef.visibility = 1;
+
+		// Turn left
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnKeyDownTrigger,
 			parameter: "a"
@@ -53,14 +73,16 @@ export class SwitchTargetAngle implements IAimType {
 			trigger: ActionManager.OnEveryFrameTrigger,
 		}, () => {
 			let newAngle = turn.aiming.targetAngle;
+			if (this.turnLeft || this.turnRight) {
+				console.log("Case -1");
+			}
 			if (this.turnRight) {
 				newAngle += this.snapAngle;
-				this.turnRight = false;
 			}
 			if (this.turnLeft) {
 				newAngle -= this.snapAngle;
-				this.turnLeft = false;
 			}
+
 			
 			// Lock movement when angles arent fully open
 			if (this.allowedAngleMin == 0 && this.allowedAngleMax == pi2) {
@@ -77,12 +99,14 @@ export class SwitchTargetAngle implements IAimType {
 					turn.aiming.targetAngle = this.allowedAngleMax;
 				}
 			}
+			this.turnRight = false;
+			this.turnLeft = false;
 		}));
 
 		this.actions.forEach(
 			(action) => {
 				if (action) 
-					scene.actionManager.registerAction(action);
+					params.scene.actionManager.registerAction(action);
 			}
 		);
 	}
@@ -90,7 +114,8 @@ export class SwitchTargetAngle implements IAimType {
 	deactivate(scene: Scene) {
 		if (!this.active)
 			return ;
-		this.meshRef.visibility = 0;
+		if (this.meshRef)
+			this.meshRef.visibility = 0;
 		this.active = false;
 		this.turnLeft = false;
 		this.turnRight = false;

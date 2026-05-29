@@ -7,13 +7,13 @@ import { GenericWeapon } from '../GenericWeapon';
 import { PickPosition } from '../aiming/PickTargetPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 
-const pi2 = Math.PI * 2;
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians
 const degToRad = Math.PI / 180;
 
 /**
  * Class that administrates specific Weapon
+ * @note all angles in radians
  */
 export class AssaultRifle extends GenericWeapon implements IWeapon {
 	public weaponId = 0;
@@ -21,9 +21,8 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 	public allowedAngleMin = 0;
 	public allowedAngleMax = 180 * degToRad;
 	public projectileCount = 1;
-	public snapAngle = 0;
-	public snapAngleValue = 0;
-	public speed = 3 * degToRad;
+	public turnSpeed = 3 * degToRad;
+	public speed = 0.95;
 	public spread = 0;
 	public damage = 10;
 	public explosion: Explosion = {
@@ -31,7 +30,6 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 		damage: 1, 
 		affectTerrain: true
 	};
-	public span = (this.allowedAngleMax - this.allowedAngleMin + pi2) % pi2;
 	public mesh: Mesh;
 	public readonly childMeshes: Array<AbstractMesh>
 	public aimTypes: Array<IAimType>;
@@ -46,9 +44,11 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new AimingAngle(this.allowedAngleMin, this.allowedAngleMax, this.span),
-			new PickPosition(),
-			new SwitchTargetAngle(45 * degToRad, 0, pi2, this.span),
+			new AimingAngle({
+				minAngle: this.allowedAngleMin, 
+				maxAngle: this.allowedAngleMax, 
+				turnSpeed: this.turnSpeed
+			}),
 		]
 		// This should be calculated in Blender (need to double values from there)
 		// It points to the tip of the nozzle, and is needed to spawn projectiles

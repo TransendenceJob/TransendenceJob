@@ -1,6 +1,7 @@
 import { Mesh, AbstractMesh } from "@babylonjs/core"
 import { AssaultRifle } from "./weaponClasses/AssaultRifle"
 import { IWeapon } from "./IWeapon"
+import { AirStrike } from "./weaponClasses/AirStrike"
 
 /**
  * For each Entry, call the constructor by calling the stored construction function,
@@ -17,4 +18,5 @@ type Entry<T> = {
  */
 export const weaponList: Array<Entry<IWeapon>> = [
 	{instance: AssaultRifle, fileName: "/assets/AssaultRifle2_1.obj"},
+	{instance: AirStrike, fileName: "/assets/Pistol_1.obj"},
 ]

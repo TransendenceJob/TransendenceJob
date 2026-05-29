@@ -1,24 +1,28 @@
 import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
 import { Turn } from "../../../4_turn_start/Turn";
-import { IAimType } from "./IAimType";
+import { activateParam, IAimType } from "./IAimType";
 
 export class PickPosition implements IAimType {
 	private actions: Array<() => void>;
 	private active: boolean = false;
 	private marker: Mesh | undefined;
 	private plane: Mesh | undefined;
+	private message: string = "Move your mouse to choose a position. Confirm with Space"
 	constructor() {
 		this.marker = undefined;
 		this.plane = undefined;
 		this.actions = [];
 	}
 
-	activate(turn: Turn, scene: Scene): void {
-		if (this.active)
+	activate(params: activateParam) {
+		if (this.active || params.turn == undefined)
 			return ;
 		this.active = true;
-		turn.aiming.seperatedTarget = true;
+		params.broadcast(this.message);
 
+		const turn = params.turn;
+		const scene = params.scene;
+		turn.aiming.seperatedTarget = true;
 		this.marker = turn.aiming.targetMarker;
 		this.plane = turn.aiming.plane;
 		this.marker.visibility = 1;

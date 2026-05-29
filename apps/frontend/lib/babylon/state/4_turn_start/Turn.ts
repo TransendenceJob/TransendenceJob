@@ -2,7 +2,9 @@ import { MeshBuilder, Scene, Mesh } from "@babylonjs/core"
 import { Player } from "@/lib/babylon/player/Player";
 import { IWeapon } from "../7_aiming/weapons/IWeapon";
 import { Worm } from "@/lib/babylon/player/Worm";
-import { createAimingTargetMesh } from "./createAimingTargetMesh";
+import { createAimingTargetMesh } from "./aiming_meshes/createAimingTargetMesh";
+import { createAimingMarker } from "./aiming_meshes/createAimingMarker";
+import { createAimingPlane } from "./aiming_meshes/createAimingPlane";
 
 const pi2 = Math.PI * 2;
 
@@ -24,19 +26,6 @@ export interface aimingHelper {
 	plane: Mesh;
 }
 
-
-function createAimingMarkerMesh(scene: Scene) {
-	const mesh = MeshBuilder.CreateSphere("Aiming Pick Position Marker", {segments: 2}, scene);
-	mesh.visibility = 0;
-	return (mesh);
-}
-
-function createAimingPlaneMesh(scene: Scene) {
-	const mesh = MeshBuilder.CreatePlane("Aiming Pick Position Plane", {size: 200}, scene);
-	mesh.setEnabled(false);
-	return (mesh);
-}
-
 export class Turn {
 	public activePlayerId: string = "";
 	public activePlayer: Player;
@@ -48,8 +37,8 @@ export class Turn {
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
 		this.aiming = {
-			targetMarker: createAimingMarkerMesh(scene),
-			plane: createAimingPlaneMesh(scene),
+			targetMarker: createAimingMarker(scene),
+			plane: createAimingPlane(scene),
 			targetDirection: createAimingTargetMesh(scene),
 			seperatedTarget: false,
 			targetAngle: 0,
@@ -74,7 +63,7 @@ export class Turn {
 	turnWeapon() {
 		if (!this.chosenWeapon) 
 			return;
-		console.log("Rotation: ", this.aiming.wormAngle);
+		// Babylon rotation is natively counter clockwise, but we would like cc, so we do 360° - x° to invert
 		this.chosenWeapon.mesh.rotation.z = ((pi2 - this.aiming.wormAngle));
 		if (this.aiming.targetDirection.visibility == 1)
 			this.aiming.targetDirection.rotation.z = (pi2 - this.aiming.targetAngle);
