@@ -8,7 +8,7 @@ import { ExecuteCodeAction, ActionManager, IAction, AbstractActionManager } from
  */
 function turnMessage(machine: StateMachine) {
 	if (machine.isActiveUser()) {
-		machine.guiHelper?.notifications.add("Move with WASD, then confirm with Space");
+		machine.guiHelper?.notifications.add("Move with ?, switch weapons with 0-9 then confirm with Space");
 	}
 	else {
 		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} is worming around`);

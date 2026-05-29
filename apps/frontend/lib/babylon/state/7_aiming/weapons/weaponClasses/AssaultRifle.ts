@@ -4,8 +4,6 @@ import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
-import { PickPosition } from '../aiming/PickTargetPosition';
-import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians

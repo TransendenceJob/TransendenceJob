@@ -32,7 +32,13 @@ export class Turn {
 	public chosenWorm: Worm;
 	public chosenWeapon: IWeapon | undefined = undefined;
 	public aiming: aimingHelper;
-	constructor(player: Player, scene: Scene, weapon: IWeapon | undefined) {
+	private notify: (msg: string) => void;
+	constructor(
+		player: Player, 
+		scene: Scene,
+		weapon: IWeapon | undefined,
+		notify: (msg: string) => void
+	) {
 		this.activePlayerId = player.id;
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
@@ -46,6 +52,7 @@ export class Turn {
 			wormAngle: 0,
 			force: 1,
 		}
+		this.notify = notify;
 	}
 
 	chooseWeapon(newWeapon: IWeapon | undefined) {
@@ -57,6 +64,7 @@ export class Turn {
 		if (this.chosenWeapon == undefined)
 			return ;
 		this.chosenWeapon.show(true);
+		this.notify(`${this.chosenWorm.name} equips ${newWeapon?.name}`);
 
 		// Set Position to player
 		this.chosenWeapon.mesh.position.x = this.chosenWorm.mesh.position.x;

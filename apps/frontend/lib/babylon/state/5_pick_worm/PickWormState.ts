@@ -39,7 +39,9 @@ export class PickWormState implements IState {
 			return ;
 
 		// Allow worms to be chosen by clicking on their mesh
-		this.machine.turn?.activePlayer.wormsClickable(true, this.pickWorm);
+		this.machine.turn?.activePlayer.wormsClickable(true, (worm: Worm) => {
+			this.pickWorm(worm);
+		});
 
 		// Set first worm as chosen (jsut goes back and forth for proper logic)
 		this.getNextWorm(true);

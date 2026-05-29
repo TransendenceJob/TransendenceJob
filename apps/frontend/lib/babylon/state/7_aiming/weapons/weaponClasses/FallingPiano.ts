@@ -7,6 +7,7 @@ import { GenericWeapon } from '../GenericWeapon';
 import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingHelper } from '../../../4_turn_start/Turn';
+import { PianoPickPosition } from '../aiming/PianoPickPosition';
 
 const SCALE = 0.01;
 
@@ -40,7 +41,7 @@ export class FallingPiano extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PickPosition()
+			new PianoPickPosition()
 		]
 	}
 

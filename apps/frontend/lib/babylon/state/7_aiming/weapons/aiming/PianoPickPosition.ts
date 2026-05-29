@@ -24,6 +24,7 @@ export class PianoPickPosition implements IAimType {
 		const scene = params.scene;
 		turn.aiming.seperatedTarget = true;
 		this.marker = turn.aiming.targetMarker;
+		turn.aiming.targetDirection.position.y = this.height;
 		this.marker.position.y = this.height;
 		this.plane = turn.aiming.plane;
 		this.marker.visibility = 1;
@@ -40,8 +41,8 @@ export class PianoPickPosition implements IAimType {
 				)
 			).pickedPoint;
 			if (pickedPoint && this.marker) {
-				this.marker.position.copyFrom(pickedPoint);
 				turn.aiming.targetMarker.position.x = pickedPoint.x;
+				turn.aiming.targetDirection.position.x = pickedPoint.x;
 			}
 		}
 		this.active = true;

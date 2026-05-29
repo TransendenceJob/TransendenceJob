@@ -3,6 +3,7 @@ import { AssaultRifle } from "./weaponClasses/AssaultRifle"
 import { IWeapon } from "./IWeapon"
 import { AirStrike } from "./weaponClasses/AirStrike"
 import { FallingPiano } from "./weaponClasses/FallingPiano"
+import { Meteor } from "./weaponClasses/Meteor"
 
 /**
  * For each Entry, call the constructor by calling the stored construction function,
@@ -21,4 +22,5 @@ export const weaponList: Array<Entry<IWeapon>> = [
 	{instance: AssaultRifle, fileName: "/assets/AssaultRifle2_1.obj"},
 	{instance: AirStrike, fileName: "/assets/1309 Remote Controller.obj"},
 	{instance: FallingPiano, fileName: "/assets/1309 Remote Controller.obj"},
+	{instance: Meteor, fileName: "/assets/1309 Remote Controller.obj"},
 ]
