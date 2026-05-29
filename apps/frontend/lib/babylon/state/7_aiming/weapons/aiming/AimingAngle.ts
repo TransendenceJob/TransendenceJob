@@ -83,7 +83,6 @@ export class AimingAngle implements IAimType {
 					turn.aiming.wormAngle = this.allowedAngleMax;
 				}
 			}
-			console.log(`New Angle: ${turn.aiming.wormAngle / Math.PI * 90}`)
 		}));
 
 		this.actions.forEach(

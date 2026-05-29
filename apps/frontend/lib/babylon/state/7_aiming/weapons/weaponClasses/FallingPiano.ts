@@ -9,25 +9,19 @@ import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingHelper } from '../../../4_turn_start/Turn';
 
 const SCALE = 0.01;
-// Mutiply degrees with this to convert to radians
-const degToRad = Math.PI / 180;
 
 /**
  * Class that administrates specific Weapon
  */
-export class AirStrike extends GenericWeapon implements IWeapon {
-	public weaponId = 1;
-	public name = "Air Strike";
-	private allowedAngleMin = 135 * degToRad;
-	private allowedAngleMax = 225 * degToRad;
-	private startAngle = 135 * degToRad;
-	public projectileCount = 3;
-	private snapAngle = 90 * degToRad;
-	public speed = 1;
-	public spread = 0.9;
-	public damage = 3;
+export class FallingPiano extends GenericWeapon implements IWeapon {
+	public weaponId = 2;
+	public name = "Falling Piano";
+	public projectileCount = 1;
+	public speed = 5;
+	public spread = 0;
+	public damage = 25;
 	public explosion: Explosion = {
-		size: 0.2,
+		size: 0.3,
 		damage: 5,
 		affectTerrain: true
 	};
@@ -46,13 +40,7 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PickPosition(),
-			new SwitchTargetAngle({
-				snapAngle: this.snapAngle,
-				minAngle: this.allowedAngleMin,
-				maxAngle: this.allowedAngleMax,
-				startAngle: this.startAngle,
-			}),
+			new PickPosition()
 		]
 	}
 

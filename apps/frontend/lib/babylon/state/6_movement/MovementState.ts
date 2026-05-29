@@ -1,7 +1,7 @@
 import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
 import { GameState } from '@/shared/state/GameState';
-import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
+import { ExecuteCodeAction, ActionManager, IAction, AbstractActionManager } from '@babylonjs/core'
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -12,6 +12,18 @@ function turnMessage(machine: StateMachine) {
 	}
 	else {
 		machine.guiHelper?.notifications.add(`${machine.getActiveUser().name} is worming around`);
+	}
+}
+
+function manuallyChooseWeapon(action: AbstractActionManager, machine: StateMachine) {
+	for (let i = 0; i < 9; i++) {
+		action.registerAction(new ExecuteCodeAction({
+			trigger: ActionManager.OnKeyUpTrigger,
+			parameter: `${i + 1}`
+		}, () => {
+			console.log("Choosing")
+			machine.turn?.chooseWeapon(machine.weapons.find((weapon) => (weapon.weaponId == i)));
+		}));
 	}
 }
 
@@ -32,6 +44,9 @@ export class MovementState implements IState {
 		// For inactive players, dont allow picking worms
 		if (!this.machine.isActiveUser())
 			return ;
+
+		manuallyChooseWeapon(action, this.machine);
+		this.machine.turn?.chosenWeapon?.show(true);
 
 		// Confirm movement to be done
 		action.registerAction(new ExecuteCodeAction({

@@ -53,15 +53,10 @@ export class Player {
 		return (this.worms[index]);
 	}
 
-	initPickWorm(setChosen: (chosen: Worm) => void) {
-		this.worms.forEach((worm) => {
-			worm.initClickable(setChosen);
-		})
-	}
-
-	wormsClickable(yes: boolean) {
-		if (yes)
-			this.worms.forEach((worm) => {worm.makeClickable()});
+	wormsClickable(yes: boolean, pickWorm: undefined | ((worm: Worm) => void)) {
+		if (yes && pickWorm != undefined) {
+			this.worms.forEach((worm) => {worm.makeClickable(pickWorm)});
+		}
 		else
 			this.worms.forEach((worm) => {worm.removeClickable()});
 	}

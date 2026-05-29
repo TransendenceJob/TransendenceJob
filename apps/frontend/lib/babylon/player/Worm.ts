@@ -52,31 +52,20 @@ export class Worm {
         this.name = `Unnamed worm ${this.id}`;
         this.clickable = false;
 	}
-    
-    /**
-     * This needs to be called, after the turns have been set up
-     * Sets up the Action for setting the chosen worm, when the player clicks on the mesh
-     * @param setterFunction function that sets the chosen worm to the given parameter
-     */
-    initClickable(setterFunction: (chosen: Worm) => void) {
-        if (this.initialised)
-            return ;
-        this.initialised = true;
-        this.action = new ExecuteCodeAction({
-            trigger: ActionManager.OnPickUpTrigger}
-            , () => {
-            setterFunction(this);
-        })
-    }
 
     /**
      * Tells the Worm to activate the functionality for being able to pick a worm
      */
-    makeClickable() {
+    makeClickable(pickFunction: (worm: Worm) => void) {
         if (this.clickable)
             return ;
         this.clickable = true;
-        if (this.action && this.mesh.actionManager)
+        this.action = new ExecuteCodeAction({
+            trigger: ActionManager.OnPickUpTrigger}
+            , () => {
+            pickFunction(this);
+        })
+        if (this.mesh.actionManager)
             this.mesh.actionManager.registerAction(this.action);
     }
 

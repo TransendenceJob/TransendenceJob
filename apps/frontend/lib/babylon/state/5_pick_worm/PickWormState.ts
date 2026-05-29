@@ -4,6 +4,7 @@ import { GameState } from '@/shared/state/GameState';
 import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
 import { WormPointer } from './WormPointer';
 import { CS_Type, CS_WormChosen } from '@/shared/packets/ClientServerPackets';
+import { Worm } from '../../player/Worm';
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -38,7 +39,11 @@ export class PickWormState implements IState {
 			return ;
 
 		// Allow worms to be chosen by clicking on their mesh
-		this.machine.turn?.activePlayer.wormsClickable(true);
+		this.machine.turn?.activePlayer.wormsClickable(true, this.pickWorm);
+
+		// Set first worm as chosen (jsut goes back and forth for proper logic)
+		this.getNextWorm(true);
+		this.getNextWorm(false);
 
 		// Confirming chosen Worm
 		action.registerAction(new ExecuteCodeAction({
@@ -77,7 +82,23 @@ export class PickWormState implements IState {
 		if (!this.machine.turn)
 			return ;
 		const next_worm = this.machine.turn.activePlayer.getNextWorm(forward, this.machine.turn.chosenWorm);
-		this.machine.turn.chosenWorm = next_worm;
+		this.pickWorm(next_worm);
+	}
+
+	/**
+	 * Chooses a new worm and places the chosen weapon on them, if possible
+	 * @param newWorm New worm to choose
+	 */
+	private pickWorm(newWorm: Worm) {
+		if (!this.machine.turn)
+			return ;
+		const turn = this.machine.turn;
+		turn.chosenWorm = newWorm;
+		if (!turn.chosenWeapon)
+			return ;
+		turn.chosenWeapon.mesh.position.x = turn.chosenWorm.mesh.position.x;
+		turn.chosenWeapon.mesh.position.y = turn.chosenWorm.mesh.position.y;
+
 	}
 
 	tick() {
@@ -90,7 +111,7 @@ export class PickWormState implements IState {
 	}
 
 	exit() {
-		this.machine.turn?.activePlayer.wormsClickable(false);
+		this.machine.turn?.activePlayer.wormsClickable(false, undefined);
 		this.pointer?.dispose();
 		this.pointer = undefined;
 		this.reset()

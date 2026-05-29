@@ -63,18 +63,10 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 		machine.activePlayerId = machine.players[0].id;
 	loadingHelper.send("Players loaded");
 
-	// Setup up interactions for worms
-	machine.players.forEach((player) => {
-		player.initPickWorm((chosen: Worm) => {
-			if (machine.turn)
-				machine.turn.chosenWorm = chosen;
-		})
-	});
-	loadingHelper.send("Loaded Map");
-
+	
 	// Create Ground
 	machine.ground = new Ground(machine.scene, data.map, false);
-	loadingHelper.send("Initialised Worms");
+	loadingHelper.send("Loaded Map");
 
 	const result: loadingWeaponResult = await loadWeapons(machine.scene);
 	if (!result.success) {

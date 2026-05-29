@@ -1,9 +1,9 @@
 import { MeshBuilder, Scene, Mesh, Vector3, StandardMaterial, Color3 } from "@babylonjs/core"
 
-const width = 0.6;
-const height = 0.15;
+const width = 0.4;
+const height = 0.1;
 const length = 1;
-const angle = (30) / 180 * Math.PI;
+const angle = (45) / 180 * Math.PI;
 
 function createArrow(scene: Scene): Mesh {
 	const right = MeshBuilder.CreateBox("right", {height: height, width: width, depth: 0.1}, scene);
