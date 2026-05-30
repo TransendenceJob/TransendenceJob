@@ -4,6 +4,7 @@ import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
+import { aimingMeshes } from '../../../1_loading/loadGame';
 
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians
@@ -33,7 +34,7 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 	public aimTypes: Array<IAimType>;
 	private nozzleVector: Vector3;
 
-	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>) {
+	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;

@@ -30,8 +30,7 @@ export class TurnEndState implements IState {
 	}
 
 	exit() {
-		this.machine.turn?.end();
-		this.machine.turn = undefined;
+		this.machine.loaded?.turn?.end();
 		this.reset()
 	}
 

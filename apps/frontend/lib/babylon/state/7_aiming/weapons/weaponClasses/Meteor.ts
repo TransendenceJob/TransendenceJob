@@ -8,6 +8,7 @@ import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingHelper } from '../../../4_turn_start/Turn';
 import { PianoPickPosition } from '../aiming/PianoPickPosition';
+import { aimingMeshes } from '../../../1_loading/loadGame';
 
 const SCALE = 0.01;
 // Mutiply degrees with this to convert to radians
@@ -36,7 +37,7 @@ export class Meteor extends GenericWeapon implements IWeapon {
 	public readonly childMeshes: Array<AbstractMesh>
 	public aimTypes: Array<IAimType>;
 
-	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>) {
+	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
@@ -47,13 +48,13 @@ export class Meteor extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PianoPickPosition(),
+			new PianoPickPosition(aimMeshes),
 			new SwitchTargetAngle({
 				snapAngle: this.snapAngle,
 				minAngle: this.allowedAngleMin,
 				maxAngle: this.allowedAngleMax,
 				startAngle: this.startAngle,
-			}),
+			}, aimMeshes),
 		]
 	}
 

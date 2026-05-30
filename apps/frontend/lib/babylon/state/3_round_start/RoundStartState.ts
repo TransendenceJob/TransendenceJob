@@ -10,12 +10,14 @@ export class RoundStartState implements IState {
 	enter() {
 		console.log('Entered Round Start State');
 		this.reset()
+		if (!this.machine.loaded)
+			return ;
 
 		// Setup
-		this.machine.turn?.chosenWeapon?.show(false)
+		this.machine.loaded?.turn.chosenWeapon?.show(false)
 		this.machine.guiHelper?.notifications.add("A new Round has started")
 
-		this.machine.activePlayerId = this.machine.players[0].id;
+		this.machine.activePlayerId = this.machine.loaded.players[0].id;
 
 		// Actions
 		const action = this.machine.scene.actionManager;

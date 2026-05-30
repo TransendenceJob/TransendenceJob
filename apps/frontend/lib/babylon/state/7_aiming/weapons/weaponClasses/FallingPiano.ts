@@ -8,6 +8,7 @@ import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingHelper } from '../../../4_turn_start/Turn';
 import { PianoPickPosition } from '../aiming/PianoPickPosition';
+import { aimingMeshes } from '../../../1_loading/loadGame';
 
 const SCALE = 0.01;
 
@@ -30,7 +31,7 @@ export class FallingPiano extends GenericWeapon implements IWeapon {
 	public readonly childMeshes: Array<AbstractMesh>
 	public aimTypes: Array<IAimType>;
 
-	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>) {
+	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
@@ -41,7 +42,7 @@ export class FallingPiano extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PianoPickPosition()
+			new PianoPickPosition(aimMeshes)
 		]
 	}
 

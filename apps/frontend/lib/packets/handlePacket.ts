@@ -34,16 +34,18 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			break ;
 		}
 		case SC_Type.SC_WormChosen : {
-			const target = findWormById(state.players, data.wormId);
-			if (state.turn && target != undefined)
-				state.turn.chosenWorm = target;
+			if (!state.loaded)
+				return ;
+			const target = findWormById(state.loaded.players, data.wormId);
+			if (state.loaded.turn && target != undefined)
+				state.loaded.turn.chosenWorm = target;
 			break ;
 		}
 		case SC_Type.SC_ExplosionOccurs: {
 			console.log("Handling Explosion");
 			if (state.state != GameState.TURN_END)
 				break ;
-			state.ground?.affectTerrain(data.point.x, data.point.y, data.radius);
+			state.loaded?.ground?.affectTerrain(data.point.x, data.point.y, data.radius);
 		}
 		default : {
 			console.log("BABYLON> Received unhandled type: ", data.type);

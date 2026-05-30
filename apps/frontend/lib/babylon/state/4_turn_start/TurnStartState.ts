@@ -22,12 +22,14 @@ export class TurnStartState implements IState {
 
 	enter() {
 		this.reset()
+		if (!this.machine.loaded)
+			return ;
 
 		// Setup
-		this.machine.turn = new Turn(
+		this.machine.loaded.turn = new Turn(
 			this.machine.getActiveUser(), 
 			this.machine.scene,
-			this.machine.weapons.length > 0 ? this.machine.weapons[0] : undefined,
+			this.machine.loaded.weapons.length > 0 ? this.machine.loaded.weapons[0] : undefined,
 			(msg: string) => {this.machine.guiHelper?.notifications.add(msg)}
 		);
 		turnMessage(this.machine);

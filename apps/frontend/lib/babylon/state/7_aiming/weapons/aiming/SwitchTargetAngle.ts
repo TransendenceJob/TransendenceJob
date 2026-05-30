@@ -1,6 +1,7 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 import { activateParam, IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Mesh, Scene } from '@babylonjs/core';
+import { aimingMeshes } from '../../../1_loading/loadGame';
 
 const pi2 = Math.PI * 2;
 
@@ -18,7 +19,7 @@ export interface switchTargetAngleParam {
 export class SwitchTargetAngle implements IAimType {
 	private active: boolean = false;
 	private actions: Array<IAction> = [];
-	private meshRef: Mesh | undefined = undefined;
+	private meshRef: Mesh;
 	private snapAngle: number;
 	private startAngle: number;
 	private turnLeft: boolean = false;
@@ -28,12 +29,13 @@ export class SwitchTargetAngle implements IAimType {
 	private span: number;
 	private message: string = "Use A and D to switch between angles. Confirm with Space";
 
-	constructor(data: switchTargetAngleParam) {
+	constructor(data: switchTargetAngleParam, aimMeshes: aimingMeshes) {
 		this.snapAngle = data.snapAngle;
 		this.allowedAngleMin = data.minAngle;
 		this.allowedAngleMax = data.maxAngle;
 		this.span = (data.maxAngle - data.minAngle + pi2) % pi2;
 		this.startAngle = data.startAngle ?? 0;
+		this.meshRef = aimMeshes.direction;
 	}
 
 
@@ -45,7 +47,6 @@ export class SwitchTargetAngle implements IAimType {
 		const turn = params.turn;
 
 		turn.aiming.targetAngle = this.startAngle;
-		this.meshRef = turn.aiming.targetDirection;
 		this.meshRef.visibility = 1;
 
 		// Turn left
@@ -114,8 +115,7 @@ export class SwitchTargetAngle implements IAimType {
 	deactivate(scene: Scene) {
 		if (!this.active)
 			return ;
-		if (this.meshRef)
-			this.meshRef.visibility = 0;
+		this.meshRef.visibility = 0;
 		this.active = false;
 		this.turnLeft = false;
 		this.turnRight = false;

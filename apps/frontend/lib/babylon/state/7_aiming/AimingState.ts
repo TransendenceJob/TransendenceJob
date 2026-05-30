@@ -20,16 +20,16 @@ function turnMessage(machine: StateMachine) {
 }
 
 function sendAimingDone(machine: StateMachine) {
-	if (!machine.turn)
+	if (!machine.loaded)
 		return ;
-	const data: aimingHelper = machine.turn.aiming;
+	const data: aimingHelper = machine.loaded.turn.aiming;
 	const pos_x = data.seperatedTarget ? 
 		data.targetMarker.position.x :
-		machine.turn.chosenWeapon?.getProjectileSpawnPos().x ??
+		machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos().x ??
 		0;
 	const pos_y = data.seperatedTarget ? 
 		data.targetMarker.position.y : 
-		machine.turn.chosenWeapon?.getProjectileSpawnPos().y ??
+		machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos().y ??
 		0;
 	machine.msgToServer<CS_EndAimState>(CS_Type.CS_EndAimState, {
 		wormAngle: data.wormAngle,
@@ -52,7 +52,8 @@ export class AimingState implements IState {
 
 	enter() {
 		this.reset()
-
+		if (!this.machine.loaded)
+			return ;
 		// Setup
 		turnMessage(this.machine);
 
@@ -60,16 +61,14 @@ export class AimingState implements IState {
 		const action = this.machine.scene.actionManager;
 
 		// Force a chosen worm and weapon
-		if (!this.machine.turn)
-			this.machine.turn = new Turn(this.machine.players[0], this.machine.scene);
-		const turn = this.machine.turn;
+		const turn = this.machine.loaded.turn;
 		if (!turn.chosenWorm)
 			turn.chosenWorm = turn.activePlayer.worms[0];
 		// Choose random Weapon, if no weapon chosen
 		if (!turn.chosenWeapon) {
-			const range = this.machine.weapons.length - 1
+			const range = this.machine.loaded.weapons.length - 1
 			const randomWeaponIndex = (Math.round(Math.random() * range))
-			this.weapon = this.machine.weapons[randomWeaponIndex]
+			this.weapon = this.machine.loaded.weapons[randomWeaponIndex]
 			this.machine.guiHelper?.notifications.add(`No Weapon was chosen, picking random one: ${this.weapon.name}`)
 		} else {
 			this.weapon = turn.chosenWeapon;
@@ -96,11 +95,32 @@ export class AimingState implements IState {
 			this.cancelAiming = true;
 		}));
 
+		let variable = -1; // -1 = nothing selected yet
+
+		action.registerAction(new ExecuteCodeAction({
+			trigger: ActionManager.OnKeyUpTrigger,
+			parameter: "k",
+		}, () => {
+			if (!this.machine.loaded)
+				return;
+			console.log("Toggling ", variable);
+			const parts = this.machine.loaded.aiming.target.all;
+
+			// Reset previously selected part
+			if (variable >= 0)
+				parts[variable].visiblity = 0;
+
+			// Advance, wrapping around
+			variable = (variable + 1) % parts.length;
+
+			// Highlight new part
+			parts[variable].visiblity = 1;
+		}))
 		// Activate the first aiming type for the Weapon
 		console.log("Activating 0");
-		this.machine.turn?.chosenWeapon?.aimTypes[0].activate({
+		turn.chosenWeapon?.aimTypes[0].activate({
 			scene: this.machine.scene,
-			turn: this.machine.turn,
+			turn: this.machine.loaded.turn,
 			broadcast: this.machine.msgForActive
 		});
 	}
@@ -115,7 +135,7 @@ export class AimingState implements IState {
 			this.next = false;
 			this.switchAimingPhase(this.aimingPhase + 1);
 		}
-		this.machine.turn?.turnWeapon();
+		this.machine.loaded?.turn?.turnWeapon();
 	}
 
 	exit() {
@@ -138,8 +158,10 @@ export class AimingState implements IState {
 	 * @param newPhase phase of aiming to switch to
 	 */
 	switchAimingPhase(newPhase: number) {
-		if (newPhase == 0 && this.machine.turn) {
-			const aiming = this.machine.turn.aiming;
+		if (!this.machine.loaded)
+			return ;
+		if (newPhase == 0) {
+			const aiming = this.machine.loaded.turn.aiming;
 			aiming.wormAngle = 0;
 			aiming.targetAngle = 0;
 			aiming.force = 1;
@@ -152,12 +174,11 @@ export class AimingState implements IState {
 			sendAimingDone(this.machine);
 		}
 		else {
-			if (this.machine.turn)
-				this.weapon?.aimTypes[newPhase].activate({
-					scene: this.machine.scene,
-					turn: this.machine.turn,
-					broadcast: this.machine.msgForActive
-				});
+			this.weapon?.aimTypes[newPhase].activate({
+				scene: this.machine.scene,
+				turn: this.machine.loaded.turn,
+				broadcast: this.machine.msgForActive
+			});
 			this.aimingPhase = newPhase;
 		}
 	}

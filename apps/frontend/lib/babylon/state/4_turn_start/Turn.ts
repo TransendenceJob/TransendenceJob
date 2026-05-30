@@ -37,7 +37,7 @@ export class Turn {
 		player: Player, 
 		scene: Scene,
 		weapon: IWeapon | undefined,
-		notify: (msg: string) => void
+		notify: (msg: string) => void,
 	) {
 		this.activePlayerId = player.id;
 		this.activePlayer = player;

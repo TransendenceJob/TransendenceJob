@@ -3,6 +3,7 @@ import { AbstractMesh, ImportMeshAsync, Scene, MeshBuilder, Mesh } from '@babylo
 import "@babylonjs/loaders/OBJ";
 import { weaponList } from '../7_aiming/weapons/weaponList';
 import { IWeapon } from '../7_aiming/weapons/IWeapon';
+import { aimingMeshes } from './loadGame';
 
 async function load(scene: Scene, file: string): Promise<Array<AbstractMesh>> {
 	// May throw exception, should be caught on specific Weapon Creation that calls this in constructor
@@ -20,7 +21,7 @@ export interface loadingWeaponResult {
 	message: string,
 }
 
-export async function loadWeapons(scene: Scene) {
+export async function loadWeapons(scene: Scene, aimMeshes: aimingMeshes) {
 	const result: loadingWeaponResult = {
 		weapons: [],
 		success: false,
@@ -40,7 +41,7 @@ export async function loadWeapons(scene: Scene) {
 			})
 			// Offset in front of worm model, so gun is visible
 			parent.position.z = -0.5;
-			result.weapons.push(new entry.instance(parent, meshes));
+			result.weapons.push(new entry.instance(parent, meshes, aimMeshes));
 		}
 		catch (e) {
 			result.message = `BABYLON: Error while trying to load weapon ${entry.fileName}`;

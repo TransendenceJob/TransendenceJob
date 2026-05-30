@@ -4,6 +4,7 @@ import { IWeapon } from "./IWeapon"
 import { AirStrike } from "./weaponClasses/AirStrike"
 import { FallingPiano } from "./weaponClasses/FallingPiano"
 import { Meteor } from "./weaponClasses/Meteor"
+import { aimingMeshes } from '../../1_loading/loadGame';
 
 /**
  * For each Entry, call the constructor by calling the stored construction function,
@@ -11,7 +12,7 @@ import { Meteor } from "./weaponClasses/Meteor"
  * as well as the scene, which is required for the Weapon Constructor
  */
 type Entry<T> = {
-	instance: new (mesh: Mesh, childMeshes: Array<AbstractMesh>) => T,
+	instance: new (mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) => T,
 	fileName: string,
 }
 

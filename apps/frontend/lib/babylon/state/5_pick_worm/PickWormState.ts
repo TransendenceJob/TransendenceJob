@@ -25,11 +25,14 @@ export class PickWormState implements IState {
 
 	enter() {
 		this.reset()
+		if (!this.machine.loaded)
+			return ;
 
 		// Setup
 		turnMessage(this.machine);
-		this.pointer = new WormPointer(this.machine.scene, this.machine.turn?.chosenWorm.mesh);
-		this.pointer.target = (this.machine.turn) ? this.machine.turn.chosenWorm.mesh : undefined;
+		const turn = this.machine.loaded.turn;
+		this.pointer = new WormPointer(this.machine.scene, turn.chosenWorm.mesh);
+		this.pointer.target = (this.machine.loaded.turn) ? this.machine.loaded.turn.chosenWorm.mesh : undefined;
 		
 		// Actions
 		const action = this.machine.scene.actionManager;
@@ -39,7 +42,7 @@ export class PickWormState implements IState {
 			return ;
 
 		// Allow worms to be chosen by clicking on their mesh
-		this.machine.turn?.activePlayer.wormsClickable(true, (worm: Worm) => {
+		turn.activePlayer.wormsClickable(true, (worm: Worm) => {
 			this.pickWorm(worm);
 		});
 
@@ -62,7 +65,7 @@ export class PickWormState implements IState {
 		}, () => {
 			this.getNextWorm(true);
 			this.machine.msgToServer<CS_WormChosen>(CS_Type.CS_WormChosen, {
-				wormId: this.machine.turn?.chosenWorm.id ?? 0,
+				wormId: turn.chosenWorm.id ?? 0,
 			})
 		}));
 		action.registerAction(new ExecuteCodeAction({
@@ -71,7 +74,7 @@ export class PickWormState implements IState {
 		}, () => {
 			this.getNextWorm(false);
 			this.machine.msgToServer<CS_WormChosen>(CS_Type.CS_WormChosen, {
-				wormId: this.machine.turn?.chosenWorm.id ?? 0,
+				wormId: turn.chosenWorm.id ?? 0,
 			})
 		}));
 	}
@@ -81,9 +84,9 @@ export class PickWormState implements IState {
 	 * @returns 
 	 */
 	private getNextWorm(forward: boolean) {
-		if (!this.machine.turn)
+		if (!this.machine.loaded)
 			return ;
-		const next_worm = this.machine.turn.activePlayer.getNextWorm(forward, this.machine.turn.chosenWorm);
+		const next_worm = this.machine.loaded.turn.activePlayer.getNextWorm(forward, this.machine.loaded.turn.chosenWorm);
 		this.pickWorm(next_worm);
 	}
 
@@ -92,9 +95,9 @@ export class PickWormState implements IState {
 	 * @param newWorm New worm to choose
 	 */
 	private pickWorm(newWorm: Worm) {
-		if (!this.machine.turn)
+		if (!this.machine.loaded)
 			return ;
-		const turn = this.machine.turn;
+		const turn = this.machine.loaded.turn;
 		turn.chosenWorm = newWorm;
 		if (!turn.chosenWeapon)
 			return ;
@@ -104,8 +107,11 @@ export class PickWormState implements IState {
 	}
 
 	tick() {
-		if (this.pointer && this.machine.turn && this.pointer.target != this.machine.turn.chosenWorm.mesh)
-			this.pointer.target = this.machine.turn.chosenWorm.mesh;
+		if (!this.machine.loaded)
+			return ;
+		const turn = this.machine.loaded.turn;
+		if (this.pointer && turn && this.pointer.target != turn.chosenWorm.mesh)
+			this.pointer.target = turn.chosenWorm.mesh;
 		if (this.next && this.machine.isActiveUser()) {
 			this.machine.sendRequestStatePacket(GameState.MOVEMENT);
 			this.next = false;
@@ -113,7 +119,7 @@ export class PickWormState implements IState {
 	}
 
 	exit() {
-		this.machine.turn?.activePlayer.wormsClickable(false, undefined);
+		this.machine.loaded?.turn.activePlayer.wormsClickable(false, undefined);
 		this.pointer?.dispose();
 		this.pointer = undefined;
 		this.reset()
