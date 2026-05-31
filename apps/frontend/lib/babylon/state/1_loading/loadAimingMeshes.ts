@@ -59,12 +59,9 @@ function createTargetDirectionMesh(scene: Scene): Mesh {
 
 export async function loadAimingMeshes(scene: Scene): Promise<aimingMeshes> {
 
-	let scaling = 0.1
 	// Target Position Marker
 	const target: ImportMesh = await importMesh(scene, "Aiming Target Position Marker", "/assets/WormsReticle.obj");
-	//target.all.forEach((mesh) => {
-	//	mesh.renderingGroupId = 1;
-	//})
+	target.all[0].renderingGroupId = 1;
 
 	// Target Direction Marker
 	const direction = createTargetDirectionMesh(scene);
