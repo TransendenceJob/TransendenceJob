@@ -63,8 +63,7 @@ export class Turn {
 		this.chosenWeapon = newWeapon;
 		if (this.chosenWeapon == undefined)
 			return ;
-		this.aiming.wormAngle = this.chosenWeapon.getStartWormAngle();
-		this.turnWeapon();
+		this.turnWeapon(this.chosenWeapon.getStartWormAngle());
 		this.chosenWeapon.show(true);
 		this.notify(`${this.chosenWorm.name} equips ${newWeapon?.name}`);
 
@@ -73,17 +72,16 @@ export class Turn {
 		this.chosenWeapon.mesh.position.y = this.chosenWorm.mesh.position.y;
 	}
 
-	/**
-	 * Turns Weapon to new rotation
-	 * @param angle new Rotation for Weapon in degrees
-	 */
-	turnWeapon() {
+	turnWeapon(angle: number) {
 		if (!this.chosenWeapon) 
 			return;
-		// Babylon rotation is natively counter clockwise, but we would like cc, so we do 360° - x° to invert
-		this.chosenWeapon.mesh.rotation.z = ((pi2 - this.aiming.wormAngle));
-		if (this.aiming.targetDirection.visibility == 1)
-			this.aiming.targetDirection.rotation.z = (pi2 - this.aiming.targetAngle);
+		this.aiming.wormAngle = angle;
+		if (this.chosenWeapon)
+			this.chosenWeapon.mesh.rotation.z = (Math.PI * 2 - angle) % (Math.PI * 2);
+	}
+
+	turnDirection(angle: number) {
+		this.aiming.targetDirection.rotation.z = (Math.PI * 2 - angle) % (Math.PI * 2);
 	}
 
 	dispose() {
@@ -99,7 +97,7 @@ export class Turn {
 		this.aiming.wormAngle = 0;
 		this.aiming.targetAngle = 0;
 		this.aiming.force = 1;
-		this.aiming.targetDirection.visibility = 0;
+		this.aiming.targetDirection.setEnabled(false);
 		this.aiming.targetMarker.show(false);
 	}
 }

@@ -4,6 +4,7 @@ import "@babylonjs/loaders/OBJ";
 import { weaponList } from '../7_aiming/weapons/weaponList';
 import { IWeapon } from '../7_aiming/weapons/IWeapon';
 import { aimingMeshes } from './loadGame';
+import { StateMachine } from '../StateMachine';
 
 async function load(scene: Scene, file: string): Promise<Array<AbstractMesh>> {
 	// May throw exception, should be caught on specific Weapon Creation that calls this in constructor
@@ -21,7 +22,7 @@ export interface loadingWeaponResult {
 	message: string,
 }
 
-export async function loadWeapons(scene: Scene, aimMeshes: aimingMeshes) {
+export async function loadWeapons(machine: StateMachine, aimMeshes: aimingMeshes) {
 	const result: loadingWeaponResult = {
 		weapons: [],
 		success: false,
@@ -31,8 +32,8 @@ export async function loadWeapons(scene: Scene, aimMeshes: aimingMeshes) {
 	// Try to load each Weapon, stopping on failure
 	for (const entry of weaponList) {
 		try {
-			const meshes = await load(scene, entry.fileName);
-			const parent: Mesh = MeshBuilder.CreateBox("unset weapon mesh", {}, scene);
+			const meshes = await load(machine.scene, entry.fileName);
+			const parent: Mesh = MeshBuilder.CreateBox("unset weapon mesh", {}, machine.scene);
 			parent.visibility = 0;
 			// Remove parenting, so meshes can later be put into one custom mesh
 			meshes.forEach((mesh) => {
@@ -41,7 +42,7 @@ export async function loadWeapons(scene: Scene, aimMeshes: aimingMeshes) {
 			})
 			// Offset in front of worm model, so gun is visible
 			parent.position.z = -0.5;
-			result.weapons.push(new entry.instance(parent, meshes, aimMeshes));
+			result.weapons.push(new entry.instance(parent, meshes, aimMeshes, machine.msgToServer));
 		}
 		catch (e) {
 			result.message = `BABYLON: Error while trying to load weapon ${entry.fileName}`;

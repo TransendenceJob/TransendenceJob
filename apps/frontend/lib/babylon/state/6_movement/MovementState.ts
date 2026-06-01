@@ -26,6 +26,7 @@ function manuallyChooseWeapon(action: AbstractActionManager, machine: StateMachi
 		}, () => {
 			if (!machine.loaded)
 				return ;
+			console.log("Manually chose weapon");
 			const weapon = machine.loaded.weapons.find((weapon) => (weapon.weaponId == i));
 			machine.msgToServer<CS_WeaponChosen>(CS_Type.CS_WeaponChosen, {
 				id: (weapon?.weaponId ?? 0)
@@ -51,9 +52,8 @@ export class MovementState implements IState {
 		const action = this.machine.scene.actionManager;
 
 		// Display first weapon as default
-		this.machine.msgToServer<CS_WeaponChosen>(CS_Type.CS_WeaponChosen, {
-			id: this.machine.loaded.weapons[0].weaponId,
-		});
+		console.log("First weapon chosen");
+		this.machine.loaded.turn.chooseWeapon(this.machine.loaded.weapons[0]);
 
 		// For inactive players, dont allow picking worms
 		if (!this.machine.isActiveUser())

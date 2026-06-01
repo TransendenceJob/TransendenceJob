@@ -111,7 +111,6 @@ export class AimingState implements IState {
 			this.next = false;
 			this.switchAimingPhase(this.aimingPhase + 1);
 		}
-		this.machine.loaded?.turn?.turnWeapon();
 	}
 
 	exit() {

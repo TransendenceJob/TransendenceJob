@@ -66,7 +66,6 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 
 	// Load meshes for aiming stuffs
 	const aiming: aimingMeshes = await loadAimingMeshes(machine.scene);
-	console.log("Aiming Meshes: ", aiming);
 	loadingHelper.send("Imported Aiming Meshes")
 
 
@@ -86,7 +85,9 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	loadingHelper.send("Loaded Map");
 
 	// Load Weapons & Meshes
-	const result: loadingWeaponResult = await loadWeapons(machine.scene, aiming);
+	const result: loadingWeaponResult = await loadWeapons(
+		machine,
+		aiming);
 	if (!result.success) {
 		machine.msgToServer<CS_FailedLoading>(CS_Type.CS_FailedLoading, {
 			msg: result.message,

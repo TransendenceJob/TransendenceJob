@@ -7,6 +7,7 @@ import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingMeshes } from '../../../1_loading/loadGame';
 import { weaponIds } from '@/shared/weapons/weaponIds';
+import { msgToServerType } from '@/lib/packets/msgToServerType';
 
 const SCALE = 0.01;
 // Mutiply degrees with this to convert to radians
@@ -36,7 +37,12 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 	public readonly childMeshes: Array<AbstractMesh>
 	public aimTypes: Array<IAimType>;
 
-	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
+	constructor(
+		mesh: Mesh, 
+		childMeshes: Array<AbstractMesh>, 
+		aimMeshes: aimingMeshes,
+		msgToServer: msgToServerType,
+	) {
 		super();
 		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
@@ -48,13 +54,13 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PickPosition(aimMeshes),
+			new PickPosition(aimMeshes, msgToServer),
 			new SwitchTargetAngle({
 				snapAngle: this.snapAngle,
 				minAngle: this.allowedAngleMin,
 				maxAngle: this.allowedAngleMax,
 				startAngle: this.startAngle,
-			}, aimMeshes),
+			}, aimMeshes, msgToServer),
 		]
 	}
 

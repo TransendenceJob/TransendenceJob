@@ -42,6 +42,7 @@ export interface IWeapon {
 
 	/**
 	 * Returns a value for an angle in radians, where a Weapon should start out in
+	 * Values in Babylon Js angles (radians, counter clockwise, up = 0)
 	 */
 	getStartWormAngle(): number;
 

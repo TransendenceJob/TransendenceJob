@@ -1,5 +1,6 @@
 import {
   CS_GenericPacket,
+  CS_SwitchAimState,
   CS_Type,
 } from '@/shared/packets/ClientServerPackets';
 import { Lobby } from 'src/lobbies/Lobby';
@@ -10,9 +11,13 @@ import {
   SC_WormChosen,
   SC_ExplosionOccurs,
   SC_WeaponChosen,
+  SC_AimAngle,
+  SC_AimMoveTarget,
+  SC_SwitchAimState,
+  SC_AimTargetAngle,
 } from '@/shared/packets/ServerClientPackets';
 import { GameState } from '@/shared/state/GameState';
-import { pointData } from '@/shared/packets/util';
+import { aimStateId, pointData } from '@/shared/packets/util';
 
 function requestChangeState(
   lobby: Lobby,
@@ -78,9 +83,43 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       break;
     }
 
+    // When switching weapons
     case CS_Type.CS_WeaponChosen: {
       lobby.msgToClient<SC_WeaponChosen>(SC_Type.SC_WeaponChosen, {
-        id: data.id as number,
+        id: data.id,
+      });
+      break;
+    }
+
+    // When changing worms weapons angle
+    case CS_Type.CS_AimAngle: {
+      lobby.msgToClient<SC_AimAngle>(SC_Type.SC_AimAngle, {
+        angle: data.angle,
+      });
+      break;
+    }
+
+    // When changing worms weapons angle
+    case CS_Type.CS_AimTargetAngle: {
+      lobby.msgToClient<SC_AimTargetAngle>(SC_Type.SC_AimTargetAngle, {
+        angle: data.angle as number,
+      });
+      break;
+    }
+
+    // When changing worms weapons angle
+    case CS_Type.CS_AimMoveTarget: {
+      lobby.msgToClient<SC_AimMoveTarget>(SC_Type.SC_AimMoveTarget, {
+        point: data.point as pointData,
+      });
+      break;
+    }
+
+    // When changing worms weapons angle
+    case CS_Type.CS_SwitchAimState: {
+      lobby.msgToClient<SC_SwitchAimState>(SC_Type.SC_SwitchAimState, {
+        entering: data.entering as boolean,
+        stateId: data.stateId as aimStateId,
       });
       break;
     }
@@ -91,8 +130,7 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       if (lobby.clientManager.getActive().id != data.userId) return;
       const target = lobby.game.aimingData;
       target.wormAngle = data.wormAngle;
-      // Remove the "as pointData" once the compiler stops being a bitch
-      target.position = data.position as pointData;
+      target.position = data.position;
       target.targetAngle = data.targetAngle;
       target.force = data.force;
       requestChangeState(lobby, data.userId, GameState.TURN_END);

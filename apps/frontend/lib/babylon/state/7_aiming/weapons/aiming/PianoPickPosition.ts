@@ -2,6 +2,9 @@ import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
 import { activateParam, IAimType } from "./IAimType";
 import { aimingMeshes } from '../../../1_loading/loadGame';
 import { ImportMesh } from '@/lib/babylon/state/1_loading/ImportMesh';
+import { msgToServerType } from "@/lib/packets/msgToServerType";
+import { CS_AimMoveTarget, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
+import { aimStateId } from "@/shared/packets/util";
 
 export class PianoPickPosition implements IAimType {
 	private actions: Array<() => void>;
@@ -10,10 +13,12 @@ export class PianoPickPosition implements IAimType {
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
 	private height: number = 34;
-	constructor(aimMeshes: aimingMeshes) {
+	private msgToServer: msgToServerType;
+	constructor(aimMeshes: aimingMeshes, msgToServer: msgToServerType) {
 		this.target = aimMeshes.target;
 		this.plane = aimMeshes.plane;
 		this.actions = [];
+		this.msgToServer = msgToServer;
 	}
 
 	activate(params: activateParam) {
@@ -21,6 +26,10 @@ export class PianoPickPosition implements IAimType {
 			return ;
 		this.active = true;
 		params.broadcast(this.message);
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: true,
+			stateId: aimStateId.PianoPickPosition,
+		});
 
 		const turn = params.turn;
 		const scene = params.scene;
@@ -41,7 +50,12 @@ export class PianoPickPosition implements IAimType {
 				)
 			).pickedPoint;
 			if (pickedPoint) {
-				this.target.mesh.position.x = pickedPoint.x;
+				this.msgToServer<CS_AimMoveTarget>(CS_Type.CS_AimMoveTarget, {
+					point: {
+						x: pickedPoint.x,
+						y: this.height,
+					}
+				})
 			}
 		}
 		this.active = true;
@@ -54,6 +68,11 @@ export class PianoPickPosition implements IAimType {
 		if (!this.active)
 			return ;
 		
+		// Hide target marker mesh
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: false,
+			stateId: aimStateId.PianoPickPosition,
+		});
 		this.active = false;
 		this.target.show(false);
 		this.actions.forEach((action: () => void) => {

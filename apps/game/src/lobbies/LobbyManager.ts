@@ -2,7 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { Lobby } from './Lobby';
 import { EventEmitter } from 'stream';
 import { Logger } from '@nestjs/common';
-import { CS_GenericPacket } from '@/shared/packets/ClientServerPackets';
+import {
+  CS_GenericPacket,
+  CS_Type,
+  hideClientPackets,
+} from '@/shared/packets/ClientServerPackets';
+import {
+  SERVER_LOG_CLIENT_PACKETS,
+  SERVER_LOG_SERVER_PACKETS,
+} from '@/shared/packets/config';
+import {
+  hideServerPackets,
+  SC_Type,
+} from '@/shared/packets/ServerClientPackets';
 
 const DEBUG: boolean = true;
 //process.env.NODE_ENV == 'development';
@@ -24,7 +36,12 @@ export class LobbyManager extends EventEmitter {
       this.lobbies[i] = new Lobby(i, (payload: string) => {
         this.emit('dataToEmit', payload);
 
-        if (DEBUG) this.logger.log(`Server->Client: ${payload}`);
+        const obj = JSON.parse(payload);
+        const found = hideServerPackets.find(
+          (type: SC_Type) => type == obj.type,
+        );
+        if (!found && SERVER_LOG_SERVER_PACKETS)
+          this.logger.log(`Server->Client: ${payload}`);
       });
     }
   }
@@ -56,8 +73,12 @@ export class LobbyManager extends EventEmitter {
       return;
     }
 
-    // Log
-    if (DEBUG) this.logger.log(`Client->Server: ${data_raw}`);
+    // Log C->S packets
+    const found: CS_Type | undefined = hideClientPackets.find(
+      (type: CS_Type) => type == (data.type as CS_Type),
+    );
+    if (!found && SERVER_LOG_CLIENT_PACKETS)
+      this.logger.log(`Client->Server: ${data_raw}`);
 
     // Let appropriate lobby handle package
     this.lobbies[data.lobbyId].msgToServer(data);

@@ -13,7 +13,7 @@ import { GameContext } from '@/src/components/game/lobby/GameContext';
 
 
 const DEBUG: boolean = (process.env.NODE_ENV == "development");
-// const DEBUG: boolean = true; // always true to testing prod as well
+const LOG_PACKETS: boolean = false; // always true to testing prod as well
 
 const updateSlotReadyState = (
   slots: Client[],
@@ -54,7 +54,7 @@ const buildSlotsFromLobbyData = (
   const newSlots: Client[] = [];
   // fill slots with data from server
   players.forEach(player => {
-    if (DEBUG) console.log("Processing Player at Index:", player.slot, "Data:", player);
+    if (LOG_PACKETS) console.log("Processing Player at Index:", player.slot, "Data:", player);
     newSlots.push(player);
   });
   return newSlots;
@@ -110,7 +110,7 @@ export default function LobbyPageController() {
     const packet_string = JSON.stringify(packet);
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit('msgToServer', packet_string);
-      if (DEBUG) console.log("NEXT: Client sends packt to Server: ", packet_string);
+      if (LOG_PACKETS) console.log("NEXT: Client sends packt to Server: ", packet_string);
     }
   }, [lobbyId, user]);
 
@@ -139,11 +139,11 @@ export default function LobbyPageController() {
           setSlots(prev =>
             addPlayerToSlots(prev, p.clientData)
           );
-          if (DEBUG) console.log("Player joined:", p.clientData.id);
+          if (LOG_PACKETS) console.log("Player joined:", p.clientData.id);
           break;
 
         case SC_Type.SC_ClientDisconnect:
-          if (DEBUG) console.log("Player left:", p.userId);
+          if (LOG_PACKETS) console.log("Player left:", p.userId);
           setSlots(prev =>
             removePlayerFromSlots(prev, p.userId)
           );
@@ -159,11 +159,11 @@ export default function LobbyPageController() {
     };
 
     const msgToClient = (data: string) => {
-      //if (DEBUG) console.log("NEXT: Client received packet: ", data);
+      //if (LOG_PACKETS) console.log("NEXT: Client received packet: ", data);
       const packet: SC_GenericPacket = JSON.parse(data);
 
       if (!packet || !('type' in packet)) {
-        if (DEBUG) console.error("Frontend received malformed packet:", packet);
+        if (LOG_PACKETS) console.error("Frontend received malformed packet:", packet);
         return;
       }
 
@@ -171,7 +171,7 @@ export default function LobbyPageController() {
       if (lobbyIdRef.current != packet.lobbyId)
         return ;
 
-      if (DEBUG) console.log("NEXT: Client received packet: ", packet);
+      if (LOG_PACKETS) console.log("NEXT: Client received packet: ", packet);
 
       // Handle state Transitions
       let packetHandled = true;
@@ -205,7 +205,7 @@ export default function LobbyPageController() {
       if (stateRef.current === "LOBBY" && isLobbyDataPacket) {
         handleLobbyUpdates(packet);
       } else if (!packetHandled){
-        if (DEBUG) console.warn(`[Frontend Page] Ignored: ${packet.type} in state ${stateRef.current}`);
+        if (LOG_PACKETS) console.warn(`[Frontend Page] Ignored: ${packet.type} in state ${stateRef.current}`);
       }
     }
 
@@ -247,7 +247,7 @@ export default function LobbyPageController() {
             `Unnamed Player ${user?.id.substring(0, 6)}` :
             "",
       errorMsg,
-      DEBUG
+      LOG_PACKETS
     }}>
       <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center"> 
         <SocketStatus isConnected={isConnected}/>

@@ -51,3 +51,10 @@ export const lobbyDataPackets = [
 	SC_Type.SC_ClientJoin,
 	SC_Type.SC_ClientDisconnect
 ];
+
+export enum aimStateId {
+	AimAngle =	0,
+	PianoPickPosition =	1,
+	PickPosition = 2,
+	SwitchTargetAngle = 3,
+}

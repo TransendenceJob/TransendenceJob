@@ -50,7 +50,7 @@ function createTargetDirectionMesh(scene: Scene): Mesh {
 	const material = new StandardMaterial("material", scene);
 	material.emissiveColor = new Color3(1, 0.25, 0.25);
 	arrow.material = material;
-	arrow.visibility = 0;
+	arrow.setEnabled(false);
 	arrow.renderingGroupId = 1;
 	return (arrow);
 }

@@ -6,6 +6,7 @@ import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
 import { aimingMeshes } from '../../../1_loading/loadGame';
 import { weaponIds } from '@/shared/weapons/weaponIds';
+import { msgToServerType } from '@/lib/packets/msgToServerType';
 
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians
@@ -36,7 +37,12 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 	public aimTypes: Array<IAimType>;
 	private nozzleVector: Vector3;
 
-	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
+	constructor(
+		mesh: Mesh, 
+		childMeshes: Array<AbstractMesh>, 
+		aimMeshes: aimingMeshes,
+		msgToServer: msgToServerType,
+	) {
 		super();
 		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
@@ -49,8 +55,9 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 			new AimingAngle({
 				minAngle: this.allowedAngleMin, 
 				maxAngle: this.allowedAngleMax, 
-				turnSpeed: this.turnSpeed
-			}),
+				turnSpeed: this.turnSpeed,
+			}, 
+			msgToServer),
 		]
 		// This should be calculated in Blender (need to double values from there)
 		// It points to the tip of the nozzle, and is needed to spawn projectiles
@@ -74,7 +81,7 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 		let angle = (this.allowedAngleMax - this.allowedAngleMin) / 2;
 		if (this.allowedAngleMin > this.allowedAngleMax)
 			angle += pi2;
-		angle = (angle + pi2) % pi2;
-		return (angle)
+		angle = (pi2 - angle) % pi2;
+		return (pi2 - angle) % pi2;
 	}
 }

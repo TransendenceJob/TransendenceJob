@@ -1,8 +1,10 @@
 import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
-import { Turn } from "../../../4_turn_start/Turn";
 import { activateParam, IAimType } from "./IAimType";
 import { aimingMeshes } from '../../../1_loading/loadGame';
 import { ImportMesh } from '@/lib/babylon/state/1_loading/ImportMesh';
+import { msgToServerType } from "@/lib/packets/msgToServerType";
+import { CS_AimMoveTarget, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
+import { aimStateId } from "@/shared/packets/util";
 
 export class PickPosition implements IAimType {
 	private actions: Array<() => void>;
@@ -10,10 +12,12 @@ export class PickPosition implements IAimType {
 	private marker: ImportMesh;
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
-	constructor(aimMeshes: aimingMeshes) {
+	private msgToServer: msgToServerType;
+	constructor(aimMeshes: aimingMeshes, msgToServer: msgToServerType,) {
 		this.plane = aimMeshes.plane;
 		this.marker = aimMeshes.target;
 		this.actions = [];
+		this.msgToServer = msgToServer;
 	}
 
 	activate(params: activateParam) {
@@ -21,6 +25,10 @@ export class PickPosition implements IAimType {
 			return ;
 		this.active = true;
 		params.broadcast(this.message);
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: true,
+			stateId: aimStateId.PickPosition,
+		});
 
 		const turn = params.turn;
 		const scene = params.scene;
@@ -39,7 +47,12 @@ export class PickPosition implements IAimType {
 				)
 			).pickedPoint;
 			if (pickedPoint) {
-				this.marker.mesh.position.copyFrom(pickedPoint);
+				this.msgToServer<CS_AimMoveTarget>(CS_Type.CS_AimMoveTarget, {
+					point: {
+						x: pickedPoint.x,
+						y: pickedPoint.y,
+					}
+				})
 			}
 		}
 		this.active = true;
@@ -51,7 +64,11 @@ export class PickPosition implements IAimType {
 	deactivate(scene: Scene): void {
 		if (!this.active)
 			return ;
-		
+		// Hide target marker mesh
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: false,
+			stateId: aimStateId.PickPosition,
+		});
 		this.active = false;
 		this.marker.show(false);
 		this.actions.forEach((action: () => void) => {

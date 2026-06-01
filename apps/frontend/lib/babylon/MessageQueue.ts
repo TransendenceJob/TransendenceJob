@@ -1,6 +1,7 @@
-import { SC_GenericPacket } from '@/shared/packets/ServerClientPackets'
+import { frontendServerPackets, SC_GenericPacket, SC_Type } from '@/shared/packets/ServerClientPackets'
 import { Socket } from 'socket.io-client';
 import { StateMachine } from './state/StateMachine';
+import { hideServerPackets } from '@/shared/packets/ServerClientPackets';
 
 /**
  * Class that administrates the comunication from Server->Client
@@ -18,6 +19,7 @@ export class MessageQueue {
 	public dispose: () => void;
 	public updateSocketUi: () => void;
 	public log: (data: string) => void;
+	public addNotif: (msg: string) => void;
 	constructor(lobbyId: number, socket: Socket, state: StateMachine, DEBUG: boolean, log: (data: string) => void) {
 		this.queue = [];
 		this.buffer = [];
@@ -28,8 +30,10 @@ export class MessageQueue {
 		const setSocketConnected = (connected: boolean) => {
 			state.guiHelper?.socketStatus?.set(connected);
 		}
-		const addNotification = (message: string) => {
-			state.guiHelper?.notifications?.add(message);
+
+		this.addNotif = (message: string) => {
+			if (DEBUG) 
+				state.guiHelper?.notifications?.add(message);
 		}
 
 		// Because the UI is created after the socket, we need to add a function,
@@ -43,27 +47,26 @@ export class MessageQueue {
 		const onConnect = () => {
 			setSocketConnected(true);
 			//log("Connected to Backend");
-			if (DEBUG) addNotification("Connected to Backend");
+			this.addNotif("Connected to Backend");
 		};
 		socket.on("connect", onConnect);
 				
 		const onError = (error: Error) => {
 			setSocketConnected(false);
 			//log(`Error with websocket: ${error.message}`);
-			if (DEBUG) addNotification(`Error with websocket: ${error.message}`);
+			this.addNotif(`Error with websocket: ${error.message}`);
 		};
 		socket.on("connect_error", onError);
 		
 		const onDisconnect = () => {
 			setSocketConnected(false);
 			//log("Connection closed");
-			if (DEBUG) addNotification("Connection closed");
+			this.addNotif("Connection closed");
 		}
 		socket.on("disconnect", onDisconnect);
 
 		const msgToClient = (data: string) => {
 			log(`Message from server ${data}`);
-			if (DEBUG) addNotification(`Message from server ${data}`);
 			this.write(data);
 		}
 		socket.on("msgToClient", msgToClient);
@@ -119,6 +122,13 @@ export class MessageQueue {
 		if (this.queue.length == 0) 
 			return [];
 		const copy: Array<SC_GenericPacket> = [...this.queue];
+		copy.forEach((packet) => {
+			const isHidden = hideServerPackets.find((type: SC_Type) => (type == packet.type));
+			const isHandled = frontendServerPackets.find((type: SC_Type) => (type == packet.type));
+			if (!isHidden && !isHandled) {
+				this.addNotif(`Message from server ${packet}`);
+			}
+		})
 		this.queue = [];
 		return (copy);
 	}

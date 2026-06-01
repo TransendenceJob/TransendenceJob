@@ -1,6 +1,9 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 import { activateParam, IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Scene } from '@babylonjs/core';
+import { msgToServerType } from "@/lib/packets/msgToServerType";
+import { CS_AimAngle, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
+import { aimStateId } from "@/shared/packets/util";
 
 const pi2 = Math.PI * 2;
 
@@ -20,12 +23,14 @@ export class AimingAngle implements IAimType {
 	private allowedAngleMax: number;
 	private span: number;
 	private message: string = "Use A and D to rotate the weapon, confirm with Space";
+	private msgToServer: msgToServerType;
 
-	constructor(data: aimingAngleParam) {
+	constructor(data: aimingAngleParam, msgToServer: msgToServerType) {
 		this.allowedAngleMin = data.minAngle;
 		this.allowedAngleMax = data.maxAngle;
 		this.span = (data.maxAngle - data.minAngle + pi2) % pi2;;
 		this.turnSpeed = data.turnSpeed;
+		this.msgToServer = msgToServer;
 	}
 
 	activate(params: activateParam) {
@@ -34,6 +39,10 @@ export class AimingAngle implements IAimType {
 		this.active = true;
 		const aim = params.turn.aiming;
 		params.broadcast(this.message);
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: true,
+			stateId: aimStateId.AimAngle,
+		});
 
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
@@ -59,6 +68,8 @@ export class AimingAngle implements IAimType {
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnEveryFrameTrigger,
 		}, () => {
+			if (!this.turnRight && !this.turnLeft)
+				return ;
 			let newAngle = aim.wormAngle;
 			if (this.turnRight) {
 				newAngle += this.turnSpeed;
@@ -68,22 +79,23 @@ export class AimingAngle implements IAimType {
 			}
 
 			// Lock movement when angles arent fully open
-			let finalAngle: number;
 			if (this.allowedAngleMin == 0 && this.allowedAngleMax == pi2) {
-				finalAngle = (newAngle + pi2) % pi2;
+				newAngle = (newAngle + pi2) % pi2;
 			} else {
 				const relativeAngle = (newAngle - this.allowedAngleMin + pi2) % pi2;
 				if (relativeAngle <= this.span) {
-					finalAngle = (newAngle + pi2) % pi2;
+					newAngle = (newAngle + pi2) % pi2;
 				}
 				else if (this.turnLeft) {
-					finalAngle = this.allowedAngleMin;
+					newAngle = this.allowedAngleMin;
 				}
 				else if (this.turnRight) {
-					finalAngle = this.allowedAngleMax;
+					newAngle = this.allowedAngleMax;
 				}
 			}
-			
+			this.msgToServer<CS_AimAngle>(CS_Type.CS_AimAngle, {
+				angle:  newAngle
+			});
 		}));
 
 		this.actions.forEach(
@@ -97,6 +109,10 @@ export class AimingAngle implements IAimType {
 	deactivate(scene: Scene) {
 		if (!this.active)
 			return ;
+		this.msgToServer<CS_SwitchAimState>(CS_Type.CS_SwitchAimState, {
+			entering: false,
+			stateId: aimStateId.AimAngle,
+		});
 		this.active = false;
 		this.turnLeft = false;
 		this.turnRight = false;
