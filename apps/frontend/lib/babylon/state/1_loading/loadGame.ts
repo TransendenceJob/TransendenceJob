@@ -47,7 +47,7 @@ export interface aimingMeshes {
 export async function loadGame(machine: StateMachine, data: gameData) {
 	console.log("BABYLON: Setting up Game according to given data");
 	if (!data) return ;
-	const LOADING_STEPS = 6;
+	const LOADING_STEPS = 5;
 
 	// Predefine how many times you will call the send() function to report progress
 	const loadingHelper = new LoadingHelper(LOADING_STEPS, (progress: number, msg: string) => {
@@ -85,6 +85,7 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	const ground = new Ground(machine.scene, data.map, false);
 	loadingHelper.send("Loaded Map");
 
+	// Load Weapons & Meshes
 	const result: loadingWeaponResult = await loadWeapons(machine.scene, aiming);
 	if (!result.success) {
 		machine.msgToServer<CS_FailedLoading>(CS_Type.CS_FailedLoading, {
@@ -95,7 +96,7 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 	const weapons = result.weapons;
 	loadingHelper.send("Imported Weapon Meshes")
 
-	const turn = new Turn(players[0], machine.scene, weapons[0], (msg: string) => {});
+	const turn = new Turn(machine, players[0], undefined, aiming);
 	loadingHelper.send(`Chose Player ${players[0].name} as first player`);
 
 	// Finished

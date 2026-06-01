@@ -1,14 +1,11 @@
 import { Mesh, AbstractMesh, Vector3 } from '@babylonjs/core'
-import { AimingAngle } from "../aiming/AimingAngle";
 import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
-import { PickPosition } from '../aiming/PickPosition';
-import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
-import { aimingHelper } from '../../../4_turn_start/Turn';
 import { PianoPickPosition } from '../aiming/PianoPickPosition';
 import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponIds } from '@/shared/weapons/weaponIds';
 
 const SCALE = 0.01;
 
@@ -16,8 +13,8 @@ const SCALE = 0.01;
  * Class that administrates specific Weapon
  */
 export class FallingPiano extends GenericWeapon implements IWeapon {
-	public weaponId = 2;
 	public name = "Falling Piano";
+	public weaponId: number;
 	public projectileCount = 1;
 	public speed = 5;
 	public spread = 0;
@@ -33,6 +30,7 @@ export class FallingPiano extends GenericWeapon implements IWeapon {
 
 	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
+		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
 		this.childMeshes.forEach((mesh) => {
@@ -61,5 +59,10 @@ export class FallingPiano extends GenericWeapon implements IWeapon {
 	 */
 	getProjectileSpawnPos(): Vector3 {
 		return (Vector3.Zero())
+	}
+
+
+	getStartWormAngle(): number {
+		return (0)
 	}
 }

@@ -1,24 +1,24 @@
 import { Mesh, AbstractMesh, Vector3 } from '@babylonjs/core'
-import { AimingAngle } from "../aiming/AimingAngle";
 import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
 import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
-import { aimingHelper } from '../../../4_turn_start/Turn';
 import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponIds } from '@/shared/weapons/weaponIds';
 
 const SCALE = 0.01;
 // Mutiply degrees with this to convert to radians
 const degToRad = Math.PI / 180;
+const pi2 = Math.PI * 2;
 
 /**
  * Class that administrates specific Weapon
  */
 export class AirStrike extends GenericWeapon implements IWeapon {
-	public weaponId = 1;
 	public name = "Air Strike";
+	public weaponId: number;
 	private allowedAngleMin = 135 * degToRad;
 	private allowedAngleMax = 225 * degToRad;
 	private startAngle = 135 * degToRad;
@@ -38,6 +38,7 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 
 	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
+		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
 		this.childMeshes.forEach((mesh) => {
@@ -72,5 +73,9 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 	 */
 	getProjectileSpawnPos(): Vector3 {
 		return (Vector3.Zero())
+	}
+
+	getStartWormAngle(): number {
+		return (0)
 	}
 }

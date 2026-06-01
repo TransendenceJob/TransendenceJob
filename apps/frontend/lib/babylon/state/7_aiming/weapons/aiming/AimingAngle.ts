@@ -32,9 +32,8 @@ export class AimingAngle implements IAimType {
 		if (this.active || params.turn == undefined)
 			return ;
 		this.active = true;
+		const aim = params.turn.aiming;
 		params.broadcast(this.message);
-		const turn = params.turn;
-
 
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
@@ -60,7 +59,7 @@ export class AimingAngle implements IAimType {
 		this.actions.push(new ExecuteCodeAction({
 			trigger: ActionManager.OnEveryFrameTrigger,
 		}, () => {
-			let newAngle = turn.aiming.wormAngle;
+			let newAngle = aim.wormAngle;
 			if (this.turnRight) {
 				newAngle += this.turnSpeed;
 			}
@@ -69,20 +68,22 @@ export class AimingAngle implements IAimType {
 			}
 
 			// Lock movement when angles arent fully open
+			let finalAngle: number;
 			if (this.allowedAngleMin == 0 && this.allowedAngleMax == pi2) {
-				turn.aiming.wormAngle = (newAngle + pi2) % pi2;
+				finalAngle = (newAngle + pi2) % pi2;
 			} else {
 				const relativeAngle = (newAngle - this.allowedAngleMin + pi2) % pi2;
 				if (relativeAngle <= this.span) {
-					turn.aiming.wormAngle = (newAngle + pi2) % pi2;
+					finalAngle = (newAngle + pi2) % pi2;
 				}
 				else if (this.turnLeft) {
-					turn.aiming.wormAngle = this.allowedAngleMin;
+					finalAngle = this.allowedAngleMin;
 				}
 				else if (this.turnRight) {
-					turn.aiming.wormAngle = this.allowedAngleMax;
+					finalAngle = this.allowedAngleMax;
 				}
 			}
+			
 		}));
 
 		this.actions.forEach(

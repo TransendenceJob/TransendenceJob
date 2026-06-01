@@ -1,6 +1,6 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 import { activateParam, IAimType } from "./IAimType";
-import { IAction, ExecuteCodeAction, ActionManager, Mesh, Scene } from '@babylonjs/core';
+import { IAction, ExecuteCodeAction, ActionManager, Mesh, Scene, AbstractMesh } from '@babylonjs/core';
 import { aimingMeshes } from '../../../1_loading/loadGame';
 
 const pi2 = Math.PI * 2;
@@ -19,7 +19,7 @@ export interface switchTargetAngleParam {
 export class SwitchTargetAngle implements IAimType {
 	private active: boolean = false;
 	private actions: Array<IAction> = [];
-	private meshRef: Mesh;
+	private meshRef: AbstractMesh;
 	private snapAngle: number;
 	private startAngle: number;
 	private turnLeft: boolean = false;
@@ -47,6 +47,7 @@ export class SwitchTargetAngle implements IAimType {
 		const turn = params.turn;
 
 		turn.aiming.targetAngle = this.startAngle;
+		this.meshRef.position.copyFrom(turn.aiming.targetMarker.mesh.position);
 		this.meshRef.visibility = 1;
 
 		// Turn left
@@ -74,9 +75,6 @@ export class SwitchTargetAngle implements IAimType {
 			trigger: ActionManager.OnEveryFrameTrigger,
 		}, () => {
 			let newAngle = turn.aiming.targetAngle;
-			if (this.turnLeft || this.turnRight) {
-				console.log("Case -1");
-			}
 			if (this.turnRight) {
 				newAngle += this.snapAngle;
 			}

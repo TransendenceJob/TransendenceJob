@@ -11,10 +11,9 @@ export class PickPosition implements IAimType {
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
 	constructor(aimMeshes: aimingMeshes) {
-		this.plane = undefined;
-		this.actions = [];
-		this.marker = aimMeshes.target;
 		this.plane = aimMeshes.plane;
+		this.marker = aimMeshes.target;
+		this.actions = [];
 	}
 
 	activate(params: activateParam) {
@@ -35,13 +34,12 @@ export class PickPosition implements IAimType {
 			const pickedPoint = scene.pick(
 				scene.pointerX, 
 				scene.pointerY, 
-				(mesh: Mesh) => (
+				(mesh: AbstractMesh) => (
 					mesh === this.plane
 				)
 			).pickedPoint;
 			if (pickedPoint) {
 				this.marker.mesh.position.copyFrom(pickedPoint);
-				turn.aiming.targetDirection.position.copyFrom(pickedPoint);
 			}
 		}
 		this.active = true;

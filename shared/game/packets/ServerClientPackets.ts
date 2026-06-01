@@ -35,6 +35,7 @@ export enum SC_Type {
 	SC_DEV_GameState =			"SC_DEV_GameState",
 	SC_ActivePlayerChanged =	"SC_ActivePlayerChanged",
 	SC_WormChosen =				"SC_WormChosen",
+	SC_WeaponChosen =			"SC_WeaponChosen",
 	SC_ExplosionOccurs =		"SC_ExplosionOccurs",
 }
 
@@ -247,6 +248,15 @@ export interface SC_WormChosen extends SC_Base {
 }
 
 /**
+ * Sent to inform frontend of client choosing a worm
+ * @param wormId identifier for the chosen worm
+ */
+export interface SC_WeaponChosen extends SC_Base {
+	type: SC_Type.SC_WeaponChosen,
+	id: number,
+}
+
+/**
  * Sent when game is started or loaded so Clients can display game
  * @param data Data that is needed for game to be loaded
  */
@@ -277,7 +287,7 @@ export type SC_GenericPacket =
 			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
 			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState |
 			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen |
-			SC_ExplosionOccurs
+			SC_ExplosionOccurs | SC_WeaponChosen
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |

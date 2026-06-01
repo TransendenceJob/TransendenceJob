@@ -15,14 +15,10 @@ import { msgToClientType } from '../lobbies/lobbyUtil/msgToClientType';
 import { Lobby } from 'src/lobbies/Lobby';
 import { pointData } from '@/shared/packets/util';
 
-// Server still needs a Turn, that tracks:
-// aiming values
-// active player (already tracked elsewhere)
-
 interface aimingData {
-  position: pointData;
   wormAngle: number;
-  targetAngle: number
+  position: pointData;
+  targetAngle: number;
   force: number;
 }
 

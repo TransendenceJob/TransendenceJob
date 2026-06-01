@@ -44,16 +44,15 @@ function createTargetDirectionMesh(scene: Scene): Mesh {
 		height: 0.1,
 		length: 1,
 		angle: (45) / 180 * Math.PI,
-
 	});
 	arrow.rotation.z = Math.PI;
 	arrow.bakeCurrentTransformIntoVertices();
 	const material = new StandardMaterial("material", scene);
 	material.emissiveColor = new Color3(1, 0.25, 0.25);
-    arrow.material = material;
-    arrow.visibility = 0;
+	arrow.material = material;
+	arrow.visibility = 0;
 	arrow.renderingGroupId = 1;
-    return (arrow);
+	return (arrow);
 }
 
 

@@ -1,11 +1,9 @@
 import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
-import { GameState } from '@/shared/state/GameState';
-import { ExecuteCodeAction, ActionManager, IAction } from '@babylonjs/core'
-import { aimingHelper, Turn } from '../4_turn_start/Turn';
+import { ExecuteCodeAction, ActionManager } from '@babylonjs/core'
+import { aimingHelper } from '../4_turn_start/Turn';
 import { IWeapon } from './weapons/IWeapon';
 import { CS_EndAimState, CS_Type } from '@/shared/packets/ClientServerPackets';
-import { activateParam } from './weapons/aiming/IAimType';
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -24,21 +22,22 @@ function sendAimingDone(machine: StateMachine) {
 		return ;
 	const data: aimingHelper = machine.loaded.turn.aiming;
 	const pos_x = data.seperatedTarget ? 
-		data.targetMarker.position.x :
-		machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos().x ??
-		0;
+		data.targetMarker.mesh.position.x :
+		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.x ??
+		machine.loaded.turn.chosenWorm.mesh.position.x);
 	const pos_y = data.seperatedTarget ? 
-		data.targetMarker.position.y : 
-		machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos().y ??
-		0;
+		data.targetMarker.mesh.position.y : 
+		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.y ??
+		machine.loaded.turn.chosenWorm.mesh.position.x);
 	machine.msgToServer<CS_EndAimState>(CS_Type.CS_EndAimState, {
 		wormAngle: data.wormAngle,
-		targetAngle: data.wormAngle,
-		force: data.force,
 		position: {
 			x: pos_x,
 			y: pos_y,
-		}
+		},
+		// Do this because BJs angles are counter clockwise, but ours are clockwise
+		targetAngle: (Math.PI * 2 - data.targetDirection.rotation.y),
+		force: data.force
 	});
 }
 
@@ -95,29 +94,6 @@ export class AimingState implements IState {
 			this.cancelAiming = true;
 		}));
 
-		let variable = -1; // -1 = nothing selected yet
-
-		action.registerAction(new ExecuteCodeAction({
-			trigger: ActionManager.OnKeyUpTrigger,
-			parameter: "k",
-		}, () => {
-			if (!this.machine.loaded)
-				return;
-			console.log("Toggling ", variable);
-			const parts = this.machine.loaded.aiming.target.all;
-
-			// Reset previously selected part
-			if (variable >= 0)
-				parts[variable].visiblity = 0;
-
-			// Advance, wrapping around
-			variable = (variable + 1) % parts.length;
-
-			// Highlight new part
-			parts[variable].visiblity = 1;
-		}))
-		// Activate the first aiming type for the Weapon
-		console.log("Activating 0");
 		turn.chosenWeapon?.aimTypes[0].activate({
 			scene: this.machine.scene,
 			turn: this.machine.loaded.turn,

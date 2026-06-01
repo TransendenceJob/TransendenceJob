@@ -9,6 +9,7 @@ import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
 import { aimingHelper } from '../../../4_turn_start/Turn';
 import { PianoPickPosition } from '../aiming/PianoPickPosition';
 import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponIds } from '@/shared/weapons/weaponIds';
 
 const SCALE = 0.01;
 // Mutiply degrees with this to convert to radians
@@ -18,8 +19,8 @@ const degToRad = Math.PI / 180;
  * Class that administrates specific Weapon
  */
 export class Meteor extends GenericWeapon implements IWeapon {
-	public weaponId = 3;
 	public name = "Meteor";
+	public weaponId: number;
 	private allowedAngleMin = 160 * degToRad;
 	private allowedAngleMax = 200 * degToRad;
 	private startAngle = 160 * degToRad;
@@ -39,6 +40,7 @@ export class Meteor extends GenericWeapon implements IWeapon {
 
 	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
+		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
 		this.childMeshes.forEach((mesh) => {
@@ -73,5 +75,9 @@ export class Meteor extends GenericWeapon implements IWeapon {
 	 */
 	getProjectileSpawnPos(): Vector3 {
 		return (Vector3.Zero())
+	}
+
+	getStartWormAngle(): number {
+		return (0)
 	}
 }

@@ -1,4 +1,4 @@
-import { Scene, MeshBuilder, Mesh, AbstractMesh, Color3, StandardMaterial, ImportMeshAsync, ISceneLoaderAsyncResult } from '@babylonjs/core';
+import { Scene, AbstractMesh, ImportMeshAsync, ISceneLoaderAsyncResult } from '@babylonjs/core';
 
 /**
  * Uses the ImportMesh Helper class to handle creation of a mesh asynchronously.
@@ -32,6 +32,7 @@ export class ImportMesh {
 				return ;
 			mesh.name = name + ` child ${i}`;
 			mesh.parent = this.mesh;
+			mesh.setEnabled(false);
 			i++;
 		})
 		this.all = meshes;

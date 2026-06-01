@@ -26,7 +26,7 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			break ;
 		}
 		case SC_Type.SC_GameData : {
-			state.load(data.data)
+			state.load(data.data);
 			break ;
 		}
 		case SC_Type.SC_ActivePlayerChanged : {
@@ -39,6 +39,16 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			const target = findWormById(state.loaded.players, data.wormId);
 			if (state.loaded.turn && target != undefined)
 				state.loaded.turn.chosenWorm = target;
+			break ;
+		}
+		case SC_Type.SC_WeaponChosen : {
+			if (!state.loaded)
+				return ;
+			state.loaded.turn.chooseWeapon(
+				state.loaded.weapons.find(
+					(weapon) => (weapon.weaponId == data.id)
+				)
+			);
 			break ;
 		}
 		case SC_Type.SC_ExplosionOccurs: {

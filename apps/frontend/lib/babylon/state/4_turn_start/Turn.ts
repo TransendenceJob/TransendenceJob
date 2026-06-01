@@ -1,10 +1,10 @@
-import { MeshBuilder, Scene, Mesh } from "@babylonjs/core"
+import { MeshBuilder, Scene, Mesh, AbstractMesh } from "@babylonjs/core"
 import { Player } from "@/lib/babylon/player/Player";
 import { IWeapon } from "../7_aiming/weapons/IWeapon";
 import { Worm } from "@/lib/babylon/player/Worm";
-import { createAimingTargetMesh } from "./aiming_meshes/createAimingTargetMesh";
-import { createAimingMarker } from "./aiming_meshes/createAimingMarker";
-import { createAimingPlane } from "./aiming_meshes/createAimingPlane";
+import { StateMachine } from "../StateMachine";
+import { ImportMesh } from "../1_loading/ImportMesh";
+import { aimingMeshes } from "../1_loading/loadGame";
 
 const pi2 = Math.PI * 2;
 
@@ -18,8 +18,8 @@ const pi2 = Math.PI * 2;
  */
 export interface aimingHelper {
 	targetAngle: number;
-	targetMarker: Mesh;
-	targetDirection: Mesh;
+	targetMarker: ImportMesh;
+	targetDirection: AbstractMesh;
 	seperatedTarget: boolean;
 	wormAngle: number;
 	force: number;
@@ -34,25 +34,25 @@ export class Turn {
 	public aiming: aimingHelper;
 	private notify: (msg: string) => void;
 	constructor(
-		player: Player, 
-		scene: Scene,
+		state: StateMachine,
+		player: Player,
 		weapon: IWeapon | undefined,
-		notify: (msg: string) => void,
+		aimingMeshes: aimingMeshes,
 	) {
 		this.activePlayerId = player.id;
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
 		this.chosenWeapon = weapon;
 		this.aiming = {
-			targetMarker: createAimingMarker(scene),
-			plane: createAimingPlane(scene),
-			targetDirection: createAimingTargetMesh(scene),
+			targetMarker: aimingMeshes.target,
+			targetDirection: aimingMeshes.direction,
+			plane: aimingMeshes.plane,
 			seperatedTarget: false,
 			targetAngle: 0,
 			wormAngle: 0,
 			force: 1,
 		}
-		this.notify = notify;
+		this.notify = (msg: string) => {state.guiHelper?.notifications.add(msg)};
 	}
 
 	chooseWeapon(newWeapon: IWeapon | undefined) {
@@ -63,6 +63,8 @@ export class Turn {
 		this.chosenWeapon = newWeapon;
 		if (this.chosenWeapon == undefined)
 			return ;
+		this.aiming.wormAngle = this.chosenWeapon.getStartWormAngle();
+		this.turnWeapon();
 		this.chosenWeapon.show(true);
 		this.notify(`${this.chosenWorm.name} equips ${newWeapon?.name}`);
 
@@ -98,6 +100,6 @@ export class Turn {
 		this.aiming.targetAngle = 0;
 		this.aiming.force = 1;
 		this.aiming.targetDirection.visibility = 0;
-		this.aiming.targetMarker.visibility = 0;
+		this.aiming.targetMarker.show(false);
 	}
 }

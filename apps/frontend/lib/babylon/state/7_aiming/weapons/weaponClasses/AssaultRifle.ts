@@ -5,18 +5,20 @@ import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
 import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponIds } from '@/shared/weapons/weaponIds';
 
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians
 const degToRad = Math.PI / 180;
+const pi2 = Math.PI * 2;
 
 /**
  * Class that administrates specific Weapon
  * @note all angles in radians
  */
 export class AssaultRifle extends GenericWeapon implements IWeapon {
-	public weaponId = 0;
 	public name = "Assault Rifle";
+	public weaponId: number;
 	public allowedAngleMin = 0;
 	public allowedAngleMax = 180 * degToRad;
 	public projectileCount = 1;
@@ -36,6 +38,7 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 
 	constructor(mesh: Mesh, childMeshes: Array<AbstractMesh>, aimMeshes: aimingMeshes) {
 		super();
+		this.weaponId = weaponIds.get(this.name);
 		this.mesh = mesh;
 		this.childMeshes = childMeshes;
 		this.childMeshes.forEach((mesh) => {
@@ -65,5 +68,13 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 			localY + this.mesh.position.y,
 			this.mesh.position.z
 		);
+	}
+
+	getStartWormAngle(): number {
+		let angle = (this.allowedAngleMax - this.allowedAngleMin) / 2;
+		if (this.allowedAngleMin > this.allowedAngleMax)
+			angle += pi2;
+		angle = (angle + pi2) % pi2;
+		return (angle)
 	}
 }

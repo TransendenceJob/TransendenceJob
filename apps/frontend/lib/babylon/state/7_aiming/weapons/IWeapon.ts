@@ -41,6 +41,11 @@ export interface IWeapon {
 	show(status: boolean): void;
 
 	/**
+	 * Returns a value for an angle in radians, where a Weapon should start out in
+	 */
+	getStartWormAngle(): number;
+
+	/**
 	 * May sometimes return 0,0,0 when its result isnt to be used
 	 */
 	getProjectileSpawnPos(): Vector3;

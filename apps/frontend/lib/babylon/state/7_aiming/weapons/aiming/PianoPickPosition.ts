@@ -6,12 +6,12 @@ import { ImportMesh } from '@/lib/babylon/state/1_loading/ImportMesh';
 export class PianoPickPosition implements IAimType {
 	private actions: Array<() => void>;
 	private active: boolean = false;
-	private marker: ImportMesh;
+	private target: ImportMesh;
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
 	private height: number = 34;
 	constructor(aimMeshes: aimingMeshes) {
-		this.marker = aimMeshes.target;
+		this.target = aimMeshes.target;
 		this.plane = aimMeshes.plane;
 		this.actions = [];
 	}
@@ -26,8 +26,8 @@ export class PianoPickPosition implements IAimType {
 		const scene = params.scene;
 		turn.aiming.seperatedTarget = true;
 		turn.aiming.targetDirection.position.y = this.height;
-		this.marker.mesh.position.y = this.height;
-		this.marker.show(true);
+		this.target.mesh.position.y = this.height;
+		this.target.show(true);
 		// Credit: https://forum.babylonjs.com/t/vector3-unproject-onto-xz-plane/31056
 		this.actions[0] = () => {
 			if (scene.getFrameId() <= 1)
@@ -41,8 +41,7 @@ export class PianoPickPosition implements IAimType {
 				)
 			).pickedPoint;
 			if (pickedPoint) {
-				turn.aiming.targetMarker.position.x = pickedPoint.x;
-				turn.aiming.targetDirection.position.x = pickedPoint.x;
+				this.target.mesh.position.x = pickedPoint.x;
 			}
 		}
 		this.active = true;
@@ -56,7 +55,7 @@ export class PianoPickPosition implements IAimType {
 			return ;
 		
 		this.active = false;
-		this.marker.show(false);
+		this.target.show(false);
 		this.actions.forEach((action: () => void) => {
 			scene.unregisterBeforeRender(action);
 		})
