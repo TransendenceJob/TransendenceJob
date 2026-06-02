@@ -5,6 +5,7 @@ import { Worm } from "@/lib/babylon/player/Worm";
 import { StateMachine } from "../StateMachine";
 import { ImportMesh } from "../1_loading/ImportMesh";
 import { aimingMeshes } from "../1_loading/loadGame";
+import { DotTail } from "../1_loading/DotTail";
 
 const pi2 = Math.PI * 2;
 
@@ -16,14 +17,15 @@ const pi2 = Math.PI * 2;
  * @param aimAngle angle in degree, 0 = up, increasing = clockwise
  * @param aimForce amount of force a projectile will be moved at
  */
-export interface aimingHelper {
+export interface aimingHelper extends aimingMeshes {
+	target: ImportMesh;
+	direction: AbstractMesh;
+	plane: Mesh;
+	tail: DotTail;
 	targetAngle: number;
-	targetMarker: ImportMesh;
-	targetDirection: AbstractMesh;
 	seperatedTarget: boolean;
 	wormAngle: number;
 	force: number;
-	plane: Mesh;
 }
 
 export class Turn {
@@ -33,6 +35,7 @@ export class Turn {
 	public chosenWeapon: IWeapon | undefined = undefined;
 	public aiming: aimingHelper;
 	private notify: (msg: string) => void;
+	public cancelAiming: boolean = false;
 	constructor(
 		state: StateMachine,
 		player: Player,
@@ -43,10 +46,8 @@ export class Turn {
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
 		this.chosenWeapon = weapon;
-		this.aiming = {
-			targetMarker: aimingMeshes.target,
-			targetDirection: aimingMeshes.direction,
-			plane: aimingMeshes.plane,
+		this.aiming = { 
+			...aimingMeshes,
 			seperatedTarget: false,
 			targetAngle: 0,
 			wormAngle: 0,
@@ -81,14 +82,13 @@ export class Turn {
 	}
 
 	turnDirection(angle: number) {
-		this.aiming.targetDirection.rotation.z = (Math.PI * 2 - angle) % (Math.PI * 2);
+		this.aiming.direction.rotation.z = (Math.PI * 2 - angle) % (Math.PI * 2);
 	}
 
 	dispose() {
+		console.log("Disposing ", this.chosenWeapon);
+		// Are you sure this is right? Turn only tracks stuff, which is created elsewhere so far
 		this.chosenWeapon?.dispose();
-		this.aiming.targetMarker.dispose();
-		this.aiming.plane.dispose();
-		this.aiming.targetDirection.dispose();
 	}
 
 	end() {
@@ -97,7 +97,8 @@ export class Turn {
 		this.aiming.wormAngle = 0;
 		this.aiming.targetAngle = 0;
 		this.aiming.force = 1;
-		this.aiming.targetDirection.setEnabled(false);
-		this.aiming.targetMarker.show(false);
+		this.aiming.target.show(false);
+		this.aiming.direction.setEnabled(false);
+		this.aiming.tail.deactivate();
 	}
 }

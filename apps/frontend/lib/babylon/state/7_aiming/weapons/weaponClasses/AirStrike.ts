@@ -5,9 +5,12 @@ import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
 import { PickPosition } from '../aiming/PickPosition';
 import { SwitchTargetAngle } from '../aiming/SwitchTargetAngle';
-import { aimingMeshes } from '../../../1_loading/loadGame';
+import { aimingMeshes, weaponHelper } from '../../../1_loading/loadGame';
 import { weaponIds } from '@/shared/weapons/weaponIds';
 import { msgToServerType } from '@/lib/packets/msgToServerType';
+import { StateMachine } from '../../../StateMachine';
+import { AimingAngle } from '../aiming/AimingAngle';
+import { PianoPickPosition } from '../aiming/PianoPickPosition';
 
 const SCALE = 0.01;
 // Mutiply degrees with this to convert to radians
@@ -40,8 +43,8 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 	constructor(
 		mesh: Mesh, 
 		childMeshes: Array<AbstractMesh>, 
-		aimMeshes: aimingMeshes,
-		msgToServer: msgToServerType,
+		weaponHelper: weaponHelper,
+		state: StateMachine,
 	) {
 		super();
 		this.weaponId = weaponIds.get(this.name);
@@ -54,13 +57,18 @@ export class AirStrike extends GenericWeapon implements IWeapon {
 		})
 		// Needs to be called last, so weapon is properly initialised with relevant data
 		this.aimTypes = [
-			new PickPosition(aimMeshes, msgToServer),
+			new AimingAngle({
+				minAngle: this.allowedAngleMin, 
+				maxAngle: this.allowedAngleMax, 
+				turnSpeed: 3 / 180 * Math.PI,
+			}, state.msgToServer),
+			new PianoPickPosition(weaponHelper, state.msgToServer),
 			new SwitchTargetAngle({
 				snapAngle: this.snapAngle,
 				minAngle: this.allowedAngleMin,
 				maxAngle: this.allowedAngleMax,
 				startAngle: this.startAngle,
-			}, aimMeshes, msgToServer),
+			}, weaponHelper, state.msgToServer),
 		]
 	}
 

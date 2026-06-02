@@ -1,6 +1,5 @@
 import {
   CS_GenericPacket,
-  CS_SwitchAimState,
   CS_Type,
 } from '@/shared/packets/ClientServerPackets';
 import { Lobby } from 'src/lobbies/Lobby';
@@ -15,9 +14,9 @@ import {
   SC_AimMoveTarget,
   SC_SwitchAimState,
   SC_AimTargetAngle,
+  SC_CancelAiming,
 } from '@/shared/packets/ServerClientPackets';
 import { GameState } from '@/shared/state/GameState';
-import { aimStateId, pointData } from '@/shared/packets/util';
 
 function requestChangeState(
   lobby: Lobby,
@@ -99,27 +98,33 @@ export function handleGamePackets(lobby: Lobby, data: CS_GenericPacket) {
       break;
     }
 
-    // When changing worms weapons angle
+    // When changing worms target angle
     case CS_Type.CS_AimTargetAngle: {
       lobby.msgToClient<SC_AimTargetAngle>(SC_Type.SC_AimTargetAngle, {
-        angle: data.angle as number,
+        angle: data.angle,
       });
       break;
     }
 
-    // When changing worms weapons angle
+    // When changing targets position
     case CS_Type.CS_AimMoveTarget: {
       lobby.msgToClient<SC_AimMoveTarget>(SC_Type.SC_AimMoveTarget, {
-        point: data.point as pointData,
+        point: data.point,
       });
       break;
     }
 
-    // When changing worms weapons angle
+    // When Client cancels the aiming to go back to first state
+    case CS_Type.CS_CancelAiming: {
+      lobby.msgToClient<SC_CancelAiming>(SC_Type.SC_CancelAiming, {});
+      break;
+    }
+
+    // When the aiming state needs to be switched
     case CS_Type.CS_SwitchAimState: {
       lobby.msgToClient<SC_SwitchAimState>(SC_Type.SC_SwitchAimState, {
-        entering: data.entering as boolean,
-        stateId: data.stateId as aimStateId,
+        entering: data.entering,
+        stateId: data.stateId,
       });
       break;
     }

@@ -36,6 +36,7 @@ export enum CS_Type {
 	CS_EndAimState =			"CS_EndAimState",
 	CS_SwitchAimState =			"CS_SwitchAimState",
 	CS_AimTargetAngle =			"CS_AimTargetAngle",
+	CS_CancelAiming =			"CS_CancelAiming",
 }
 
 // Packets that should definitely not show up in logging
@@ -228,6 +229,13 @@ export interface CS_SwitchAimState extends CS_Base {
 	stateId: aimStateId,
 }
 
+/**
+ * Sent when client wants to tell server to reset their aiming back to the first state
+ */
+export interface CS_CancelAiming extends CS_Base {
+	type: CS_Type.CS_CancelAiming,
+}
+
 export interface CS_EndAimState extends CS_Base {
 	type: CS_Type.CS_EndAimState,
 	wormAngle: number,
@@ -253,5 +261,5 @@ export type CS_GenericPacket =
 			CS_GetGameState | CS_DEV_SetGameState | CS_RequestChangeGameState |
 			CS_WormChosen | CS_EndAimState | CS_WeaponChosen |
 			CS_AimMoveTarget | CS_SwitchAimState | CS_AimTargetAngle |
-			CS_AimAngle 
+			CS_AimAngle | CS_CancelAiming
 			;

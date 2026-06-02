@@ -1,7 +1,7 @@
 import { Turn } from "@/lib/babylon/state/4_turn_start/Turn";
 import { activateParam, IAimType } from "./IAimType";
 import { IAction, ExecuteCodeAction, ActionManager, Mesh, Scene, AbstractMesh } from '@babylonjs/core';
-import { aimingMeshes } from '../../../1_loading/loadGame';
+import { aimingMeshes, weaponHelper } from '../../../1_loading/loadGame';
 import { msgToServerType } from "@/lib/packets/msgToServerType";
 import { CS_AimTargetAngle, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
 import { aimStateId } from "@/shared/packets/util";
@@ -33,13 +33,13 @@ export class SwitchTargetAngle implements IAimType {
 	private message: string = "Use A and D to switch between angles. Confirm with Space";
 	private msgToServer: msgToServerType;
 
-	constructor(data: switchTargetAngleParam, aimMeshes: aimingMeshes, msgToServer: msgToServerType) {
+	constructor(data: switchTargetAngleParam, weaponHelper: weaponHelper, msgToServer: msgToServerType) {
 		this.snapAngle = data.snapAngle;
 		this.allowedAngleMin = data.minAngle;
 		this.allowedAngleMax = data.maxAngle;
 		this.span = (data.maxAngle - data.minAngle + pi2) % pi2;
 		this.startAngle = data.startAngle ?? 0;
-		this.meshRef = aimMeshes.direction;
+		this.meshRef = weaponHelper.direction;
 		this.msgToServer = msgToServer
 	}
 
@@ -59,8 +59,8 @@ export class SwitchTargetAngle implements IAimType {
 		});
 
 		turn.aiming.targetAngle = this.startAngle;
-		this.meshRef.position.copyFrom(turn.aiming.targetMarker.mesh.position);
-		this.meshRef.visibility = 1;
+		this.meshRef.position.copyFrom(turn.aiming.target.mesh.position);
+		this.meshRef.setEnabled(true);
 
 		// Turn left
 		this.actions.push(new ExecuteCodeAction({
@@ -134,7 +134,7 @@ export class SwitchTargetAngle implements IAimType {
 			entering: false,
 			stateId: aimStateId.SwitchTargetAngle,
 		});
-		this.meshRef.visibility = 0;
+		this.meshRef.setEnabled(false);
 		this.active = false;
 		this.turnLeft = false;
 		this.turnRight = false;

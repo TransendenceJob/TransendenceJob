@@ -1,14 +1,14 @@
 import { AbstractMesh, Mesh } from '@babylonjs/core';
-import { loaded, StateMachine } from '../StateMachine';
+import { StateMachine } from '../StateMachine';
 import { gameData, playerData } from '@/shared/packets/util';
 import { CS_FailedLoading, CS_FinishedLoading, CS_LoadingProgress, CS_Type } from '@/shared/packets/ClientServerPackets';
 import { Ground } from "./Ground";
 import { Player } from "@/lib/babylon/player/Player";
-import { Worm } from "@/lib/babylon/player/Worm";
 import { loadWeapons, loadingWeaponResult } from "./loadWeapons";
 import { Turn } from '../4_turn_start/Turn';
 import { loadAimingMeshes } from './loadAimingMeshes';
 import { ImportMesh } from './ImportMesh';
+import { DotTail } from './DotTail';
 
 /**
  * Helper class, that offers the send function to send packages with an ever increasing percentage
@@ -38,6 +38,27 @@ export interface aimingMeshes {
 	target: ImportMesh,
 	direction: AbstractMesh,
 	plane: Mesh,
+	tail: DotTail,
+}
+
+export interface weaponHelper extends aimingMeshes {
+	groundTopHeight: number,
+	groundBottomHeight: number,
+}
+
+function getGroundDimensions(ground: Ground): {bot: number, top: number} {
+	if (ground.points.length <= 0)
+		return {bot: 0, top: 0};
+	let min = ground.points[0].z;
+	let max = ground.points[0].z;
+	ground.points.forEach((vector) => {
+		if (vector.z < min)
+			min = vector.z;
+		if (vector.z > max)
+			max = vector.z;
+	});
+	// Offset, so we arent perfectly flat on ground
+	return {bot: min, top: max};
 }
 
 /**
@@ -58,36 +79,45 @@ export async function loadGame(machine: StateMachine, data: gameData) {
 		}
 	);
 
-	// Delete old Player&Worm Data
+	// Delete old Player & Worm Data
 	machine.loaded?.players.forEach(element => {
 		element.dispose();
 	});
 
+	// Create Ground
+	const ground = new Ground(machine.scene, data.map, false);
+	loadingHelper.send("Loaded Map");
+	const groundExtremes = getGroundDimensions(ground);
 
-	// Load meshes for aiming stuffs
-	const aiming: aimingMeshes = await loadAimingMeshes(machine.scene);
+	// Load meshes for aiming stuffs 
+	// AFTER Ground
+	// BEFORE Weapons
+	const aiming: aimingMeshes = await loadAimingMeshes(
+		machine.scene, 
+		groundExtremes.bot, 
+		groundExtremes.top + 5
+	);
 	loadingHelper.send("Imported Aiming Meshes")
-
 
 	// Create new Players and Worms
 	const players = new Array<Player>();
 	data.players.forEach((player: playerData) => {
 		players.push(new Player(machine.scene, player));
 	});
-	// Assume first player is active until otherwise specified
 	if (players.length > 0)
 		machine.activePlayerId = players[0].id;
 	loadingHelper.send("Players loaded");
 
-	
-	// Create Ground
-	const ground = new Ground(machine.scene, data.map, false);
-	loadingHelper.send("Loaded Map");
-
-	// Load Weapons & Meshes
+	// Load Weapons & Meshes 
+	// AFTER Ground
+	const weaponHelper: weaponHelper = {...aiming,
+		groundBottomHeight: groundExtremes.bot,
+		groundTopHeight: groundExtremes.top + 5,
+	}
 	const result: loadingWeaponResult = await loadWeapons(
 		machine,
-		aiming);
+		weaponHelper,
+	);
 	if (!result.success) {
 		machine.msgToServer<CS_FailedLoading>(CS_Type.CS_FailedLoading, {
 			msg: result.message,

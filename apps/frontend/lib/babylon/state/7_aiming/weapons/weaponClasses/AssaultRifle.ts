@@ -4,9 +4,9 @@ import { IAimType } from "../aiming/IAimType";
 import { Explosion } from "../Explosion";
 import { IWeapon } from "../IWeapon";
 import { GenericWeapon } from '../GenericWeapon';
-import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponHelper } from '../../../1_loading/loadGame';
 import { weaponIds } from '@/shared/weapons/weaponIds';
-import { msgToServerType } from '@/lib/packets/msgToServerType';
+import { StateMachine } from '../../../StateMachine';
 
 const SCALE = 0.2;
 // Mutiply degrees with this to convert to radians
@@ -40,8 +40,8 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 	constructor(
 		mesh: Mesh, 
 		childMeshes: Array<AbstractMesh>, 
-		aimMeshes: aimingMeshes,
-		msgToServer: msgToServerType,
+		weaponHelper: weaponHelper,
+		state: StateMachine,
 	) {
 		super();
 		this.weaponId = weaponIds.get(this.name);
@@ -57,7 +57,7 @@ export class AssaultRifle extends GenericWeapon implements IWeapon {
 				maxAngle: this.allowedAngleMax, 
 				turnSpeed: this.turnSpeed,
 			}, 
-			msgToServer),
+			state.msgToServer),
 		]
 		// This should be calculated in Blender (need to double values from there)
 		// It points to the tip of the nozzle, and is needed to spawn projectiles

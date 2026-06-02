@@ -1,6 +1,6 @@
 import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
 import { activateParam, IAimType } from "./IAimType";
-import { aimingMeshes } from '../../../1_loading/loadGame';
+import { aimingMeshes, weaponHelper } from '../../../1_loading/loadGame';
 import { ImportMesh } from '@/lib/babylon/state/1_loading/ImportMesh';
 import { msgToServerType } from "@/lib/packets/msgToServerType";
 import { CS_AimMoveTarget, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
@@ -13,9 +13,9 @@ export class PickPosition implements IAimType {
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
 	private msgToServer: msgToServerType;
-	constructor(aimMeshes: aimingMeshes, msgToServer: msgToServerType,) {
-		this.plane = aimMeshes.plane;
-		this.marker = aimMeshes.target;
+	constructor(weaponHelper: weaponHelper, msgToServer: msgToServerType,) {
+		this.plane = weaponHelper.plane;
+		this.marker = weaponHelper.target;
 		this.actions = [];
 		this.msgToServer = msgToServer;
 	}

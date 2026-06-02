@@ -82,21 +82,28 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			const aim = state.loaded.turn.aiming;
 			if (data.entering == true) {
 				if (data.stateId == aimStateId.PianoPickPosition) {
-					aim.targetMarker.show(true);
+					aim.target.show(true);
+					aim.tail.activate();
 				}
 				else if (data.stateId == aimStateId.PickPosition) {
-					aim.targetMarker.show(true);
+					aim.target.show(true);
 				}
 				else if (data.stateId == aimStateId.SwitchTargetAngle) {
-					aim.targetMarker.show(true);
-					aim.targetDirection.setEnabled(true);
-					aim.targetDirection.position.copyFrom(aim.targetMarker.mesh.position);
+					aim.target.show(true);
+					aim.direction.setEnabled(true);
+					aim.direction.position.copyFrom(aim.target.mesh.position);
 				}
 			}
 			else {
-				aim.targetMarker.show(false);
-				aim.targetDirection.setEnabled(false);
+				aim.target.show(false);
+				aim.direction.setEnabled(false);
 			}
+			break ;
+		}
+		case SC_Type.SC_CancelAiming : {
+			if (!state.loaded)
+				return ;
+			state.loaded.turn.cancelAiming = true;
 			break ;
 		}
 		case SC_Type.SC_ExplosionOccurs: {

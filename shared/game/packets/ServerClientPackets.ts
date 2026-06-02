@@ -41,6 +41,7 @@ export enum SC_Type {
 	SC_ExplosionOccurs =		"SC_ExplosionOccurs",
 	SC_SwitchAimState =			"SC_SwitchAimState",
 	SC_AimTargetAngle =			"SC_AimTargetAngle",
+	SC_CancelAiming =			"SC_CancelAiming",
 }
 
 // Packets that should definitely not show up in logging
@@ -319,6 +320,13 @@ export interface SC_SwitchAimState extends SC_Base {
 }
 
 /**
+ * Sent when server telsl client to reset the aiming state
+ */
+export interface SC_CancelAiming extends SC_Base {
+	type: SC_Type.SC_CancelAiming,
+}
+
+/**
  * Sent when game is started or loaded so Clients can display game
  * @param data Data that is needed for game to be loaded
  */
@@ -350,7 +358,8 @@ export type SC_GenericPacket =
 			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState |
 			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen |
 			SC_ExplosionOccurs | SC_WeaponChosen | SC_AimAngle |
-			SC_AimMoveTarget | SC_SwitchAimState | SC_AimTargetAngle
+			SC_AimMoveTarget | SC_SwitchAimState | SC_AimTargetAngle |
+			SC_CancelAiming
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |

@@ -160,13 +160,19 @@ export class StateMachine {
 	 */
 	clearGame() {
 		// Clean Players and their worms
-		this.loaded?.weapons.forEach(w => w.dispose());
-		this.loaded?.players.forEach(p => p.dispose());
-		this.loaded?.turn?.dispose()
+		if (this.loaded) {
+			this.loaded.weapons.forEach(w => w.dispose());
+			this.loaded.players.forEach(p => p.dispose());
+			this.loaded.turn.dispose();
+			this.loaded.ground.dispose();
+			this.loaded.aiming.target.dispose();
+			this.loaded.aiming.plane.dispose();
+			this.loaded.aiming.direction.dispose();
+			this.loaded.aiming.tail.dispose();
+		}
+		this.loaded = undefined;
 		this.guiHelper?.dispose()
 		this.guiHelper = undefined;
-		this.loaded?.ground?.dispose();
-		this.loaded = undefined;
 	}
 
 	/**

@@ -3,7 +3,8 @@ import { StateMachine } from '../StateMachine';
 import { ExecuteCodeAction, ActionManager } from '@babylonjs/core'
 import { aimingHelper } from '../4_turn_start/Turn';
 import { IWeapon } from './weapons/IWeapon';
-import { CS_EndAimState, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { CS_CancelAiming, CS_EndAimState, CS_Type } from '@/shared/packets/ClientServerPackets';
+import { SC_CancelAiming, SC_Type } from '@/shared/packets/ServerClientPackets';
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -22,11 +23,11 @@ function sendAimingDone(machine: StateMachine) {
 		return ;
 	const data: aimingHelper = machine.loaded.turn.aiming;
 	const pos_x = data.seperatedTarget ? 
-		data.targetMarker.mesh.position.x :
+		data.target.mesh.position.x :
 		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.x ??
 		machine.loaded.turn.chosenWorm.mesh.position.x);
 	const pos_y = data.seperatedTarget ? 
-		data.targetMarker.mesh.position.y : 
+		data.target.mesh.position.y : 
 		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.y ??
 		machine.loaded.turn.chosenWorm.mesh.position.x);
 	machine.msgToServer<CS_EndAimState>(CS_Type.CS_EndAimState, {
@@ -36,14 +37,14 @@ function sendAimingDone(machine: StateMachine) {
 			y: pos_y,
 		},
 		// Do this because BJs angles are counter clockwise, but ours are clockwise
-		targetAngle: (Math.PI * 2 - data.targetDirection.rotation.y),
+		targetAngle: (Math.PI * 2 - data.direction.rotation.y),
 		force: data.force
 	});
 }
 
 export class AimingState implements IState {
 	private next: boolean = false;
-	private cancelAiming: boolean = false;
+	public cancelAiming: boolean = false;
 	private weapon: IWeapon | undefined = undefined;
 	private aimingPhase: number = 0;
 	private phaseCount: number = 0;
@@ -91,7 +92,7 @@ export class AimingState implements IState {
 			trigger: ActionManager.OnKeyUpTrigger,
 			parameter: "q"
 		}, () => {
-			this.cancelAiming = true;
+			this.machine.msgToServer<CS_CancelAiming>(CS_Type.CS_CancelAiming, {});
 		}));
 
 		turn.chosenWeapon?.aimTypes[0].activate({
@@ -102,9 +103,12 @@ export class AimingState implements IState {
 	}
 
 	tick() {
+		const load = this.machine.loaded;
+		if (!load)
+			return ;
 		// User changes aiming to next type
-		if (this.cancelAiming) {
-			this.cancelAiming = false;
+		if (load.turn.cancelAiming) {
+			load.turn.cancelAiming = false;
 			this.switchAimingPhase(0);
 		}
 		else if (this.machine.isActiveUser() && this.next) {
@@ -141,8 +145,10 @@ export class AimingState implements IState {
 			aiming.targetAngle = 0;
 			aiming.force = 1;
 			aiming.seperatedTarget = false;
+			aiming.target.show(false);
+			aiming.direction.setEnabled(false);
+			aiming.tail.deactivate();
 		}
-		console.log(`Switching from ${this.phaseCount} to ${newPhase}`);
 		this.weapon?.aimTypes[this.aimingPhase].deactivate(this.machine.scene);
 		if (newPhase >= this.phaseCount) {
 			// When finishing last state, go to End of Turn)

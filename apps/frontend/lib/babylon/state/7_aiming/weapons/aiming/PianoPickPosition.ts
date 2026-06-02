@@ -1,10 +1,11 @@
-import { Scene, Mesh, AbstractMesh	 } from "@babylonjs/core";
+import { Scene, Mesh, AbstractMesh, MeshBuilder, StandardMaterial, Color3, ExecuteCodeAction, ActionManager	 } from "@babylonjs/core";
 import { activateParam, IAimType } from "./IAimType";
-import { aimingMeshes } from '../../../1_loading/loadGame';
+import { weaponHelper } from '../../../1_loading/loadGame';
 import { ImportMesh } from '@/lib/babylon/state/1_loading/ImportMesh';
 import { msgToServerType } from "@/lib/packets/msgToServerType";
 import { CS_AimMoveTarget, CS_SwitchAimState, CS_Type } from "@/shared/packets/ClientServerPackets";
 import { aimStateId } from "@/shared/packets/util";
+
 
 export class PianoPickPosition implements IAimType {
 	private actions: Array<() => void>;
@@ -12,13 +13,14 @@ export class PianoPickPosition implements IAimType {
 	private target: ImportMesh;
 	private plane: Mesh;
 	private message: string = "Move your mouse to choose a position. Confirm with Space"
-	private height: number = 34;
 	private msgToServer: msgToServerType;
-	constructor(aimMeshes: aimingMeshes, msgToServer: msgToServerType) {
-		this.target = aimMeshes.target;
-		this.plane = aimMeshes.plane;
+	private mapTop: number;
+	constructor(weaponHelper: weaponHelper, msgToServer: msgToServerType) {
+		this.target = weaponHelper.target;
+		this.plane = weaponHelper.plane;
 		this.actions = [];
 		this.msgToServer = msgToServer;
+		this.mapTop = weaponHelper.groundTopHeight;
 	}
 
 	activate(params: activateParam) {
@@ -33,9 +35,10 @@ export class PianoPickPosition implements IAimType {
 
 		const turn = params.turn;
 		const scene = params.scene;
+		// Display tail for better visual positioning
 		turn.aiming.seperatedTarget = true;
-		turn.aiming.targetDirection.position.y = this.height;
-		this.target.mesh.position.y = this.height;
+		turn.aiming.direction.position.y = this.mapTop;
+		this.target.mesh.position.y = this.mapTop;
 		this.target.show(true);
 		// Credit: https://forum.babylonjs.com/t/vector3-unproject-onto-xz-plane/31056
 		this.actions[0] = () => {
@@ -53,7 +56,7 @@ export class PianoPickPosition implements IAimType {
 				this.msgToServer<CS_AimMoveTarget>(CS_Type.CS_AimMoveTarget, {
 					point: {
 						x: pickedPoint.x,
-						y: this.height,
+						y: this.mapTop,
 					}
 				})
 			}

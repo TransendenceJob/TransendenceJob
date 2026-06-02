@@ -1,6 +1,7 @@
-import { Scene, MeshBuilder, Mesh, AbstractMesh, Color3, StandardMaterial, ImportMeshAsync, ISceneLoaderAsyncResult } from '@babylonjs/core';
+import { Scene, MeshBuilder, Mesh, AbstractMesh, Color3, StandardMaterial, ImportMeshAsync, ISceneLoaderAsyncResult, ExecuteCodeAction, ActionManager } from '@babylonjs/core';
 import { aimingMeshes } from './loadGame';
 import { importMesh, ImportMesh } from './ImportMesh';
+import { DotTail } from './DotTail';
 
 function createAimingPlane(scene: Scene): Mesh {
 	const mesh = MeshBuilder.CreatePlane("Aiming Pick Position Plane", {size: 200}, scene);
@@ -56,11 +57,18 @@ function createTargetDirectionMesh(scene: Scene): Mesh {
 }
 
 
-export async function loadAimingMeshes(scene: Scene): Promise<aimingMeshes> {
+export async function loadAimingMeshes(
+	scene: Scene, 
+	bottom: number,
+	top: number,
+): Promise<aimingMeshes> {
 
 	// Target Position Marker
 	const target: ImportMesh = await importMesh(scene, "Aiming Target Position Marker", "/assets/WormsReticle.obj");
 	target.all[0].renderingGroupId = 1;
+
+	// Tail of Target Marker
+	const tail = new DotTail(top, bottom, target, scene);
 
 	// Target Direction Marker
 	const direction = createTargetDirectionMesh(scene);
@@ -70,7 +78,8 @@ export async function loadAimingMeshes(scene: Scene): Promise<aimingMeshes> {
 	const result: aimingMeshes = {
 		target,
 		direction,
-		plane
+		plane,
+		tail,
 	};
 	return (result)
 }

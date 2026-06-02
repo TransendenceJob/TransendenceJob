@@ -4,8 +4,9 @@ import { IWeapon } from "./IWeapon"
 import { AirStrike } from "./weaponClasses/AirStrike"
 import { FallingPiano } from "./weaponClasses/FallingPiano"
 import { Meteor } from "./weaponClasses/Meteor"
-import { aimingMeshes } from '../../1_loading/loadGame';
+import { weaponHelper } from '../../1_loading/loadGame';
 import { msgToServerType } from "@/lib/packets/msgToServerType"
+import { StateMachine } from "../../StateMachine"
 
 /**
  * For each Entry, call the constructor by calling the stored construction function,
@@ -16,8 +17,8 @@ type Entry<T> = {
 	instance: new (
 		mesh: Mesh, 
 		childMeshes: Array<AbstractMesh>, 
-		aimMeshes: aimingMeshes,
-		msgToServer: msgToServerType,
+		weaponHelper: weaponHelper,
+		machine: StateMachine,
 	) => T,
 	fileName: string,
 }

@@ -25,7 +25,7 @@ function angle(target: Vector2) {
 export class Ground
 {
 	private scene: Scene;
-	private points: Vector3[];
+	public points: Vector3[];
 	private depth: number;
 	private name: string;
 	private DEBUG: boolean;
