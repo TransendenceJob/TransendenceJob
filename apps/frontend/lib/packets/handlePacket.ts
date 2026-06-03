@@ -1,7 +1,7 @@
 import { SC_Type, SC_GenericPacket, frontendServerPackets } from "@/shared/packets/ServerClientPackets"
 import { StateMachine } from '../babylon/state/StateMachine';
 import { GameState } from '@/shared/state/GameState';
-import { Nullable } from "@babylonjs/core";
+import { Nullable, Vector3 } from "@babylonjs/core";
 import { Control, TextBlock } from "@babylonjs/gui";
 import { Player } from "../babylon/player/Player";
 import { Worm } from '../babylon/player/Worm';
@@ -104,6 +104,18 @@ export function handlePacket(data: SC_GenericPacket, state: StateMachine) {
 			if (!state.loaded)
 				return ;
 			state.loaded.turn.cancelAiming = true;
+			break ;
+		}
+		case SC_Type.SC_EndAimState: {
+			if (!state.loaded)
+				return ;
+			const projectile = state.loaded.turn.projectile;
+			projectile.launchPos = new Vector3(data.position.x, data.position.y, 0);
+			projectile.type = data.id;
+			if (projectile.type == 0)
+				projectile.launchAngle = data.wormAngle;
+			else
+				projectile.launchAngle = data.targetAngle;
 			break ;
 		}
 		case SC_Type.SC_ExplosionOccurs: {

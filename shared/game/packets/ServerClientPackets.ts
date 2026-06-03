@@ -42,6 +42,7 @@ export enum SC_Type {
 	SC_SwitchAimState =			"SC_SwitchAimState",
 	SC_AimTargetAngle =			"SC_AimTargetAngle",
 	SC_CancelAiming =			"SC_CancelAiming",
+	SC_EndAimState =			"SC_EndAimState",
 }
 
 // Packets that should definitely not show up in logging
@@ -335,6 +336,16 @@ export interface SC_GameData extends SC_Base {
 	data: gameData,
 }
 
+// bia bla blub
+export interface SC_EndAimState extends SC_Base {
+	id: number;
+	type: SC_Type.SC_EndAimState,
+	wormAngle: number,
+	position: pointData
+	targetAngle: number,
+	force: number,
+}
+
 /**
  * Sent when game is started or loaded so Clients can display game
  * @param data Data that is needed for game to be loaded
@@ -359,7 +370,7 @@ export type SC_GenericPacket =
 			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen |
 			SC_ExplosionOccurs | SC_WeaponChosen | SC_AimAngle |
 			SC_AimMoveTarget | SC_SwitchAimState | SC_AimTargetAngle |
-			SC_CancelAiming
+			SC_CancelAiming | SC_EndAimState
 			;
 
 export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |

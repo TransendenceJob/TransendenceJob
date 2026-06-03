@@ -16,6 +16,7 @@ import { Lobby } from 'src/lobbies/Lobby';
 import { pointData } from '@/shared/packets/util';
 
 interface aimingData {
+  id: number;
   wormAngle: number;
   position: pointData;
   targetAngle: number;
@@ -71,6 +72,7 @@ export class Game {
     this.currentState.enter();
     this.turnOrder = [];
     this.aimingData = {
+      id: 0,
       position: {
         x: 0,
         y: 0,

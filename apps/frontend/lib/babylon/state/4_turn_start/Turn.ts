@@ -6,6 +6,7 @@ import { StateMachine } from "../StateMachine";
 import { ImportMesh } from "../1_loading/ImportMesh";
 import { aimingMeshes } from "../1_loading/loadGame";
 import { DotTail } from "../1_loading/DotTail";
+import { Projectile } from "../8_turn_end/Projectile";
 
 const pi2 = Math.PI * 2;
 
@@ -32,6 +33,7 @@ export class Turn {
 	public activePlayerId: string = "";
 	public activePlayer: Player;
 	public chosenWorm: Worm;
+	public projectile: Projectile;
 	public chosenWeapon: IWeapon | undefined = undefined;
 	public aiming: aimingHelper;
 	private notify: (msg: string) => void;
@@ -46,6 +48,7 @@ export class Turn {
 		this.activePlayer = player;
 		this.chosenWorm = player.worms[0];
 		this.chosenWeapon = weapon;
+		this.projectile = new Projectile(state.scene);
 		this.aiming = { 
 			...aimingMeshes,
 			seperatedTarget: false,

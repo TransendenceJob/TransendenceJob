@@ -22,8 +22,9 @@ export class TurnEndState implements IState {
 
 		// Setup
 		turnMessage(this.machine);
-
+		
 		// Actions
+		this.machine.loaded?.turn.projectile.launchProjectile(this.machine.scene);
 	}
 
 	tick() {

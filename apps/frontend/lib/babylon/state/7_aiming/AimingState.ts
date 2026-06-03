@@ -25,12 +25,13 @@ function sendAimingDone(machine: StateMachine) {
 	const pos_x = data.seperatedTarget ? 
 		data.target.mesh.position.x :
 		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.x ??
-		machine.loaded.turn.chosenWorm.mesh.position.x);
+		machine.loaded.turn.chosenWorm.collider.position.x);
 	const pos_y = data.seperatedTarget ? 
 		data.target.mesh.position.y : 
 		(machine.loaded.turn.chosenWeapon?.getProjectileSpawnPos()?.y ??
-		machine.loaded.turn.chosenWorm.mesh.position.x);
+		machine.loaded.turn.chosenWorm.collider.position.y);
 	machine.msgToServer<CS_EndAimState>(CS_Type.CS_EndAimState, {
+		id: machine.loaded.turn.chosenWeapon?.weaponId ?? 0,
 		wormAngle: data.wormAngle,
 		position: {
 			x: pos_x,
