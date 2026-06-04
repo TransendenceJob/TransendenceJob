@@ -387,7 +387,6 @@ export class AuthGoogleExchangeService {
     };
   }
   
-  
   private async initPlayerStats(user: ExchangeResult['user']): Promise<void> {
     const payload: Record<string, unknown> = {
       userId: user.id,

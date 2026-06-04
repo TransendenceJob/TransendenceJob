@@ -86,7 +86,7 @@ export class StateMachine {
 		this.guiHelper = undefined;
 		this.loaded = undefined;
 		this.activePlayerId = "";
-		this.achievements = new Achievements();
+		this.achievements = new Achievements(this.userId);
 	}
 
 	// Called only once per canvas, when sockets have been set up
@@ -147,7 +147,7 @@ export class StateMachine {
 		// Set up a fresh Game
 		this.log("Setting up new Game");
 
-		this.guiHelper = new GuiHelper(this.scene, this.canvas, this.msgToServer);
+		this.guiHelper = new GuiHelper(this, this.scene, this.canvas, this.msgToServer);
 		// Need to prompt socket to update the UI if its connected
 		this.queue?.updateSocketUi();
 		//this.msgToServer<CS_GetGameState>(CS_Type.CS_GetGameState, {});

@@ -24,6 +24,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.16",
+    "axios": "^1.17.0",
     "babylonjs": "^8.55.3",
     "earcut": "^3.0.2",
     "reflect-metadata": "^0.2.2",

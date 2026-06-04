@@ -1,6 +1,7 @@
 // import * from 'ClientServerPackets.ts';
 
 import { aimStateId, pointData } from "./util";
+import { CreateAchievementPayload } from "./stats-client"
 
 
 /**
@@ -250,8 +251,11 @@ export interface CS_EndAimState extends CS_Base {
 /**
  * DEV MODE, delete later
  */
+
+
 export interface CS_DEV_StartEndscreen extends CS_Base {
 	type: CS_Type.CS_DEV_StartEndscreen,
+	payload: CreateAchievementPayload,
 }
 
 export type CS_GenericPacket = 
