@@ -73,7 +73,8 @@ export class StateMachine {
 		this.states.set(GameState.GAME_END, new GameEndState(this));
 		this.movementPhysics = scene.onBeforePhysicsObservable.add(
 			() => {
-				movementTick(movementState)
+				movementTick(movementState);
+				// console.log("IM TICKING NOW!");
 			}
 		);
 

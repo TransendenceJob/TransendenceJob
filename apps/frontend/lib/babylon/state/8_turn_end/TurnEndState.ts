@@ -1,6 +1,6 @@
 import { IState } from '../IState'
 import { StateMachine } from '../StateMachine';
-import { IAction } from '@babylonjs/core'
+import { ActionManager, ExecuteCodeAction, IAction, MeshBuilder, PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from '@babylonjs/core'
 
 /**
  * Uses Notification system to display custom message based on if this client is active
@@ -18,13 +18,32 @@ export class TurnEndState implements IState {
 	constructor(private machine: StateMachine) {}
 
 	enter() {
-		this.reset()
+		this.reset();
 
 		// Setup
 		turnMessage(this.machine);
-		
+
+		if (!this.machine.loaded)
+			return;
+
+		const projectile = this.machine.loaded.turn.projectile;
+
+		// projectile.mesh.actionManager = new ActionManager(this.machine.scene);
+
+		// projectile.mesh.actionManager.registerAction(
+		// 	new ExecuteCodeAction(
+		// 		{
+		// 			trigger: ActionManager.OnIntersectionEnterTrigger
+		// 		},
+		// 		() => {
+		// 			projectile.endPos = projectile.mesh.position;
+		// 			// projectile.aggregate.dispose();
+		// 		}
+		// 	)
+		// );
+
 		// Actions
-		this.machine.loaded?.turn.projectile.launchProjectile(this.machine.scene);
+		projectile.launchProjectile(this.machine.scene);
 	}
 
 	tick() {

@@ -76,9 +76,15 @@ function forAllWorms(worm: Worm, scene: Scene) {
 
 	// Remove gravity if on ground
 	if (worm.onGround)
+	{
+		// console.log("My Gravity is 0!");
 		worm.aggregate.body.setGravityFactor(0);
+	}
 	else
+	{
+		// console.log("My Gravity is 1!");
 		worm.aggregate.body.setGravityFactor(1);
+	}
 }
 
 export function movementTick(state: MovementState) {
