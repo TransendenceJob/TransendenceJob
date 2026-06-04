@@ -63,6 +63,18 @@ export class SocialController {
     return this.social.updateProfile(userId, body, principal);
   }
 
+  // Save profile metadata and avatar in one request.
+  @Patch('users/:userId/profile/with-avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  saveProfile(
+    @Param('userId') userId: string,
+    @Body() body: UpdateProfileDto,
+    @UploadedFile() file: any,
+    @CurrentUser() principal: AuthPrincipal,
+  ) {
+    return this.social.saveProfile(userId, body, file, principal);
+  }
+
   @Get('users/search')
   searchUsers(
     @Query() query: ListQueryDto,

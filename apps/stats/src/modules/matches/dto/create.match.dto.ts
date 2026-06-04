@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsInt,
   IsOptional,
+  IsString,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
@@ -19,6 +20,14 @@ enum MatchStatus {
 export class CreateMatchParticipantDto {
   @IsUUID()
   userId!: string;
+
+  @IsOptional()
+  @IsString()
+  displayName?: string;
+
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -41,6 +50,26 @@ export class CreateMatchDto {
   @IsOptional()
   @IsInt()
   duration?: number;
+
+  @IsOptional()
+  @IsString()
+  mode?: string;
+
+  @IsOptional()
+  @IsString()
+  mapName?: string;
+
+  @IsOptional()
+  @IsString()
+  score?: string;
+
+  @IsOptional()
+  @IsString()
+  summary?: string;
+
+  @IsOptional()
+  @IsString()
+  endedAt?: string;
 
   @IsArray()
   @ArrayMinSize(2)

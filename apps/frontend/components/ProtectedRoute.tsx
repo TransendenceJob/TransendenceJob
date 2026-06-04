@@ -10,6 +10,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     const router = useRouter();
     const pathname = usePathname();
 
+
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
             const timer = setTimeout(() => {

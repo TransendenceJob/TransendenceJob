@@ -1,6 +1,14 @@
-import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateMatchParticipantDto {
+  @IsOptional()
+  @IsString()
+  displayName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  avatarUrl?: string | null;
+
   @IsOptional()
   @IsBoolean()
   isWinner?: boolean;

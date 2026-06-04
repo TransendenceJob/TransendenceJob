@@ -1,4 +1,12 @@
-import { IsString, IsUUID, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsOptional,
+  IsDateString,
+  IsNumber,
+  IsBoolean,
+  IsObject,
+} from 'class-validator';
 
 export class CreateAchievementDto {
   @IsUUID()
@@ -8,6 +16,42 @@ export class CreateAchievementDto {
   type!: string;
 
   @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  icon?: string;
+
+  @IsOptional()
+  @IsNumber()
+  xpReward?: number;
+
+  @IsOptional()
+  @IsNumber()
+  points?: number;
+
+  @IsOptional()
+  @IsNumber()
+  progress?: number;
+
+  @IsOptional()
+  @IsNumber()
+  progressTarget?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  achieved?: boolean;
+
+  @IsOptional()
   @IsDateString()
-  achivedAt?: Date;
+  achievedAt?: string;
+
+  @IsOptional()
+  @IsObject()
+  meta?: any;
 }

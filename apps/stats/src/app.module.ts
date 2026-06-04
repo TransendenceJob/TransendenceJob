@@ -7,8 +7,8 @@ import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { RequestIdMiddleware } from './modules/common/middleware/request-id.middleware.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
+import { AchievementsModule } from './modules/achivements/achivements.module.js';
 // import { WeaponsModule } from './modules/weapons/weapons.module';
-// import { AchivementsModule } from './modules/achivements/achivements.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { AuditModule } from './modules/audit/audit.module.js';
     PrismaModule,
     HealthModule,
     AuditModule,
-    // AchivementsModule,
+    AchievementsModule,
     // WeaponsModule,
   ],
   controllers: [AppController],

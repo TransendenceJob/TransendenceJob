@@ -20,6 +20,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
+    // Debug: show provider render and basic session presence (safe fields only)
+
     // useCallBack prevents rerun every react render
     const logout = useCallback(async () => {
         const accessToken = sessionStorage.getItem("auth.accessToken");
@@ -74,7 +76,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     // auto cleanup when cookies expire
     useEffect(() => {
         const handleUnauthorized = () => {
-            console.warn("Session expired or unauthorized. Performing cleanup...");
             void logout();
         };
 

@@ -46,6 +46,23 @@ export class SocialController {
     );
   }
 
+  // Proxy the combined save request with avatar upload support.
+  @Patch('users/me/profile/with-avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  saveMyProfile(
+    @Body() body: unknown,
+    @UploadedFile() file: any,
+    @Headers('x-request-id') requestId?: string,
+    @Headers('authorization') authorization?: string,
+  ) {
+   
+    return this.social.saveMyProfile(
+      body,
+      file,
+      this.context(requestId, authorization),
+    );
+  }
+
   @Post('users/me/avatar')
   @UseInterceptors(FileInterceptor('file'))
   uploadMyAvatar(

@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
-import { CreateMatchParticipantDto } from 'src/modules/matches/dto/create.match.dto';
+import { CreateMatchDto } from 'src/modules/matches/dto/create.match.dto';
+import { UpdateMatchDto } from 'src/modules/matches/dto/update.match.dto';
+import { UpdateMatchParticipantDto } from 'src/modules/matches/dto/update.match.participant.dto';
 
 type MatchStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED';
 
@@ -8,18 +10,32 @@ type MatchStatus = 'PENDING' | 'IN_PROGRESS' | 'FINISHED';
 export class MatchStatsRepository {
   constructor(private prisma: PrismaService) {}
 
+  private normalizeEndedAt(endedAt?: string | Date | null) {
+    if (!endedAt) return undefined;
+    return endedAt instanceof Date ? endedAt : new Date(endedAt);
+  }
+
   async createMatch(
-    participants: CreateMatchParticipantDto[],
-    status?: MatchStatus,
-    duration?: number,
+    dto: CreateMatchDto,
   ) {
     return this.prisma.match.create({
       data: {
-        ...(status ? { status } : {}),
-        ...(duration !== undefined ? { duration } : {}),
+        ...(dto.status ? { status: dto.status } : {}),
+        ...(dto.duration !== undefined ? { duration: dto.duration } : {}),
+        ...(dto.mode !== undefined ? { mode: dto.mode } : {}),
+        ...(dto.mapName !== undefined ? { mapName: dto.mapName } : {}),
+        ...(dto.score !== undefined ? { score: dto.score } : {}),
+        ...(dto.summary !== undefined ? { summary: dto.summary } : {}),
+        ...(dto.endedAt ? { endedAt: this.normalizeEndedAt(dto.endedAt) } : {}),
         matchParticipants: {
-          create: participants.map((participant) => ({
+          create: dto.participants.map((participant) => ({
             userId: participant.userId,
+            ...(participant.displayName !== undefined
+              ? { displayName: participant.displayName }
+              : {}),
+            ...(participant.avatarUrl !== undefined
+              ? { avatarUrl: participant.avatarUrl }
+              : {}),
             ...(participant.isWinner !== undefined
               ? { isWinner: participant.isWinner }
               : {}),
@@ -77,7 +93,11 @@ export class MatchStatsRepository {
     return await this.prisma.match.findUnique({
       where: { id: matchId },
       include: {
-        matchParticipants: true,
+        matchParticipants: {
+          include: {
+            player: true,
+          },
+        },
       },
     });
   }
@@ -86,26 +106,45 @@ export class MatchStatsRepository {
   async getMatches() {
     return await this.prisma.match.findMany({
       include: {
-        matchParticipants: true,
+        matchParticipants: {
+          include: {
+            player: true,
+          },
+        },
       },
     });
   }
 
   // update match
-  async update(matchId: string, dto: any) {
+  async update(matchId: string, dto: UpdateMatchDto) {
     return await this.prisma.match.update({
       where: { id: matchId },
       data: {
         ...(dto.status !== undefined ? { status: dto.status } : {}),
         ...(dto.duration !== undefined ? { duration: dto.duration } : {}),
+        ...(dto.mode !== undefined ? { mode: dto.mode } : {}),
+        ...(dto.mapName !== undefined ? { mapName: dto.mapName } : {}),
+        ...(dto.score !== undefined ? { score: dto.score } : {}),
+        ...(dto.summary !== undefined ? { summary: dto.summary } : {}),
+        ...(dto.endedAt !== undefined
+          ? { endedAt: this.normalizeEndedAt(dto.endedAt) }
+          : {}),
       },
       include: {
-        matchParticipants: true,
+        matchParticipants: {
+          include: {
+            player: true,
+          },
+        },
       },
     });
   }
   // add participant to match
-  async addParticipant(matchId: string, userId: string, participantData?: any) {
+  async addParticipant(
+    matchId: string,
+    userId: string,
+    participantData?: UpdateMatchParticipantDto,
+  ) {
     const existingParticipant = await this.prisma.matchParticipant.findUnique({
       where: {
         matchId_userId: { matchId, userId },
@@ -120,6 +159,12 @@ export class MatchStatsRepository {
       data: {
         matchId,
         userId,
+        ...(participantData?.displayName !== undefined
+          ? { displayName: participantData.displayName }
+          : {}),
+        ...(participantData?.avatarUrl !== undefined
+          ? { avatarUrl: participantData.avatarUrl }
+          : {}),
         ...(participantData?.isWinner !== undefined
           ? { isWinner: participantData.isWinner }
           : {}),
@@ -135,8 +180,15 @@ export class MatchStatsRepository {
 
   /* Get match by ID */
   async getMatchById(matchId: string) {
-    const findMatch = this.prisma.match.findUnique({
+    const findMatch = await this.prisma.match.findUnique({
       where: { id: matchId },
+      include: {
+        matchParticipants: {
+          include: {
+            player: true,
+          },
+        },
+      },
     });
     if (!findMatch)
       throw new NotFoundException(`math with ${matchId} not found`);
@@ -144,12 +196,20 @@ export class MatchStatsRepository {
   }
 
   // update participant stats in match
-  async updateParticipant(matchId: string, userId: string, dto: any) {
+  async updateParticipant(
+    matchId: string,
+    userId: string,
+    dto: UpdateMatchParticipantDto,
+  ) {
     return await this.prisma.matchParticipant.update({
       where: {
         matchId_userId: { matchId, userId },
       },
       data: {
+        ...(dto.displayName !== undefined
+          ? { displayName: dto.displayName }
+          : {}),
+        ...(dto.avatarUrl !== undefined ? { avatarUrl: dto.avatarUrl } : {}),
         ...(dto.isWinner !== undefined ? { isWinner: dto.isWinner } : {}),
         ...(dto.kills !== undefined ? { kills: dto.kills } : {}),
         ...(dto.deaths !== undefined ? { deaths: dto.deaths } : {}),

@@ -1,34 +1,56 @@
-// import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-// import { AchivementsService } from './achivements.service';
-// // import { CreateAchivementDto } from './dto/create-achivement.dto';
-// import { UpdateAchivementDto } from './dto/update-achivement.dto';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Patch,
+	Post,
+	ParseUUIDPipe,
+} from '@nestjs/common';
+import { AchievementsService } from './achivements.service';
+import { CreateAchievementDto } from './dto/create-achivement.dto';
+import { UpdateAchievementDto } from './dto/update-achivement.dto';
 
-// @Controller('achivements')
-// export class AchivementsController {
-//   constructor(private readonly achivementsService: AchivementsService) {}
+@Controller('achievements')
+export class AchievementsController {
+	constructor(private readonly achievementsService: AchievementsService) {}
 
-//   @Post()
-//   create(@Body() createAchivementDto: CreateAchivementDto) {
-//     return this.achivementsService.create(createAchivementDto);
-//   }
+	@Post()
+	create(@Body() dto: CreateAchievementDto) {
+		return this.achievementsService.create(dto);
+	}
 
-//   @Get()
-//   findAll() {
-//     return this.achivementsService.findAll();
-//   }
+	@Post('upsert')
+	createOrUpdate(@Body() dto: CreateAchievementDto) {
+		return this.achievementsService.createOrUpdate(dto);
+	}
 
-//   @Get(':id')
-//   findOne(@Param('id') id: string) {
-//     return this.achivementsService.findOne(+id);
-//   }
+	@Get()
+	findAll() {
+		return this.achievementsService.findAll();
+	}
 
-//   @Patch(':id')
-//   update(@Param('id') id: string, @Body() updateAchivementDto: UpdateAchivementDto) {
-//     return this.achivementsService.update(+id, updateAchivementDto);
-//   }
+	@Get(':id')
+	findOne(@Param('id', ParseUUIDPipe) id: string) {
+		return this.achievementsService.findOne(id);
+	}
 
-//   @Delete(':id')
-//   remove(@Param('id') id: string) {
-//     return this.achivementsService.remove(+id);
-//   }
-// }
+	@Get('user/:userId')
+	findByUserId(@Param('userId', ParseUUIDPipe) userId: string) {
+		return this.achievementsService.findByUserId(userId);
+	}
+
+	@Patch(':id')
+	update(
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() dto: UpdateAchievementDto,
+	) {
+		return this.achievementsService.update(id, dto);
+	}
+
+	@Delete(':id')
+	remove(@Param('id', ParseUUIDPipe) id: string) {
+		return this.achievementsService.remove(id);
+	}
+}

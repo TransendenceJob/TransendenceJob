@@ -19,9 +19,8 @@ export class UpdatePlayerDto {
   matchesLost?: string[];
 
   @IsArray()
-  @IsUUID(undefined, { each: true })
   @IsOptional()
-  achievements?: string[];
+  achievements?: Array<string | { id?: string; type?: string; name?: string }>;
 
   @IsArray()
   @IsUUID(undefined, { each: true })

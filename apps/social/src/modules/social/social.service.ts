@@ -42,6 +42,7 @@ import type {
   UpdatePrivacyDto,
   UpdateProfileDto,
 } from './social.dto';
+import { assertImageFile, extensionForMime, saveProfileWithAvatarFile } from './utils';
 
 type DbClient = PrismaService | Prisma.TransactionClient;
 
@@ -93,6 +94,23 @@ export class SocialService {
 
     this.events.publish('profile.updated', { userId });
     return this.toProfileView(profile, principal.claims.sub, principal);
+  }
+
+  // Save profile metadata first, then store the avatar file if provided.
+  async saveProfile(
+    userId: string,
+    input: UpdateProfileDto,
+    file: UploadedMemoryFile | undefined,
+    principal: AuthPrincipal,
+  ) {
+    return saveProfileWithAvatarFile(
+      userId,
+      input,
+      file,
+      (uid, inp, prin) => this.updateProfile(uid, inp, prin),
+      (uid, f, prin) => this.uploadAvatar(uid, f, prin),
+      principal,
+    );
   }
 
   async searchUsers(query: ListQueryDto, principal: AuthPrincipal) {
@@ -222,9 +240,9 @@ export class SocialService {
   ) {
     this.assertSelfOrAdmin(userId, principal);
     await this.ensureProfile(userId);
-    this.assertImageFile(file);
+    assertImageFile(file, this.config.uploads.avatarMaxBytes);
 
-    const extension = this.extensionForMime(file.mimetype!);
+    const extension = extensionForMime(file.mimetype!);
     const fileName = `${userId}-${randomUUID()}${extension}`;
     const avatarDir = join(this.config.uploads.root, 'avatars');
     const storagePath = join(avatarDir, fileName);
@@ -1615,31 +1633,5 @@ export class SocialService {
     }
   }
 
-  private assertImageFile(file: UploadedMemoryFile) {
-    if (!file?.buffer || !file.mimetype) {
-      throw new BadRequestException('Avatar file is required');
-    }
-    if (
-      !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(
-        file.mimetype,
-      )
-    ) {
-      throw new BadRequestException('Avatar must be png, jpeg, webp, or gif');
-    }
-    if (
-      (file.size ?? file.buffer.length) > this.config.uploads.avatarMaxBytes
-    ) {
-      throw new BadRequestException('Avatar file is too large');
-    }
-  }
-
-  private extensionForMime(mimeType: string): string {
-    const extensions: Record<string, string> = {
-      'image/png': '.png',
-      'image/jpeg': '.jpg',
-      'image/webp': '.webp',
-      'image/gif': '.gif',
-    };
-    return extensions[mimeType] ?? extname(mimeType);
-  }
+  
 }

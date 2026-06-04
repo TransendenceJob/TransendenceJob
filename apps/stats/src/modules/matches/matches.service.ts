@@ -29,7 +29,7 @@ export class MatchesService {
       );
     }
 
-    return this.repo.createMatch(dto.participants, dto.status, dto.duration);
+    return this.repo.createMatch(dto);
   }
 
   /* Get match by id */

@@ -8,6 +8,7 @@ import {
 import axios, { AxiosError } from 'axios';
 import { BffConfigService } from '../config/bff-config.service';
 import { AuthService } from '../auth/auth.service';
+import { UpdateProfileService } from './updateProfile.service';
 
 type RequestContext = {
   requestId?: string;
@@ -26,14 +27,20 @@ export class SocialService {
   constructor(
     private readonly config: BffConfigService,
     private readonly authService: AuthService,
+    private readonly updateProfileService: UpdateProfileService,
   ) {}
 
   async currentUserId(context: RequestContext): Promise<string> {
+    //console.log("[BFF/social.service] currentUserId called", {
+    //  authorization: context.authorization ? context.authorization.substring(0, 30) : "MISSING",
+    //});
     this.ensureAuthorization(context.authorization);
     const verified = await this.authService.verify(context);
+    //console.log("[BFF/social.service] verified user", { userId: verified.user.id });
     return verified.user.id;
   }
 
+  // updated /internal/users => /users
   getMyProfile(context: RequestContext) {
     return this.withMe(context, (userId) =>
       this.callSocialService({
@@ -44,17 +51,17 @@ export class SocialService {
     );
   }
 
+  // updated path: /internal/users => /users
   updateMyProfile(input: unknown, context: RequestContext) {
-    return this.withMe(context, (userId) =>
-      this.callSocialService({
-        method: 'PATCH',
-        path: `/internal/users/${encodeURIComponent(userId)}/profile`,
-        data: input,
-        context,
-      }),
-    );
+    return this.updateProfileService.updateMyProfile(input, context);
   }
 
+  // Forward metadata and avatar as multipart form data to the social service.
+  saveMyProfile(input: unknown, file: UploadedMemoryFile | undefined, context: RequestContext) {
+    return this.updateProfileService.saveMyProfile(input, file, context);
+  }
+
+  // updated path /internal/users => /users
   getUserProfile(userId: string, context: RequestContext) {
     return this.callSocialService({
       method: 'GET',
@@ -94,60 +101,15 @@ export class SocialService {
   }
 
   uploadMyAvatar(file: UploadedMemoryFile, context: RequestContext) {
-    return this.withMe(context, async (userId) => {
-      if (!file?.buffer) {
-        throw new HttpException(
-          { code: 'avatar_file_required', message: 'Avatar file is required.' },
-          400,
-        );
-      }
-
-      const form = new FormData();
-      const arrayBuffer = file.buffer.buffer.slice(
-        file.buffer.byteOffset,
-        file.buffer.byteOffset + file.buffer.byteLength,
-      ) as ArrayBuffer;
-      form.append(
-        'file',
-        new Blob([arrayBuffer], {
-          type: file.mimetype ?? 'application/octet-stream',
-        }),
-        file.originalname ?? 'avatar',
-      );
-
-      return this.callSocialService({
-        method: 'POST',
-        path: `/internal/users/${encodeURIComponent(userId)}/avatar`,
-        data: form,
-        context,
-        extraHeaders: {},
-      });
-    });
+    return this.updateProfileService.uploadMyAvatar(file, context);
   }
 
   deleteMyAvatar(context: RequestContext) {
-    return this.withMe(context, (userId) =>
-      this.callSocialService({
-        method: 'DELETE',
-        path: `/internal/users/${encodeURIComponent(userId)}/avatar`,
-        context,
-      }),
-    );
+    return this.updateProfileService.deleteMyAvatar(context);
   }
 
   async getAvatar(fileName: string, context: RequestContext) {
-    const response = await this.callSocialRaw({
-      method: 'GET',
-      path: `/internal/uploads/avatars/${encodeURIComponent(fileName)}`,
-      context,
-      responseType: 'stream',
-    });
-
-    return {
-      streamable: new StreamableFile(response.data),
-      contentType: response.headers['content-type'] as string | undefined,
-      contentLength: response.headers['content-length'] as string | undefined,
-    };
+    return this.updateProfileService.getAvatar(fileName, context);
   }
 
   listFriends(context: RequestContext) {
@@ -259,6 +221,11 @@ export class SocialService {
   }
 
   private ensureAuthorization(authorization?: string): void {
+    //console.log("[BFF/social.service] ensureAuthorization check", {
+    //  hasAuthorization: Boolean(authorization),
+    //  authorizationStart: authorization ? authorization.substring(0, 30) : "MISSING",
+    //  startsWithBearer: authorization?.toLowerCase().startsWith('bearer '),
+    //});
     if (!authorization?.toLowerCase().startsWith('bearer ')) {
       throw new UnauthorizedException({
         code: 'missing_bearer_token',
@@ -315,14 +282,16 @@ export class SocialService {
     }
   }
 
+  // edit the error message
   private throwNormalizedError(error: unknown): never {
-    if (error instanceof AxiosError) {
-      const status = error.response?.status;
-      const data: unknown = error.response?.data;
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status;
+      const data: unknown = axiosError.response?.data;
       const message =
         typeof data === 'object' && data !== null && 'message' in data
           ? String((data as { message?: unknown }).message)
-          : error.message;
+          : axiosError.message;
 
       throw new HttpException(
         {

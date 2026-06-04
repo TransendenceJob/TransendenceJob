@@ -25,7 +25,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   attachAuditMiddleware(auditService: any) {
     if (this.auditMiddlewareAttached) return;
-    console.log("test");
     const extended = createAuditExtension(auditService)(this);
     Object.assign(this, extended);
     this.auditMiddlewareAttached = true;

@@ -15,6 +15,7 @@ ENV PORT=3000
 COPY package*.json ./
 RUN npm ci
 
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "3000"]

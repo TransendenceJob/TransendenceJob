@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 
 enum MatchStatus {
   PENDING = 'PENDING',
@@ -14,4 +14,24 @@ export class UpdateMatchDto {
   @IsOptional()
   @IsInt()
   duration?: number | null;
+
+  @IsOptional()
+  @IsString()
+  mode?: string | null;
+
+  @IsOptional()
+  @IsString()
+  mapName?: string | null;
+
+  @IsOptional()
+  @IsString()
+  score?: string | null;
+
+  @IsOptional()
+  @IsString()
+  summary?: string | null;
+
+  @IsOptional()
+  @IsString()
+  endedAt?: string | null;
 }

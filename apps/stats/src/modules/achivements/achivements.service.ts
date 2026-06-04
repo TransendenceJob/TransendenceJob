@@ -1,26 +1,37 @@
-// import { Injectable } from '@nestjs/common';
-// import { CreateAchivementDto } from './dto/create-achivement.dto';
-// import { UpdateAchivementDto } from './dto/update-achivement.dto';
+import { Injectable } from '@nestjs/common';
+import { CreateAchievementDto } from './dto/create-achivement.dto';
+import { UpdateAchievementDto } from './dto/update-achivement.dto';
+import { AchievementRepository } from '../persistence/repository/achievement.repository';
 
-// @Injectable()
-// export class AchivementsService {
-//   create(createAchivementDto: CreateAchivementDto) {
-//     return 'This action adds a new achivement';
-//   }
+@Injectable()
+export class AchievementsService {
+	constructor(private readonly repo: AchievementRepository) {}
 
-//   findAll() {
-//     return `This action returns all achivements`;
-//   }
+	create(dto: CreateAchievementDto) {
+		return this.repo.create(dto);
+	}
 
-//   findOne(id: number) {
-//     return `This action returns a #${id} achivement`;
-//   }
+	createOrUpdate(dto: CreateAchievementDto) {
+		return this.repo.upsertByUserAndType(dto);
+	}
 
-//   update(id: number, updateAchivementDto: UpdateAchivementDto) {
-//     return `This action updates a #${id} achivement`;
-//   }
+	findAll() {
+		return this.repo.findAll();
+	}
 
-//   remove(id: number) {
-//     return `This action removes a #${id} achivement`;
-//   }
-// }
+	findOne(id: string) {
+		return this.repo.findById(id);
+	}
+
+	findByUserId(userId: string) {
+		return this.repo.findByUserId(userId);
+	}
+
+	update(id: string, dto: UpdateAchievementDto) {
+		return this.repo.update(id, dto);
+	}
+
+	remove(id: string) {
+		return this.repo.remove(id);
+	}
+}

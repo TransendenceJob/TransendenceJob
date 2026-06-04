@@ -1,9 +1,11 @@
-// import { Module } from '@nestjs/common';
-// import { AchivementsService } from './achivements.service';
-// import { AchivementsController } from './achivements.controller';
+import { Module } from '@nestjs/common';
+import { AchievementsService } from './achivements.service';
+import { AchievementsController } from './achivements.controller';
+import { AchievementRepository } from '../persistence/repository/achievement.repository';
 
-// @Module({
-//   controllers: [AchivementsController],
-//   providers: [AchivementsService],
-// })
-// export class AchivementsModule {}
+@Module({
+	controllers: [AchievementsController],
+	providers: [AchievementsService, AchievementRepository],
+	exports: [AchievementsService],
+})
+export class AchievementsModule {}

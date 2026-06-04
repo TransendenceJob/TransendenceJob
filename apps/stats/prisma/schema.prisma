@@ -21,11 +21,34 @@ model AuditLog {
 }
 
 model Achievement {
-  id        String      @id @default(uuid())
-  userId    String
-  user      PlayerStats @relation(fields: [userId], references: [userId])
-  type      String
-  achivedAt DateTime    @default(now())
+  id            String      @id @default(uuid())
+  userId        String
+  user          PlayerStats @relation(fields: [userId], references: [userId])
+
+  // identifiers
+  type          String      // machine identifier, e.g. "sharp_shooter"
+  name          String?     // human-friendly title shown in UI, e.g. "Sharp Shooter"
+  description   String?     // longer explanation of the achievement
+  icon          String?     // emoji or asset key used in UI
+
+  // rewards / scoring
+  xpReward      Int         @default(0)
+  points        Int         @default(0)
+
+  // progress tracking (for incremental achievements)
+  progress      Int         @default(0)
+  progressTarget Int?
+  achieved      Boolean     @default(false)
+
+  // time fields
+  achievedAt     DateTime?   @default(now())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // extensible metadata
+  meta          Json?
+
+  @@unique([userId, type])
 }
 
 model WeaponUsage {
@@ -73,6 +96,11 @@ model Match {
   id                String             @id @default(uuid())
   status            MatchStatus        @default(PENDING)
   duration          Int?
+  mode              String?
+  mapName           String?
+  score             String?
+  summary           String?
+  endedAt           DateTime?
   createdAt         DateTime           @default(now())
   matchParticipants MatchParticipant[]
   playerStatsId     String?
@@ -82,6 +110,8 @@ model MatchParticipant {
   id       String  @id @default(uuid())
   matchId  String
   userId   String
+  displayName String?
+  avatarUrl String?
   isWinner Boolean @default(false)
   kills    Int     @default(0)
   deaths   Int     @default(0)
