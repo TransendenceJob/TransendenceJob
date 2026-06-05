@@ -77,6 +77,7 @@ export class AchievementRepository {
         userId_type: {
           userId: dto.userId,
           type: dto.type,
+          
         },
       },
       update: {

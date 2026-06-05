@@ -23,27 +23,13 @@ export class TurnEndState implements IState {
 		// Setup
 		turnMessage(this.machine);
 
-		if (!this.machine.loaded)
-			return;
+		// if (!this.machine.loaded)
+		// 	return;
 
-		const projectile = this.machine.loaded.turn.projectile;
-
-		// projectile.mesh.actionManager = new ActionManager(this.machine.scene);
-
-		// projectile.mesh.actionManager.registerAction(
-		// 	new ExecuteCodeAction(
-		// 		{
-		// 			trigger: ActionManager.OnIntersectionEnterTrigger
-		// 		},
-		// 		() => {
-		// 			projectile.endPos = projectile.mesh.position;
-		// 			// projectile.aggregate.dispose();
-		// 		}
-		// 	)
-		// );
+		// const projectile = this.machine.loaded.turn.projectile;
 
 		// Actions
-		projectile.launchProjectile(this.machine.scene);
+		// projectile.launchProjectile(this.machine.scene);
 	}
 
 	tick() {
