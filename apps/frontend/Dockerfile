@@ -14,7 +14,7 @@ ENV PORT=3000
 
 COPY package*.json ./
 RUN npm ci
-COPY . .
+
 
 EXPOSE 3000
 
@@ -26,7 +26,14 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=deps /app/node_modules ./node_modules
+
+# COPY THE SHARED FILES HERE:
+# This pulls from the "shared_logic" name defined in your YAML
+COPY --from=shared . ./shared
+
 COPY . .
 
 RUN npm run build

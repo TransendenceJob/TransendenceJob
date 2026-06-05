@@ -10,7 +10,6 @@ FROM node:20-alpine AS development
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 
 ENV NODE_ENV=development
 ENV PORT=3000
@@ -28,7 +27,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NODE_ENV=production
-RUN npm run build
+RUN npx prisma generate && npm run build
 
 # ---------- production ----------
 FROM node:20-alpine AS production
@@ -41,7 +40,12 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
+COPY --from=build /app/scripts ./scripts
 
 EXPOSE 3000
 
+RUN chmod +x /app/scripts/prismarun.sh
+ENTRYPOINT ["sh", "/app/scripts/prismarun.sh"]
 CMD ["node", "dist/main.js"]

@@ -3,24 +3,22 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+COPY prisma ./prisma
+COPY prisma.config.ts ./
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public
+RUN npm ci && npx prisma generate
 
 # ---------- development ----------
 FROM node:20-alpine AS development
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 
 ENV NODE_ENV=development
 ENV PORT=3000
 
 EXPOSE 3000
 EXPOSE 9229
-
-RUN chmod +x /app/scripts/prismarun.sh
-
-ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
 CMD ["npm", "run", "start:debug"]
 
 # ---------- build ----------

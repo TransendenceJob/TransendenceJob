@@ -31,9 +31,11 @@ export class AuthLogoutService {
     input: LogoutRequestDto,
     context: LogoutContext,
   ): Promise<LogoutResponseDto> {
-    await this.rateLimit.ensureLogoutAllowed({
+    const logoutRateLimitInput = {
       ip: context.ip,
-    });
+    } satisfies Parameters<AuthRateLimitService['ensureLogoutAllowed']>[0];
+
+    await this.rateLimit.ensureLogoutAllowed(logoutRateLimitInput);
 
     const refreshTokenHash = this.refreshTokens.hashRefreshToken(
       input.refreshToken,
@@ -49,16 +51,21 @@ export class AuthLogoutService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
+      const storedRefreshTokenHash = session.refreshTokenHash;
+      if (!storedRefreshTokenHash) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
       if (
         !this.refreshTokens.verifyRefreshToken(
           input.refreshToken,
-          session.refreshTokenHash,
+          storedRefreshTokenHash,
         )
       ) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const userId = session.userId;
+      const userId = this.getSessionUserId(session);
       const revocationTime = new Date();
       const sessionIds: string[] = [];
 
@@ -69,51 +76,49 @@ export class AuthLogoutService {
         );
         sessionIds.push(...activeSessions.map((s) => s.id));
 
-        const result = await this.sessions.revokeAllSessionsForUser(
+        await this.sessions.revokeAllSessionsForUser(
           userId,
           revocationTime,
           db,
         );
 
-        await this.auditLogs.createEvent(
-          {
-            action: 'LOGOUT',
-            userId,
-            actorUserId: userId,
-            ip: context.ip ?? null,
-            userAgent: context.userAgent ?? null,
-            metadataJson: {
-              source: 'internal/auth/logout',
-              requestId: context.requestId ?? null,
-              serviceName: context.serviceName ?? null,
-              logoutAll: true,
-              revokedCount: result.count,
-            },
+        const logoutAllAudit = {
+          action: 'LOGOUT',
+          userId,
+          actorUserId: userId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/logout',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            logoutAll: true,
+            revokedCount: sessionIds.length,
           },
-          db,
-        );
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+        await this.auditLogs.createEvent(logoutAllAudit, db);
       } else {
         await this.sessions.revokeSession(session.id, revocationTime, db);
 
         sessionIds.push(session.id);
 
-        await this.auditLogs.createEvent(
-          {
-            action: 'LOGOUT',
-            userId,
-            actorUserId: userId,
-            ip: context.ip ?? null,
-            userAgent: context.userAgent ?? null,
-            metadataJson: {
-              source: 'internal/auth/logout',
-              requestId: context.requestId ?? null,
-              serviceName: context.serviceName ?? null,
-              logoutAll: false,
-              sessionId: session.id,
-            },
+        const logoutSingleAudit = {
+          action: 'LOGOUT',
+          userId,
+          actorUserId: userId,
+          ip: context.ip ?? null,
+          userAgent: context.userAgent ?? null,
+          metadataJson: {
+            source: 'internal/auth/logout',
+            requestId: context.requestId ?? null,
+            serviceName: context.serviceName ?? null,
+            logoutAll: false,
+            sessionId: session.id,
           },
-          db,
-        );
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+        await this.auditLogs.createEvent(logoutSingleAudit, db);
       }
 
       return sessionIds;
@@ -124,5 +129,13 @@ export class AuthLogoutService {
     }
 
     return AuthContractMapper.toLogoutResponse(revokedSessionIds);
+  }
+
+  private getSessionUserId(session: { userId?: unknown }): string {
+    if (typeof session.userId === 'string') {
+      return session.userId;
+    }
+
+    throw new UnauthorizedException('Invalid refresh token');
   }
 }

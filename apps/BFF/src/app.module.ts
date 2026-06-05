@@ -2,9 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LobbyModule } from './lobby.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { AppConfigModule } from './modules/config/config.module';
+import { SocialModule } from './modules/social/social.module';
 
 @Module({
-  imports: [LobbyModule],
+  imports: [AppConfigModule, LobbyModule, AuthModule, StatsModule, SocialModule],
   controllers: [AppController],
   providers: [AppService],
 })

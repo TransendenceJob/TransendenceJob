@@ -1,0 +1,47 @@
+{
+  "listThreadsInternal": {
+    "endpoint": "GET /internal/chats/by-user/{userId}",
+    "params": {
+      "userId": "d7fc2a9a-cf4b-4fcb-b154-27166fd75f7a"
+    }
+  },
+  "createDmInternal": {
+    "endpoint": "POST /internal/chats/dm",
+    "body": {
+      "otherUserId": "f04fef3d-2a7c-49ef-b9f9-45b8a8838f7e"
+    }
+  },
+  "sendMessageInternal": {
+    "endpoint": "POST /internal/chats/{threadId}/messages",
+    "params": {
+      "threadId": "8da21b8a-55f6-4e30-9325-319f04a9ab8b"
+    },
+    "body": {
+      "content": "Ready for match?",
+      "contentType": "GAME_INVITE",
+      "clientMessageId": "srv-1747900000-012"
+    }
+  },
+  "editMessageInternal": {
+    "endpoint": "PATCH /internal/messages/{messageId}",
+    "params": {
+      "messageId": "8e073d2d-3f27-4f78-a069-cf4a4c4d1f55"
+    },
+    "body": {
+      "content": "Ready for ranked match?"
+    }
+  },
+  "deleteMessageInternal": {
+    "endpoint": "DELETE /internal/messages/{messageId}?forEveryone=false",
+    "params": {
+      "messageId": "8e073d2d-3f27-4f78-a069-cf4a4c4d1f55"
+    }
+  },
+  "canReadInternal": {
+    "endpoint": "GET /internal/chats/{threadId}/can-read/{userId}",
+    "params": {
+      "threadId": "8da21b8a-55f6-4e30-9325-319f04a9ab8b",
+      "userId": "d7fc2a9a-cf4b-4fcb-b154-27166fd75f7a"
+    }
+  }
+}

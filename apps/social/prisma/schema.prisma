@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PrivacyVisibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum DirectMessagePolicy {
+  EVERYONE
+  FRIENDS
+  NONE
+}
+
+enum PresenceStatus {
+  ONLINE
+  AWAY
+  BUSY
+  OFFLINE
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELED
+  EXPIRED
+  APPROVED
+  REJECTED
+}
+
+enum ClanVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ClanJoinPolicy {
+  OPEN
+  INVITE_ONLY
+  REQUEST_ONLY
+}
+
+enum ClanRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum ChatThreadType {
+  DM
+  CLAN
+}
+
+enum MessageContentType {
+  TEXT
+  SYSTEM
+  GAME_INVITE
+}
+
+enum StoredFileKind {
+  AVATAR
+  CLAN_AVATAR
+  ATTACHMENT
+}
+
+model StoredFile {
+  id           String         @id @default(uuid()) @db.Uuid
+  ownerUserId  String         @db.Uuid
+  kind         StoredFileKind
+  originalName String?        @db.VarChar(255)
+  mimeType     String         @db.VarChar(120)
+  sizeBytes    Int
+  storagePath  String         @unique @db.Text
+  publicPath   String         @db.Text
+  sha256       String?        @db.VarChar(64)
+  createdAt    DateTime       @default(now())
+  deletedAt    DateTime?
+
+  profileAvatar UserProfile? @relation("ProfileAvatar")
+  clanAvatar    Clan?        @relation("ClanAvatar")
+
+  @@index([ownerUserId])
+  @@index([kind])
+  @@map("stored_files")
+}
+
+model UserProfile {
+  userId       String   @id @db.Uuid
+  displayName  String?  @db.VarChar(64)
+  avatarFileId String?  @unique @db.Uuid
+  bio          String?  @db.VarChar(500)
+  country      String?  @db.VarChar(2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  avatarFile StoredFile?         @relation("ProfileAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  privacy    UserPrivacySetting?
+  presence   UserPresence?
+
+  @@index([displayName])
+  @@map("user_profiles")
+}
+
+model UserPrivacySetting {
+  userId             String              @id @db.Uuid
+  profileVisibility  PrivacyVisibility   @default(PUBLIC)
+  friendsVisibility  PrivacyVisibility   @default(FRIENDS)
+  lastSeenVisibility PrivacyVisibility   @default(FRIENDS)
+  dmPolicy           DirectMessagePolicy @default(FRIENDS)
+  updatedAt          DateTime            @updatedAt
+
+  profile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("user_privacy_settings")
+}
+
+model UserPresence {
+  userId     String         @id @db.Uuid
+  status     PresenceStatus @default(OFFLINE)
+  lastSeenAt DateTime?
+  updatedAt  DateTime       @updatedAt
+
+  profile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([status])
+  @@map("user_presence")
+}
+
+model FriendRequest {
+  id          String        @id @default(uuid()) @db.Uuid
+  fromUserId  String        @db.Uuid
+  toUserId    String        @db.Uuid
+  status      RequestStatus @default(PENDING)
+  message     String?       @db.VarChar(240)
+  createdAt   DateTime      @default(now())
+  respondedAt DateTime?
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([status])
+  @@map("friend_requests")
+}
+
+model Friendship {
+  userLowId  String   @db.Uuid
+  userHighId String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  @@id([userLowId, userHighId])
+  @@index([userHighId])
+  @@map("friendships")
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+model Clan {
+  id           String         @id @default(uuid()) @db.Uuid
+  name         String         @db.VarChar(64)
+  tag          String?        @unique @db.VarChar(8)
+  ownerUserId  String         @db.Uuid
+  visibility   ClanVisibility @default(PUBLIC)
+  joinPolicy   ClanJoinPolicy @default(INVITE_ONLY)
+  description  String?        @db.VarChar(500)
+  avatarFileId String?        @unique @db.Uuid
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  avatarFile   StoredFile?       @relation("ClanAvatar", fields: [avatarFileId], references: [id], onDelete: SetNull)
+  members      ClanMember[]
+  invites      ClanInvite[]
+  joinRequests ClanJoinRequest[]
+  chatThread   ChatThread?
+
+  @@unique([name])
+  @@index([ownerUserId])
+  @@index([visibility])
+  @@map("clans")
+}
+
+model ClanMember {
+  clanId     String    @db.Uuid
+  userId     String    @db.Uuid
+  role       ClanRole  @default(MEMBER)
+  joinedAt   DateTime  @default(now())
+  mutedUntil DateTime?
+
+  clan Clan @relation(fields: [clanId], references: [id], onDelete: Cascade)
+
+  @@id([clanId, userId])
+  @@index([userId])
+  @@map("clan_members")
+}
+
+model ClanInvite {
+  id              String        @id @default(uuid()) @db.Uuid
+  clanId          String        @db.Uuid
+  invitedUserId   String        @db.Uuid
+  invitedByUserId String        @db.Uuid
+  status          RequestStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  expiresAt       DateTime
+  respondedAt     DateTime?
+
+  clan Clan @relation(fields: [clanId], references: [id], onDelete: Cascade)
+
+  @@index([clanId])
+  @@index([invitedUserId])
+  @@index([status])
+  @@map("clan_invites")
+}
+
+model ClanJoinRequest {
+  id          String        @id @default(uuid()) @db.Uuid
+  clanId      String        @db.Uuid
+  userId      String        @db.Uuid
+  status      RequestStatus @default(PENDING)
+  message     String?       @db.VarChar(240)
+  createdAt   DateTime      @default(now())
+  respondedAt DateTime?
+
+  clan Clan @relation(fields: [clanId], references: [id], onDelete: Cascade)
+
+  @@index([clanId])
+  @@index([userId])
+  @@index([status])
+  @@map("clan_join_requests")
+}
+
+model ChatThread {
+  id              String         @id @default(uuid()) @db.Uuid
+  type            ChatThreadType
+  clanId          String?        @unique @db.Uuid
+  createdByUserId String         @db.Uuid
+  createdAt       DateTime       @default(now())
+  lastMessageAt   DateTime?
+
+  clan         Clan?             @relation(fields: [clanId], references: [id], onDelete: Cascade)
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@index([type])
+  @@index([createdByUserId])
+  @@index([lastMessageAt])
+  @@map("chat_threads")
+}
+
+model ChatParticipant {
+  threadId   String    @db.Uuid
+  userId     String    @db.Uuid
+  joinedAt   DateTime  @default(now())
+  lastReadAt DateTime?
+  isMuted    Boolean   @default(false)
+
+  thread ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@id([threadId, userId])
+  @@index([userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id              String             @id @default(uuid()) @db.Uuid
+  threadId        String             @db.Uuid
+  senderUserId    String             @db.Uuid
+  content         String             @db.VarChar(2000)
+  contentType     MessageContentType @default(TEXT)
+  clientMessageId String?            @db.VarChar(120)
+  createdAt       DateTime           @default(now())
+  editedAt        DateTime?
+  deletedAt       DateTime?
+
+  thread    ChatThread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  deletions MessageDeletion[]
+
+  @@index([threadId, createdAt])
+  @@index([senderUserId])
+  @@map("messages")
+}
+
+model MessageDeletion {
+  messageId String   @db.Uuid
+  userId    String   @db.Uuid
+  deletedAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId])
+  @@index([userId])
+  @@map("message_deletions")
+}

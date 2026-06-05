@@ -1,447 +1,142 @@
 openapi: 3.0.3
 info:
-  title: Chat Service
-  version: 0.1.0
+  title: Chat Domain (Social Service Internal)
+  version: 0.2.0
 servers:
-- url: http://chat-service:8080
+  - url: http://social_service:3000
 paths:
   /internal/chats/by-user/{userId}:
     get:
-      summary: List threads by user
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: List chat threads by user
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/dm:
     post:
-      summary: Create/get DM thread
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Create or get DM thread
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}:
     get:
-      summary: Get thread
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Get thread by id
       parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}/messages:
     get:
-      summary: List messages
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: List thread messages
       parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
     post:
       summary: Send message
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      parameters:
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+
   /internal/messages/{messageId}:
     patch:
       summary: Edit message
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: messageId
-        in: path
-        required: true
-        schema:
-          type: string
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
     delete:
       summary: Delete message
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: messageId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: messageId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}/mute:
     post:
       summary: Mute thread
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}/unmute:
     post:
       summary: Unmute thread
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}/read:
     post:
-      summary: Mark read
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Mark thread as read
+      parameters:
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+
   /internal/chats/{threadId}/can-read/{userId}:
     get:
-      summary: Can read
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Check whether user can read thread
       parameters:
-      - name: threadId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: object
-      required:
-      - code
-      - message
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }

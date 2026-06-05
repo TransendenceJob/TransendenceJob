@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: Stats Service (Internal)
+  version: 0.2.0
+servers:
+  - url: http://stats_service:3000
+paths:
+  /internal/stats/helloWorld:
+    get:
+      summary: Stats root hello endpoint
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/health:
+    get:
+      summary: Stats service health
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/health/db:
+    get:
+      summary: Stats database health
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/user:
+    post:
+      summary: Create player stats
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "201": { description: Created }
+    get:
+      summary: List player stats
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/user/{id}:
+    put:
+      summary: Update player stats
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+    get:
+      summary: Get player stats by user id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/user/{id}/matches:
+    get:
+      summary: Get player match history
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/match:
+    post:
+      summary: Create match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "201": { description: Created }
+    get:
+      summary: List matches
+      responses:
+        "200": { description: OK }
+    delete:
+      summary: Delete all matches
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/match/{matchId}:
+    get:
+      summary: Get match by id
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+    patch:
+      summary: Update match
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+    delete:
+      summary: Delete match by id
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/match/{matchId}/members:
+    get:
+      summary: Get match members
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/match/{matchId}/participants/{userId}:
+    post:
+      summary: Add match participant
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+    patch:
+      summary: Update match participant
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+    delete:
+      summary: Remove match participant
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/weapons:
+    post:
+      summary: Create weapon stats
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "201": { description: Created }
+    get:
+      summary: List weapons
+      responses:
+        "200": { description: OK }
+
+  /internal/stats/weapons/{id}:
+    get:
+      summary: Get weapon by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+    patch:
+      summary: Update weapon
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+    delete:
+      summary: Delete weapon
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }

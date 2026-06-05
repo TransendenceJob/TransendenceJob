@@ -5,6 +5,8 @@ const REGISTER_ATTEMPT_LIMIT = 5;
 const REGISTER_ATTEMPT_WINDOW_SECONDS = 60;
 const REFRESH_ATTEMPT_LIMIT = 5;
 const REFRESH_ATTEMPT_WINDOW_SECONDS = 60;
+const LOGIN_ATTEMPT_LIMIT = 5;
+const LOGIN_ATTEMPT_WINDOW_SECONDS = 60;
 const LOGOUT_ATTEMPT_LIMIT = 10;
 const LOGOUT_ATTEMPT_WINDOW_SECONDS = 60;
 
@@ -54,6 +56,35 @@ export class AuthRateLimitService {
     if (ipAttempts > REFRESH_ATTEMPT_LIMIT) {
       throw new HttpException(
         'Too many refresh attempts',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  async ensureLoginAllowed(input: {
+    email: string;
+    ip?: string | null;
+  }): Promise<void> {
+    const ipBucket = input.ip ? `login:ip:${input.ip}` : 'login:ip:unknown';
+    const emailBucket = `login:email:${input.email.toLowerCase()}`;
+
+    const [ipAttempts, emailAttempts] = await Promise.all([
+      this.redis.incrementRateLimitCounter(
+        ipBucket,
+        LOGIN_ATTEMPT_WINDOW_SECONDS,
+      ),
+      this.redis.incrementRateLimitCounter(
+        emailBucket,
+        LOGIN_ATTEMPT_WINDOW_SECONDS,
+      ),
+    ]);
+
+    if (
+      ipAttempts > LOGIN_ATTEMPT_LIMIT ||
+      emailAttempts > LOGIN_ATTEMPT_LIMIT
+    ) {
+      throw new HttpException(
+        'Too many login attempts',
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

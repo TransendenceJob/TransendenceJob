@@ -169,6 +169,9 @@ export class SessionRepository {
       where: {
         userId,
         revokedAt: null,
+        expiresAt: {
+          gt: revokedAt,
+        },
       },
       data: {
         revokedAt,

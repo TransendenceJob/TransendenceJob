@@ -1,746 +1,234 @@
 openapi: 3.0.3
 info:
-  title: Clan Service
-  version: 0.1.0
+  title: Clan Domain (Social Service Internal)
+  version: 0.2.0
 servers:
-- url: http://clan-service:8080
+  - url: http://social_service:3000
 paths:
   /internal/clans:
     post:
       summary: Create clan
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
     get:
       summary: List clans
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+        "200": { description: OK }
+
   /internal/clans/{clanId}:
     get:
-      summary: Get clan
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Get clan by id
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
     patch:
       summary: Update clan
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      parameters:
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
     delete:
       summary: Delete clan
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/by-user/{userId}:
     get:
       summary: List clans by user
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/{clanId}/members:
     get:
-      summary: List members
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: List clan members
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/{clanId}/members/{userId}:
     get:
-      summary: Get membership
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Get clan member
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-    patch:
-      summary: Update member
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+        "200": { description: OK }
+    patch:
+      summary: Update clan member
+      parameters:
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-    delete:
-      summary: Remove member
+            schema: { type: object }
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+        "200": { description: OK }
+    delete:
+      summary: Remove clan member
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/{clanId}/invites:
     post:
-      summary: Create invite
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Create clan invite
+      parameters:
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+            schema: { type: object }
+      responses:
+        "200": { description: OK }
+
   /internal/clan-invites/by-user/{userId}:
     get:
-      summary: List invites by user
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: List clan invites by user
       parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clan-invites/{inviteId}/accept:
     post:
-      summary: Accept invite
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Accept clan invite
       parameters:
-      - name: inviteId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: inviteId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clan-invites/{inviteId}/decline:
     post:
-      summary: Decline invite
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Decline clan invite
       parameters:
-      - name: inviteId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: inviteId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/{clanId}/join-requests:
     post:
-      summary: Create join request
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Create clan join request
+      parameters:
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-      parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
-    get:
-      summary: List join requests
+            schema: { type: object }
       responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+        "200": { description: OK }
+    get:
+      summary: List clan join requests
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clan-join-requests/{requestId}/approve:
     post:
       summary: Approve join request
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: requestId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: requestId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clan-join-requests/{requestId}/reject:
     post:
       summary: Reject join request
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
       parameters:
-      - name: requestId
-        in: path
-        required: true
-        schema:
-          type: string
+        - in: path
+          name: requestId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
+
   /internal/clans/{clanId}/is-member/{userId}:
     get:
-      summary: Is member
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-      security:
-      - BearerAuth: []
+      summary: Check clan membership
       parameters:
-      - name: clanId
-        in: path
-        required: true
-        schema:
-          type: string
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
-  schemas:
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: object
-      required:
-      - code
-      - message
+        - in: path
+          name: clanId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: OK }
