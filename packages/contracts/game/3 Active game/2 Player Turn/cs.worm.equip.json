@@ -1,7 +1,10 @@
 {
-	"type": "cs.worm.equip",
-	"matchId": 0,
-	"userKey": 0,
-	"wormId": 0,
-	"weapon": ""
+  "implemented": true,
+  "direction": "client_to_server",
+  "socketEvent": "msgToServer",
+  "type": "CS_WeaponChosen",
+  "lobbyId": 0,
+  "userId": "user-uuid",
+  "id": 0,
+  "notes": "Weapon choice currently uses a numeric weapon id and is rebroadcast as SC_WeaponChosen. Inventory counts are not checked server-side yet."
 }

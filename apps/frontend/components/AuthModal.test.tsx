@@ -1,0 +1,198 @@
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import AuthModal from "./AuthModal";
+import { authClient } from "@/src/core/api/auth/auth.client";
+
+// Mock the useAuth hook so it doesn't look for a Provider
+vi.mock("./Providers", () => ({
+    useAuth: () => ({
+        user: null,
+        setUser: vi.fn(),
+        logout: vi.fn(),
+    }),
+}));
+
+// Mock for auth.client
+vi.mock("@/src/core/api/auth/auth.client", () => ({
+    authClient: {
+        login: vi.fn(),
+        register: vi.fn(),
+        startGoogleOAuth: vi.fn(),
+    },
+}));
+
+// Mock Next.js router
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+    }),
+}));
+
+// Mock Auth Context
+vi.mock('@/src/core/context/AuthContext', () => ({
+    useAuth: () => ({
+        setUser: vi.fn(),
+    }),
+}));
+
+describe("AuthModal Component", () => {
+    const mockOnClose = vi.fn();
+    const mockSetType = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        sessionStorage.clear();
+    });
+
+    it("renders the login form by default", () => {
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+        expect(screen.getByText(/Welcome back, You little worm!/i)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /Sign In/i })).toBeInTheDocument();
+    });
+
+    it("successfully registers a new user", async () => {
+        const mockRegister = vi.spyOn(authClient, 'register').mockResolvedValue({
+            ok: true,
+            data: { user: { id: "2" }, tokens: { accessToken: "abc", refreshToken: "def" } }
+        } as any);
+
+        render(<AuthModal isOpen={true} type="Register" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Email Address"), { target: { value: "new@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Display Name (optional)"), { target: { value: "Display" } });
+        fireEvent.change(screen.getByPlaceholderText("Username (3-24 chars)"), { target: { value: "newuser" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "Pass123!" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Password"), { target: { value: "Pass123!" } });
+
+        fireEvent.click(screen.getByRole("button", { name: /Create Account/i }));
+
+        await waitFor(() => {
+            expect(mockRegister).toHaveBeenCalledWith(expect.objectContaining({
+                email: 'new@test.com',
+                password: 'Pass123!',
+                username: 'newuser',
+                displayName: 'Display'
+            }));
+            expect(mockOnClose).toHaveBeenCalled();
+        });
+    });
+
+    it("successfully logs in and redirects the user", async () => {
+        const mockLogin = vi.spyOn(authClient, 'login').mockResolvedValue({
+            ok: true,
+            data: {
+                user: { id: "1", email: "test@test.com" },
+                tokens: { accessToken: "abc", refreshToken: "def" }
+            }
+        } as any);
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "test@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "password123" } });
+
+        const submitBtn = screen.getByRole("button", { name: /Sign In/i });
+        fireEvent.click(submitBtn);
+
+        await waitFor(() => {
+            expect(mockLogin).toHaveBeenCalledWith({
+                email: "test@test.com",
+                password: "password123"
+            });
+        });
+
+        await waitFor(() => {
+            expect(mockOnClose).toHaveBeenCalled();
+        });
+
+        mockLogin.mockRestore();
+    });
+
+    it("displays error message from server on failed login", async () => {
+        (authClient.login as any).mockResolvedValue({
+            ok: false,
+            error: { message: "Invalid credentials" }
+        });
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "wrong@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "wrongpass" } });
+
+        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+        expect(await screen.findByText(/Invalid credentials/i)).toBeInTheDocument();
+        expect(await screen.findByText(/linked to Google OAuth/i)).toBeInTheDocument();
+        expect(await screen.findByTestId("oauth-recovery-button")).toBeInTheDocument();
+    });
+
+    it("starts Google OAuth from recovery hint", async () => {
+        (authClient.login as any).mockResolvedValue({
+            ok: false,
+            status: 401,
+            error: { message: "Invalid email or password" }
+        });
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "oauth@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "random-pass" } });
+        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+        const recoveryButton = await screen.findByTestId("oauth-recovery-button");
+        fireEvent.click(recoveryButton);
+
+        expect(authClient.startGoogleOAuth).toHaveBeenCalled();
+        expect(sessionStorage.getItem("auth.oauth.password.recovery")).toBe("random-pass");
+    });
+
+    it("displays connection error if the API call fails entirely", async () => {
+        (authClient.login as any).mockRejectedValue(new Error("Network Error"));
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "test@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "password123" } });
+
+        fireEvent.click(screen.getByRole("button", { name: /Sign In/i }));
+
+        expect(await screen.findByText(/Connection failed/i)).toBeInTheDocument();
+    });
+
+    it("shows validation error if passwords do not match during registration", async () => {
+        render(<AuthModal isOpen={true} type="Register" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), { target: { value: "test@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Email Address"), { target: { value: "test@test.com" } });
+        fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "password123" } });
+        fireEvent.change(screen.getByPlaceholderText("Confirm Password"), { target: { value: "wrongpass" } });
+
+        fireEvent.click(screen.getByRole("button", { name: /Create Account/i }));
+
+        expect(await screen.findByText(/Passwords do not match!/i)).toBeInTheDocument();
+    });
+
+    it("disables the submit button while loading", async () => {
+        (authClient.login as any).mockReturnValue(new Promise(() => {}));
+
+        render(<AuthModal isOpen={true} type="Login" onClose={mockOnClose} setType={mockSetType} />);
+
+        fireEvent.change(screen.getByPlaceholderText("Email Address"), {
+            target: { value: "test@example.com" }
+        });
+        fireEvent.change(screen.getByPlaceholderText("Password"), {
+            target: { value: "password123" }
+        });
+
+        const submitBtn = screen.getByRole("button", { name: /Sign In/i });
+        fireEvent.click(submitBtn);
+
+        await waitFor(() => {
+            expect(submitBtn).toBeDisabled();
+        });
+
+        expect(submitBtn).toBeDisabled();
+        expect(screen.getByText(/Processing.../i)).toBeInTheDocument();
+    });
+});

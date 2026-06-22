@@ -1,21 +1,7 @@
 {
-	"type": "sc.inventory.data",
-	"matchId": 0,
-	"activePlayerId": 0,
-	"inventory": [
-		{"name": "baseballBat",		"count": 1},
-		{"name": "bazooka",			"count": 999},
-		{"name": "mortar",			"count": 999},
-		{"name": "handgun",			"count": 999},
-		{"name": "shotgun",			"count": 999},
-		{"name": "uzi",				"count": 999},
-		{"name": "grenade",			"count": 999},
-		{"name": "clusterGrenade",	"count": 1},
-		{"name": "anvil",			"count": 1},
-		{"name": "dynamite",		"count": 999},
-		{"name": "airstrike",		"count": 999},
-		{"name": "meteor",			"count": 1},
-		{"name": "fallingPiano",	"count": 999}
-	],
-	"seq": [0]
+  "implemented": false,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "plannedType": "SC_InventoryData",
+  "notes": "No inventory packet exists in shared/game/packets/ServerClientPackets.ts today. Weapon selection is currently broadcast with SC_WeaponChosen and only carries a numeric weapon id."
 }

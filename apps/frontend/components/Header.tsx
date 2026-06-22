@@ -3,11 +3,11 @@
 import {useState} from "react";
 import AuthModal from "./AuthModal";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react"; // handle google sign in and out
+import {useAuth} from "@/components/Providers";
 
 export default function Header() {
-    const [modalType, setModalType] = useState<'Login' | 'Register' | null>(null); // modaltype is a variable, and setModaltype a setter which can be called on lick, null is the default state
-    const { data: session, status } = useSession(); // extract those from the session token
+    const [modalType, setModalType] = useState<'Login' | 'Register' | null>(null); // modaltype is a variable, and setModaltype a setter which can be called on click, null is the default state
+    const { user, isAuthenticated, logout, isLoading } = useAuth();
     return (
         <header className="p-4 border-b border-foreground/10 grid grid-cols-3 items-center px-8">
             <div className="flex justify-start">
@@ -25,28 +25,23 @@ export default function Header() {
                 <h1 className="font-black text-2xl tracking-tighter uppercase italic bg-gradient-to-r from-blue-600 to-indigo-400 bg-clip-text text-transparent">Ft_transcendence</h1>
             </div>
             <div className="flex justify-end pr-4">
-                {/* Conditional Rendering based on Auth Status */}
-                {status === "authenticated" ? (
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end">
-                            <span className="text-sm font-bold leading-tight">{session?.user?.name}</span>
+                {isLoading ? (
+                    <div className="h-8 w-8 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
+                ) : isAuthenticated ? (
+                    <div className="flex items-center gap-6">
+                        <div className="text-right">
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Active Operative</p>
+                            <p className="text-sm font-black">{user?.email}</p>
                             <button
-                                onClick={() => signOut()}
-                                className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-red-500 transition"
+                                onClick={logout}
+                                className="text-[10px] font-bold text-red-500 hover:underline uppercase tracking-tighter"
                             >
-                                Sign Out
+                                Terminate Session
                             </button>
                         </div>
-                        {session?.user?.image && (
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/20">
-                                <Image
-                                    src={session.user.image}
-                                    alt="Profile"
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        )}
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-400 flex items-center justify-center text-white font-bold border-2 border-foreground/10 shadow-lg">
+                            {user?.email?.[0].toUpperCase()}
+                        </div>
                     </div>
                 ) : (
                     <nav className="flex flex-col items-end space-y-1">

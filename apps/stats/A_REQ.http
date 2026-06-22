@@ -1,0 +1,229 @@
+
+@userId = {{$guid}}
+@matchUserA = {{$guid}}
+@matchUserB = {{$guid}}
+--------------------------------- PLYAER -----------------------------
+### send post request
+POST http://localhost:3004/internal/stats/user
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "xp": 50,
+  "level": 2,
+  "wins": 1,
+  "losses": 0,
+  "kills": 10,
+  "deaths": 2
+}
+
+### create player stats used by the match-history seed
+POST http://localhost:3004/internal/stats/user
+Content-Type: application/json
+
+{
+  "userId": "{{matchUserA}}",
+  "xp": 240,
+  "level": 5,
+  "wins": 9,
+  "losses": 3,
+  "kills": 112,
+  "deaths": 44
+}
+
+### create second player stats used by the match-history seed
+POST http://localhost:3004/internal/stats/user
+Content-Type: application/json
+
+{
+  "userId": "{{matchUserB}}",
+  "xp": 180,
+  "level": 4,
+  "wins": 6,
+  "losses": 5,
+  "kills": 84,
+  "deaths": 53
+}
+
+
+### update the stats for player
+PUT http://localhost:3004/internal/stats/user/99173503-c17e-4b8c-9ec8-207157f0afbc
+Content-Type: application/json
+
+{
+  "xp": 50,
+  "level": 4,
+  "wins": 2,
+  "losses": 0,
+  "kills": 13,
+  "deaths": 2
+}
+
+
+### get all
+GET http://localhost:3004/internal/stats/user
+
+### get by id=> full player profile view/Admin dashboard	
+GET http://localhost:3004/internal/stats/user/0c5a51c6-95d9-45f0-9b65-4fba8f8d1ed8
+
+### GET    /internal/stats/user/:userId/matches (match history)
+GET http://localhost:3004/internal/stats/user/d200724c-2856-4319-aefa-b41a73a0a0eb/matches
+
+
+
+------------------------------------ HEALTH ------------------------------------------------------------
+### Health 
+GET http://localhost:3004/internal/stats/health
+
+
+------------------------------------MATCH --------------------------------------------------------------
+### create match request; prevented duplicated match
+POST http://localhost:3004/internal/stats/match
+Content-Type: application/json
+
+{
+  "status" : "FINISHED",
+  "duration": 840,
+  "mode": "Ranked Skirmish",
+  "mapName": "Rust Canyon",
+  "score": "3 - 1",
+  "summary": "Clean rotations and a decisive final blast.",
+  "endedAt": "2026-05-31T19:42:00.000Z",
+  "participants": [
+    {
+      "userId"  :"a124f36d-5736-46e3-95e8-7a7e003e73e5",
+      "displayName": "You",
+      "avatarUrl": null,
+      "isWinner" : true,
+      "kills"    : 5,
+      "deaths"   : 1
+    },
+    {
+      "userId"  :"99173503-c17e-4b8c-9ec8-207157f0afbc",
+      "displayName": "BoomRanger",
+      "avatarUrl": null,
+      "isWinner" : false,
+      "kills"    : 3,
+      "deaths"   : 2 
+    }
+      
+  ]
+
+}
+
+
+
+### Get all the match from table /matches
+GET  http://localhost:3004/internal/stats/match
+
+### Get match by Id /match/matchId
+GET    http://localhost:3004/internal/stats/match/5fc6115f-38a1-4aec-a510-11fb5da6a575
+
+### Get all particicpnats of a match/matchId/{participants : true}
+GET http://localhost:3004/internal/stats/match/91117ea7-dc26-4eab-920f-145909e226ba/members
+
+### Get user match history (this is what the frontend profile tab consumes)
+GET http://localhost:3004/internal/stats/user/0c5a51c6-95d9-45f0-9b65-4fba8f8d1ed8/matches
+
+### Update match status and duration match/matchId
+PATCH http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS",
+  "duration": 1800
+}
+
+
+### Delete a match by id:
+DELETE http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e
+
+
+### Delete all match
+DELETE  http://localhost:3004/internal/stats/match
+
+
+### Add participant to match
+POST http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+Content-Type: application/json
+
+{
+  "kills": 0,
+  "deaths": 0,
+  "isWinner": false
+}
+
+### Update participant stats in match
+PATCH http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+Content-Type: application/json
+
+{
+  "kills": 7,
+  "deaths": 2,
+  "isWinner": true
+}
+
+### Remove participant from match
+DELETE http://localhost:3004/internal/stats/match/6c585020-b190-4f85-a1a2-e3358715d10e/participants/d200724c-2856-4319-aefa-b41a73a0a0eb
+
+
+
+##----------------------------achivements------------------------------
+@achievementId = {{$guid}}
+
+# if the type was not unique then it will not be stored
+### create achievement (new record)
+POST http://localhost:3004/internal/stats/achievements
+Content-Type: application/json
+
+{
+  "userId": "99173503-c17e-4b8c-9ec8-207157f0afbc",
+  "type": "sharp_shooter4",
+  "name": "Sharp Shooter",
+  "description": "Hit 10 accurate shots",
+  "icon": "🎯",
+  "xpReward": 100,
+  "points": 20,
+  "progress": 10,
+  "progressTarget": 10,
+  "achieved": true,
+  "meta": {
+    "weapon": "bazooka"
+  }
+}
+
+### upsert achievement (create or update by userId + type)
+POST http://localhost:3004/internal/stats/achievements/upsert
+Content-Type: application/json
+
+{
+  "userId": "a124f36d-5736-46e3-95e8-7a7e003e73e5",
+  "type": "sharp_shooter 2334",
+  "name": "Sharp Shooter werwerwer",
+  "progress": 12,
+  "progressTarget": 10,
+  "achieved": true
+}
+
+### get all achievements
+GET http://localhost:3004/internal/stats/achievements
+
+### get achievement by id
+GET http://localhost:3004/internal/stats/achievements/{{achievementId}}
+
+### get achievements by user id
+GET http://localhost:3004/internal/stats/achievements/user/99173503-c17e-4b8c-9ec8-207157f0afbc
+
+### update achievement by id
+PATCH http://localhost:3004/internal/stats/achievements/27e190ba-972b-4af1-9f6c-da2bb4013335
+Content-Type: application/json
+
+{
+  "name": "Sharp Shooter II",
+  "points": 25,
+  "progress": 15,
+  "achieved": true
+}
+
+### delete achievement by id
+DELETE http://localhost:3004/internal/stats/achievements/27e190ba-972b-4af1-9f6c-da2bb4013335

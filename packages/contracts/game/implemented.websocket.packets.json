@@ -1,0 +1,347 @@
+{
+  "transport": {
+    "library": "socket.io",
+    "path": "/socket.io/",
+    "clientToServerEvent": "msgToServer",
+    "serverToClientEvent": "msgToClient",
+    "encoding": "JSON string payload on the game socket",
+    "serverBroadcast": "The current EventSocket emits every msgToClient packet through server.emit, so packets are broadcast to all connected sockets rather than addressed to one player."
+  },
+  "sharedShapes": {
+    "clientServerBase": {
+      "lobbyId": 0,
+      "userId": "user-uuid"
+    },
+    "serverClientBase": {
+      "lobbyId": 0,
+      "seq": [1]
+    },
+    "pointData": {
+      "x": 0,
+      "y": 0
+    },
+    "aimStateId": {
+      "AimAngle": 0,
+      "PianoPickPosition": 1,
+      "PickPosition": 2,
+      "SwitchTargetAngle": 3
+    },
+    "gameState": {
+      "GAME_PENDING": 0,
+      "GAME_LOADING": 1,
+      "GAME_START": 2,
+      "ROUND_START": 3,
+      "TURN_START": 4,
+      "PICK_WORM": 5,
+      "MOVEMENT": 6,
+      "AIMING": 7,
+      "TURN_END": 8,
+      "GAME_END": 9
+    }
+  },
+  "clientToServer": [
+    {
+      "type": "CS_JoinLobby",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "userName": "Player"
+    },
+    {
+      "type": "CS_ReadyChange",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "ready": true
+    },
+    {
+      "type": "CS_LoadingProgress",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "percentage": 50,
+      "msg": "Loaded weapons"
+    },
+    {
+      "type": "CS_FinishedLoading",
+      "lobbyId": 0,
+      "userId": "user-uuid"
+    },
+    {
+      "type": "CS_FailedLoading",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "msg": "Asset failed to load"
+    },
+    {
+      "type": "CS_GetGameState",
+      "lobbyId": 0,
+      "userId": "user-uuid"
+    },
+    {
+      "type": "CS_RequestChangeGameState",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "state": 8
+    },
+    {
+      "type": "CS_WormChosen",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "wormId": 0
+    },
+    {
+      "type": "CS_WeaponChosen",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "id": 0
+    },
+    {
+      "type": "CS_AimAngle",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "angle": 0
+    },
+    {
+      "type": "CS_AimTargetAngle",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "angle": 0
+    },
+    {
+      "type": "CS_AimMoveTarget",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "point": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "CS_SwitchAimState",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "entering": true,
+      "stateId": 1
+    },
+    {
+      "type": "CS_CancelAiming",
+      "lobbyId": 0,
+      "userId": "user-uuid"
+    },
+    {
+      "type": "CS_EndAimState",
+      "lobbyId": 0,
+      "userId": "user-uuid",
+      "wormAngle": 0,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "targetAngle": 0,
+      "force": 0
+    }
+  ],
+  "serverToClient": [
+    {
+      "type": "SC_StartLobby",
+      "lobbyId": 0,
+      "seq": [1]
+    },
+    {
+      "type": "SC_StartLoading",
+      "lobbyId": 0,
+      "seq": [2]
+    },
+    {
+      "type": "SC_StartGame",
+      "lobbyId": 0,
+      "seq": [3]
+    },
+    {
+      "type": "SC_GameFinished",
+      "lobbyId": 0,
+      "seq": [4]
+    },
+    {
+      "type": "SC_ConnectSuccess",
+      "lobbyId": 0,
+      "seq": [5],
+      "userId": "user-uuid"
+    },
+    {
+      "type": "SC_ConnectFail",
+      "lobbyId": 0,
+      "seq": [6],
+      "userId": "user-uuid",
+      "msg": "Cannot join full Lobby"
+    },
+    {
+      "type": "SC_ClientDisconnect",
+      "lobbyId": 0,
+      "seq": [7],
+      "userId": "user-uuid"
+    },
+    {
+      "type": "SC_LobbyData",
+      "lobbyId": 0,
+      "seq": [8],
+      "lobbyData": [
+        {
+          "id": "user-uuid",
+          "name": "Player",
+          "slot": 0,
+          "color": "text-red-600",
+          "ready": false,
+          "loading": {
+            "progress": 0,
+            "msg": "",
+            "done": false,
+            "failed": false
+          }
+        }
+      ]
+    },
+    {
+      "type": "SC_ReadyChange",
+      "lobbyId": 0,
+      "seq": [9],
+      "userId": "user-uuid",
+      "ready": true
+    },
+    {
+      "type": "SC_FinishedLoading",
+      "lobbyId": 0,
+      "seq": [10],
+      "userId": "user-uuid"
+    },
+    {
+      "type": "SC_FailedLoading",
+      "lobbyId": 0,
+      "seq": [11],
+      "userId": "user-uuid",
+      "msg": "Failed loading"
+    },
+    {
+      "type": "SC_LoadingProgress",
+      "lobbyId": 0,
+      "seq": [12],
+      "progress": 50,
+      "msg": "Loaded weapons"
+    },
+    {
+      "type": "SC_DEV_GameState",
+      "lobbyId": 0,
+      "seq": [13],
+      "gameState": 7
+    },
+    {
+      "type": "SC_GameData",
+      "lobbyId": 0,
+      "seq": [14],
+      "data": {
+        "players": [
+          {
+            "id": "user-uuid",
+            "slot": 0,
+            "name": "Player",
+            "worms": [
+              {
+                "id": 0,
+                "pos": {
+                  "x": 0,
+                  "y": 0
+                }
+              }
+            ]
+          }
+        ],
+        "map": {
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "SC_ActivePlayerChanged",
+      "lobbyId": 0,
+      "seq": [15],
+      "activeId": "user-uuid"
+    },
+    {
+      "type": "SC_WormChosen",
+      "lobbyId": 0,
+      "seq": [16],
+      "wormId": 0
+    },
+    {
+      "type": "SC_WeaponChosen",
+      "lobbyId": 0,
+      "seq": [17],
+      "id": 0
+    },
+    {
+      "type": "SC_AimAngle",
+      "lobbyId": 0,
+      "seq": [18],
+      "angle": 0
+    },
+    {
+      "type": "SC_AimTargetAngle",
+      "lobbyId": 0,
+      "seq": [19],
+      "angle": 0
+    },
+    {
+      "type": "SC_AimMoveTarget",
+      "lobbyId": 0,
+      "seq": [20],
+      "point": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "SC_SwitchAimState",
+      "lobbyId": 0,
+      "seq": [21],
+      "entering": true,
+      "stateId": 1
+    },
+    {
+      "type": "SC_CancelAiming",
+      "lobbyId": 0,
+      "seq": [22]
+    },
+    {
+      "type": "SC_ExplosionOccurs",
+      "lobbyId": 0,
+      "seq": [23],
+      "point": {
+        "x": 0,
+        "y": 0
+      },
+      "radius": 3
+    }
+  ],
+  "devOnlyClientToServer": [
+    "CS_DEV_StartLobby",
+    "CS_DEV_StartLoading",
+    "CS_DEV_StartGame",
+    "CS_DEV_StartEndscreen",
+    "CS_DEV_ButtonPress",
+    "CS_DEV_SetGameState"
+  ],
+  "notImplementedYet": [
+    "inventory packets",
+    "worm movement input/result packets",
+    "projectile simulation packets",
+    "knockback packets",
+    "damage packets",
+    "winner payload on game finished",
+    "rematch packets",
+    "per-socket/per-player targeted game sends",
+    "authoritative validation for worm ownership, weapon inventory, projectile hit, damage, and turn legality beyond active-player checks on selected packets"
+  ]
+}

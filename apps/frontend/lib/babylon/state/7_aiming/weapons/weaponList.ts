@@ -1,0 +1,34 @@
+import { Mesh, AbstractMesh } from "@babylonjs/core"
+import { AssaultRifle } from "./weaponClasses/AssaultRifle"
+import { IWeapon } from "./IWeapon"
+import { AirStrike } from "./weaponClasses/AirStrike"
+import { FallingPiano } from "./weaponClasses/FallingPiano"
+import { Meteor } from "./weaponClasses/Meteor"
+import { weaponHelper } from '../../1_loading/loadGame';
+import { msgToServerType } from "@/lib/packets/msgToServerType"
+import { StateMachine } from "../../StateMachine"
+
+/**
+ * For each Entry, call the constructor by calling the stored construction function,
+ * and giving it the specific fileName for that entry,
+ * as well as the scene, which is required for the Weapon Constructor
+ */
+type Entry<T> = {
+	instance: new (
+		mesh: Mesh, 
+		childMeshes: Array<AbstractMesh>, 
+		weaponHelper: weaponHelper,
+		machine: StateMachine,
+	) => T,
+	fileName: string,
+}
+
+/**
+ * Stores all the weapons and their file paths.
+ */
+export const weaponList: Array<Entry<IWeapon>> = [
+	{instance: AssaultRifle, fileName: "/assets/AssaultRifle2_1.obj"},
+	{instance: AirStrike, fileName: "/assets/1309 Remote Controller.obj"},
+	{instance: FallingPiano, fileName: "/assets/1309 Remote Controller.obj"},
+	{instance: Meteor, fileName: "/assets/1309 Remote Controller.obj"},
+]

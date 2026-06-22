@@ -1,37 +1,32 @@
-import { NullEngine, Scene, ArcRotateCamera, Vector3 } from 'babylonjs';
+import { NullEngine } from '@babylonjs/core';
+import { CS_GenericPacket } from '@/shared/packets/ClientServerPackets';
+import {
+  SC_Type,
+  SC_Base,
+  SC_GenericStatePacket,
+  SC_DEV_GameState,
+  SC_LobbyData,
+  SC_ClientDisconnect,
+} from '@/shared/packets/ServerClientPackets';
+import { Client, resetClient } from '@/shared/packets/Client';
+import { GameState } from '@/shared/state/GameState';
+import { Game } from '../game/Game';
+import { SeqHandler } from './lobbyUtil/SeqHandler';
+import { MessageQueue } from './lobbyUtil/MessageQueue';
+import { LobbyStateEnum } from './lobbyUtil/LobbyStateEnum';
+import { handlePackets } from './lobbyUtil/packets/handlePackets';
+import { translateLobbyState } from './lobbyUtil/translateLobbyState';
+import { log } from './lobbyUtil/log';
+import { clientFailedLoading } from './lobbyUtil/packets/clientFailedLoading';
+import { ClientManager } from './lobbyUtil/ClientManager';
 
-enum LobbyStateEnum {
-  ClosedLobby = 0,
-  OpenLobby = 1,
-  Loading = 2,
-  Game = 3,
+function newGame(lobby: Lobby) {
+  return new Game(lobby);
 }
 
-interface JsonPacket {
-  type: string,
-  timestamp: number,
-  message: string,
-}
-
-/**
- * Translates Lobby State Enum to corresponding packet type,
- * to put Client into the corresponding state
- * @param state Lobbys State
- * @returns string for Json packet type
- */
-function translateLobbyState(state: LobbyStateEnum): string
-{
-  switch (state) {
-    case LobbyStateEnum.OpenLobby:
-      return ("sc.DEV.start.lobby");
-    case LobbyStateEnum.Loading:
-      return ("sc.start.loading");
-    case LobbyStateEnum.Game:
-      return ("sc.start.game");
-  }
-  return ("sc.invalid.state");
-}
-
+const DEFAULT_MAX_WORMS_PER_PLAYER = 3;
+const DEFAULT_SELECTED_MAP = 'map1';
+const DEFAULT_IS_LOCKED = false;
 /**
  * An Object representing one Lobby, which goes through different states,
  * as our game progresses
@@ -42,14 +37,16 @@ function translateLobbyState(state: LobbyStateEnum): string
  * gameServerLoop() triggers events periodically
  */
 export class Lobby {
-  public state: LobbyStateEnum;
   public id: number;
-  public lobbyId: number;
-  private engine: NullEngine;
-  private scene: Scene;
-  private camera: ArcRotateCamera;
-  private lastTimestamp: number;
-  private msgToClient: (msg: string) => void;
+  public state: LobbyStateEnum;
+  public clientManager: ClientManager;
+  public engine: NullEngine;
+  private emitData: (msg: string) => void;
+  private seqHandler: SeqHandler;
+  public game: Game;
+  public queue: MessageQueue;
+  public maxWormsPerPlayer: number = DEFAULT_MAX_WORMS_PER_PLAYER;
+  public selectedMap: string = DEFAULT_SELECTED_MAP;
 
   /**
    * On Lobby Creation, call the constructor,
@@ -58,95 +55,155 @@ export class Lobby {
    * @param id unique number identifier for this lobby
    */
   constructor(id: number, emitData: (msg: string) => void) {
+    this.id = id;
     this.state = LobbyStateEnum.OpenLobby;
-    this.msgToClient = emitData;
-    this.lobbyId = id;
+    this.clientManager = new ClientManager([]);
+    this.emitData = emitData;
     this.engine = new NullEngine();
-    this.scene = new Scene(this.engine);
-    this.camera = new ArcRotateCamera(
-      'Camera',
-      0,
-      0.8,
-      100,
-      Vector3.Zero(),
-      this.scene,
-    );
-    this.lastTimestamp = 0;
-    this.registerLoop();
+    // Since we dont have functionality for sending packets to specific players, this feature is made to treat all players as 1
+    this.seqHandler = new SeqHandler(1);
+    this.seqHandler.registerPlayer('unused', 0);
+    // Set up game with functionality to send packets to Client
+    this.game = newGame(this);
+    // Set up Queue for reading packets synced
+    this.queue = new MessageQueue();
+
+    // Register code to execute every frame
+    this.engine.runRenderLoop(() => {
+      handlePackets(this);
+      this.game.tick();
+      this.game.scene.render();
+    });
+    console.log(`Created Lobby with ${this.id}`);
   }
 
   /**
-   * Register code that should be repeatedly executed
+   * @brief This function is used to send packets to the Client in an automated way
+   * @note Explanation of this Syntax:
+   * The function has to be called with a data type T that has the fields from SC_Base
+   * AND a type parameter with an enum value for type,
+   * or it will throw a compile time error
+   * We have 1 parameter, called type, whoose data type is the enum from the type field of the interface given to the template
+   * Then we take the rest of the fields of the given interface, except for type,
+   * and insert them into the created packet using the spread operator
+   * We specify the function returns the specified interface type and return such an object
    */
-  private registerLoop() {
-    this.engine.runRenderLoop(() => {
-      // Call the Babylon Renderer
-      this.scene.render();
+  public msgToClient<T extends SC_Base & { type: SC_Type }>(
+    type: T['type'],
+    data: Omit<T, keyof SC_Base | 'type'>,
+  ) {
+    this.seqHandler.increase();
+    const response = {
+      type: type,
+      lobbyId: this.id,
+      seq: this.seqHandler.getSeq('unused'),
+      ...data,
+    };
+    this.emitData(JSON.stringify(response));
+  }
 
-      // This is where we can register custom code
-      this.gameServerLoop();
+  /**
+   * @brief Sends packet to Client, telling them in which state the game is
+   */
+  public sendGameStatePacket() {
+    this.msgToClient<SC_DEV_GameState>(SC_Type.SC_DEV_GameState, {
+      gameState: this.game.get(),
     });
   }
 
   /**
-   * This is where we would put our code that should be run each frame (Interactions, Inputs, Timers etc.)
-   * Currently has periodic output every 5 seconds
+   * @brief Called whenever clients send to websocket with "msgToServer"
+   * @param data any Client->Server packet, holds the payload as object
    */
-  gameServerLoop() {
-    if (
-      this.state == LobbyStateEnum.Game &&
-      Date.now() > this.lastTimestamp
-    ) {
-      this.msgToClient('{"type": "sc.DEV.repeat", "msg": "5 Seconds have passed"}');
-      this.lastTimestamp = Date.now() + 5000;
+  msgToServer(data: CS_GenericPacket) {
+    this.queue.write(data);
+  }
+
+  /**
+   * Change state of Lobby, automatically tells Clients to change as well
+   * @param newState New State to set Lobby to
+   */
+  setState(newState: LobbyStateEnum) {
+    //if (this.state == newState) return;
+    this.state = newState;
+
+    // Send Packet telling Client the new Lobby state to load
+    this.msgToClient<SC_GenericStatePacket>(translateLobbyState(newState), {});
+
+    // Reset Clients Loading progress and readiness
+    this.clientManager.resetClients();
+
+    if (this.state == LobbyStateEnum.Loading) {
+      this.game.setState(GameState.GAME_LOADING);
+    }
+    if (this.state == LobbyStateEnum.Game) {
+      this.game.setState(GameState.GAME_START);
+    }
+    // When Game ends, restart with new Game
+    if (this.state == LobbyStateEnum.EndScreen) {
+      this.game.dispose();
+      this.game = newGame(this);
+      this.state = LobbyStateEnum.OpenLobby;
+      this.clientManager = new ClientManager([]);
     }
   }
 
   /**
-   * @brief Called whenever clients send to websocket with "msgToServer"
-   * @param raw_data string in json format sent on the socket
+   * @brief Called by the LobbyManager when a user's websocket connection is lost
+   * @param userId ID of the player who disconnected
    */
-  msgToServer(raw_data: string) {
-    const data: JsonPacket = JSON.parse(raw_data);
-    let response: JsonPacket = {type: "", timestamp: 0, message: ""};
+  public handleDisconnect(userId: string) {
+    // Find player to disconnect
+    const playerIndex = this.clientManager.getIndex(userId);
+    if (playerIndex == -1) {
+      return;
+    }
+    const clientId = this.clientManager.clients[playerIndex].id;
 
-    // Most of theese should be removed later, 
-    // only exists to move through game and lobby states as developer
+    // Remove the player from the lobby list
+    this.clientManager.remove(userId);
 
-    // Client wants to connect, so send them the current state to display
-    if (data.type == "cs.connection.attempt") {
-      response.type = translateLobbyState(this.state);
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Lobby
-    else if (data.type == "cs.DEV.start.lobby") {
-      response.type = "sc.DEV.start.lobby"
-      this.state = LobbyStateEnum.OpenLobby;
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Loading
-    else if (data.type == "cs.DEV.start.loading") {
-      response.type = "sc.start.loading";
-      this.state = LobbyStateEnum.Loading;
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Game
-    else if (data.type == "cs.DEV.start.game") {
-      response.type = "sc.start.game";
-      this.state = LobbyStateEnum.Game;
-    }
-    // DEV mode, should be removed late, Client commands state to be set to Lobby after game ends
-    else if (data.type == "cs.DEV.start.endscreen") {
-      response.type = "sc.game.finished";
-      this.state = LobbyStateEnum.OpenLobby;
-    }
-    // For the button to send to Server, just send back a copy
-    else if (data.type == 'cs.DEV.buttonPress') {
-      response.type = "sc.DEV.buttonPress";
-      response.timestamp = data.timestamp;
-      response.message = data.message;
-    }
+    switch (this.state) {
+      case LobbyStateEnum.OpenLobby: {
+        this.msgToClient<SC_ClientDisconnect>(SC_Type.SC_ClientDisconnect, {
+          userId: userId,
+        });
+        // Sending Disconnect should be enough on its own to disconnect a player,
+        // this is just insurance to keep lobbies synced
+        this.msgToClient<SC_LobbyData>(SC_Type.SC_LobbyData, {
+          lobbyData: this.clientManager.clients,
+        });
+        break;
+      }
 
-    // If Response set, send it out
-    if (response.type != "") {
-      this.msgToClient(JSON.stringify(response));
+      // On Disconnection during Loading, complain about player to Clients and go back to Lobby
+      case LobbyStateEnum.Loading: {
+        clientFailedLoading(
+          this,
+          clientId,
+          `Failed Loading, Client ${userId} disconnected`,
+        );
+        break;
+      }
+
+      // When Disconnection happens during Game, skip to end (which resets Lobby)
+      case LobbyStateEnum.Game: {
+        if (this.clientManager.clients.length == 0) {
+          log(`Last Client ${clientId} disconnected, restarting game`);
+          this.setState(LobbyStateEnum.EndScreen);
+        }
+      }
     }
+  }
+
+  handleUpdateSettingsPacket(maxWorms: number | undefined, mapType: string | undefined) {
+    if (maxWorms)
+      this.maxWormsPerPlayer = maxWorms;
+    if (mapType)
+      this.selectedMap = mapType;
+  };
+
+  dispose() {
+    this.engine.dispose();
   }
 }

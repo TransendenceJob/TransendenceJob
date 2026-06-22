@@ -1,6 +1,10 @@
 {
-	"type": "sc.focus.worm",
-	"matchId": 0,
-	"wormId": 0,
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_WormChosen",
+  "lobbyId": 0,
+  "seq": [1],
+  "wormId": 0,
+  "notes": "This is the implemented focus/selection signal. It is emitted after CS_WormChosen and causes the frontend turn state to store the chosen worm."
 }

@@ -3,6 +3,7 @@ import { AuthSuccessResponseDto } from '../dto/auth-success-response.dto';
 import { LogoutResponseDto } from '../dto/logout-response.dto';
 import { RefreshResponseDto } from '../dto/refresh-response.dto';
 import { RevokeSessionsResponseDto } from '../dto/revoke-sessions-response.dto';
+import { UserEnabledResponseDto } from '../dto/user-enabled-response.dto';
 import { UserDisabledResponseDto } from '../dto/user-disabled-response.dto';
 import { UserRolesResponseDto } from '../dto/user-roles-response.dto';
 import { VerifyResponseDto } from '../dto/verify-response.dto';
@@ -19,6 +20,7 @@ import { VerifyClaimsViewModel } from '../view-models/verify-claims.view-model';
 type UserWithRelations = {
   id: string;
   email: string;
+  username?: string | null;
   status: string;
   createdAt?: Date | null;
   roles: Array<{ role: { name: string } }>;
@@ -128,7 +130,7 @@ export class AuthContractMapper {
       id: user.id,
       email: user.email,
       displayName: null,
-      username: null,
+      username: user.username ?? null,
       status: this.toUserStatusDto(user.status),
       roles: user.roles.map((entry) => this.toUserRoleDto(entry.role.name)),
       createdAt: user.createdAt?.toISOString() ?? null,
@@ -233,6 +235,13 @@ export class AuthContractMapper {
       userId,
       status: UserStatusDto.DISABLED,
       revokedSessions,
+    };
+  }
+
+  static toUserEnabledResponse(userId: string): UserEnabledResponseDto {
+    return {
+      userId,
+      status: UserStatusDto.ACTIVE,
     };
   }
 

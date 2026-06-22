@@ -1,0 +1,35 @@
+import { z } from 'zod';
+
+const baseSchema = z.object({
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+
+  AUTH_SERVICE_URL: z.string().url().default('http://auth_service:3000'),
+  SOCIAL_SERVICE_URL: z.string().url().default('http://social_service:3000'),
+  STATS_SERVICE_URL: z.string().url().default('http://stats_service:3000'),
+
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_REDIRECT_URI: z.string().url(),
+  GOOGLE_STATE_SECRET: z.string().min(16),
+  GOOGLE_FRONTEND_CALLBACK_URL: z.string().url(),
+
+  SERVICE_NAME: z.string().min(1).default('bff'),
+});
+
+export type ValidatedEnv = z.infer<typeof baseSchema>;
+
+export function validateEnv(config: Record<string, unknown>): ValidatedEnv {
+  const parsed = baseSchema.safeParse(config);
+
+  if (!parsed.success) {
+    const errors = parsed.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('\n');
+
+    throw new Error(`Invalid environment configuration:\n${errors}`);
+  }
+
+  return parsed.data;
+}

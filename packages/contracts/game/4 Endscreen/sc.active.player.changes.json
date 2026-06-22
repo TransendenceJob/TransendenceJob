@@ -1,13 +1,10 @@
 {
-	"type": "sc.endscreen.data",
-	"matchId": 0,
-	"winnerId": 0,
-	"round": 0,
-	"worms": [
-		{
-			"wormId": 0,
-			"health": 100
-		}
-	],
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_ActivePlayerChanged",
+  "lobbyId": 0,
+  "seq": [1],
+  "activeId": "user-uuid",
+  "notes": "Same implemented packet as start-of-turn active player change. The current EndScreen flow resets the lobby immediately, so this is not endscreen-specific."
 }

@@ -60,9 +60,7 @@ describe('AuthProviderRepository', () => {
         provider: 'GOOGLE',
         providerUserId: 'google-uid',
       },
-      update: {
-        userId: 'u1',
-      },
+      update: {},
     });
   });
 

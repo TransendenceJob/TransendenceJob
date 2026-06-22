@@ -1,4 +1,4 @@
-name : TransendenceJob
+name : transendence_job
 
 
 services:
@@ -22,6 +22,29 @@ services:
       retries: 20
     networks: [backend]
     logging :
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  postgres_auth_test:
+    image: postgres:16-alpine
+    container_name: postgres_auth_test
+    environment:
+      POSTGRES_USER: ${AUTH_TEST_DB_USER:-auth_test}
+      POSTGRES_PASSWORD: ${AUTH_TEST_DB_PASSWORD:-auth_test}
+      POSTGRES_DB: ${AUTH_TEST_DB_NAME:-auth_test_db}
+    ports:
+      - "${AUTH_TEST_DB_PORT:-5437}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+    logging:
       driver: "json-file"
       options:
         max-size: "10m"
@@ -196,6 +219,31 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ---------- Observability: Grafana community dashboard imports ----------
+  grafana_dashboard_importer:
+    profiles: ["obs"]
+    image: python:3.12-alpine
+    container_name: grafana_dashboard_importer
+    environment:
+      GRAFANA_URL: http://grafana:3000
+      GRAFANA_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GRAFANA_COMMUNITY_DASHBOARDS: /opt/grafana/community-dashboards.json
+    volumes:
+      - ../infra/observability/grafana/community-dashboards.json:/opt/grafana/community-dashboards.json:ro
+      - ../infra/observability/grafana/import-community-dashboards.py:/opt/grafana/import-community-dashboards.py:ro
+    command: ["python", "/opt/grafana/import-community-dashboards.py"]
+    depends_on:
+      grafana:
+        condition: service_healthy
+    networks: [backend]
+    restart: "no"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # ---------- Exporter: Redis ----------
   redis_exporter:
     profiles: ["obs"]
@@ -340,4 +388,3 @@ volumes:
   rabbitmq_data:
   prometheus_data:
   grafana_data:
-

@@ -40,7 +40,7 @@ export class GoogleExchangeRequestDto {
   idToken?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false, require_protocol: true, require_host: true })
   redirectUri?: string;
 
   @Validate(GoogleExchangeOrderOneOfValidator)

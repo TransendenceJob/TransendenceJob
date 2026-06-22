@@ -10,7 +10,6 @@ FROM node:20-alpine AS development
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
 
 ENV NODE_ENV=development
 ENV PORT=3000
@@ -18,6 +17,12 @@ ENV PORT=3000
 EXPOSE 3000
 EXPOSE 9229
 
+
+# Please keep in mind, that the Bind Mount will overwrite this file with its old permissions at the start of runtime
+COPY ./scripts /app/scripts
+RUN chmod +x /app/scripts/prismarun.sh
+
+ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
 CMD ["npm", "run", "start:debug"]
 
 # ---------- build ----------
@@ -28,7 +33,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NODE_ENV=production
-RUN npm run build
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5436/placeholder?schema=public
+RUN ./node_modules/.bin/prisma generate && npm run build
 
 # ---------- production ----------
 FROM node:20-alpine AS production
@@ -41,7 +47,12 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
+COPY ./scripts ./scripts
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+RUN chmod +x /app/scripts/prismarun.sh
+ENTRYPOINT ["sh","/app/scripts/prismarun.sh"]
+CMD ["node", "dist/src/main.js"]

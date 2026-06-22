@@ -1,4 +1,5 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import axios from 'axios';
 import { UserRepository } from '../../persistence/repositories/user.repository';
 import { RoleRepository } from '../../persistence/repositories/role.repository';
 import { SessionRepository } from '../../persistence/repositories/session.repository';
@@ -25,6 +26,7 @@ type CreatedRegisterData = {
   user: {
     id: string;
     email: string;
+    username: string | null;
     status: string;
     createdAt: Date;
   };
@@ -37,6 +39,7 @@ type CreatedRegisterData = {
 
 @Injectable()
 export class AuthRegisterService {
+  private readonly logger = new Logger(AuthRegisterService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly users: UserRepository,
@@ -53,11 +56,14 @@ export class AuthRegisterService {
     input: RegisterRequestDto,
     context: RegisterContext,
   ): Promise<AuthSuccessResponseDto> {
-    await this.rateLimit.ensureRegisterAllowed({
+    const registerRateLimitInput = {
       email: input.email,
       ip: context.ip,
-    });
+    } satisfies Parameters<AuthRateLimitService['ensureRegisterAllowed']>[0];
+
+    await this.rateLimit.ensureRegisterAllowed(registerRateLimitInput);
     await this.ensureEmailAvailable(input.email);
+    await this.ensureUsernameAvailable(input.username);
     const passwordHash = await this.passwordHashService.hashPassword(
       input.password,
     );
@@ -73,6 +79,15 @@ export class AuthRegisterService {
 
       await this.cacheRegisteredSession(created, context);
 
+      // Initialize player stats in stats service (best-effort)
+      try {
+        await this.initPlayerStats(created.user, input);
+      } catch (err) {
+        this.logger.warn(
+          `Failed to initialize stats for user=${created.user.id}: ${err?.message ?? err}`,
+        );
+      }
+
       const accessToken = await this.tokenIssue.issueAccessToken({
         userId: created.user.id,
         email: created.user.email,
@@ -86,7 +101,12 @@ export class AuthRegisterService {
         accessToken,
       );
     } catch (error) {
-      if (this.isEmailUniqueViolation(error)) {
+      if (this.isUniqueViolation(error)) {
+        const target = this.getUniqueViolationTarget(error);
+        if (target === 'username') {
+          throw new ConflictException('Username already exists');
+        }
+
         throw new ConflictException('Email already exists');
       }
 
@@ -101,22 +121,36 @@ export class AuthRegisterService {
     }
   }
 
+  private async ensureUsernameAvailable(username?: string): Promise<void> {
+    if (!username) {
+      return;
+    }
+
+    const existingUser = await this.users.findByUsername(username);
+    if (existingUser) {
+      throw new ConflictException('Username already exists');
+    }
+  }
+
   private async createRegisteredUser(
     input: RegisterRequestDto,
     passwordHash: string,
     refreshPair: { refreshTokenHash: string; expiresAt: Date },
     context: RegisterContext,
   ): Promise<CreatedRegisterData> {
-    return await this.prisma.$transaction(async (db) => {
+    return this.prisma.$transaction(async (db) => {
       const user = await this.users.createLocalUser(
         {
           email: input.email,
+          username: input.username ?? null,
           passwordHash,
         },
         db,
       );
 
       await this.roles.assignRoleToUser(user.id, DEFAULT_USER_ROLE, db);
+
+      const activeUser = await this.users.enableUser(user.id, db);
 
       const session = await this.sessions.createSession(
         {
@@ -145,12 +179,13 @@ export class AuthRegisterService {
         db,
       );
 
-      const createdRegisterData = {
+      return {
         user: {
-          id: user.id,
-          email: user.email,
-          status: user.status,
-          createdAt: user.createdAt,
+          id: activeUser.id,
+          email: activeUser.email,
+          username: activeUser.username ?? null,
+          status: activeUser.status,
+          createdAt: activeUser.createdAt,
         },
         session: {
           id: session.id,
@@ -158,8 +193,6 @@ export class AuthRegisterService {
           revokedAt: null,
         },
       } satisfies CreatedRegisterData;
-
-      return createdRegisterData;
     });
   }
 
@@ -191,6 +224,7 @@ export class AuthRegisterService {
       user: {
         id: created.user.id,
         email: created.user.email,
+        username: created.user.username,
         status: created.user.status,
         createdAt: created.user.createdAt,
         roles: [{ role: { name: DEFAULT_USER_ROLE } }],
@@ -206,7 +240,7 @@ export class AuthRegisterService {
     });
   }
 
-  private isEmailUniqueViolation(error: unknown): boolean {
+  private isUniqueViolation(error: unknown): boolean {
     if (typeof error !== 'object' || error === null) {
       return false;
     }
@@ -217,10 +251,55 @@ export class AuthRegisterService {
     }
 
     const target = maybeError.meta?.target;
-    if (Array.isArray(target)) {
-      return target.some((entry) => String(entry) === 'email');
+    return Array.isArray(target)
+      ? target.some(
+          (entry) => String(entry) === 'email' || String(entry) === 'username',
+        )
+      : false;
+  }
+
+  private getUniqueViolationTarget(error: unknown): string | null {
+    if (typeof error !== 'object' || error === null) {
+      return null;
     }
 
-    return false;
+    const target = (error as { meta?: { target?: unknown } }).meta?.target;
+    if (!Array.isArray(target)) {
+      return null;
+    }
+
+    const normalizedTarget = target.map((entry) => String(entry));
+    if (normalizedTarget.includes('username')) {
+      return 'username';
+    }
+
+    if (normalizedTarget.includes('email')) {
+      return 'email';
+    }
+
+    return null;
+  }
+
+  private async initPlayerStats(
+    user: CreatedRegisterData['user'],
+    input: RegisterRequestDto,
+  ): Promise<void> {
+    const payload: Record<string, unknown> = {
+      userId: user.id,
+      xp: 50,
+      level: 1,
+      wins: 0,
+      losses: 0,
+      kills: 0,
+      deaths: 0,
+      // stats service DTO rejects profile fields; send only stats fields
+    };
+
+    const url = 'http://stats_service:3000/internal/stats/user';
+
+    await axios.post(url, payload, {
+      headers: { 'x-service-name': 'auth_service' },
+      timeout: 2000,
+    });
   }
 }

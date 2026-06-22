@@ -55,9 +55,11 @@ export class AuthRefreshService {
     context: RefreshContext,
   ): Promise<RefreshResponseDto> {
     try {
-      await this.rateLimit.ensureRefreshAllowed({
+      const refreshRateLimitInput = {
         ip: context.ip,
-      });
+      } satisfies Parameters<AuthRateLimitService['ensureRefreshAllowed']>[0];
+
+      await this.rateLimit.ensureRefreshAllowed(refreshRateLimitInput);
 
       const refreshTokenHash = this.refreshTokens.hashRefreshToken(
         input.refreshToken,
@@ -105,22 +107,21 @@ export class AuthRefreshService {
             throw new UnauthorizedException('Invalid refresh token');
           }
 
-          await this.auditLogs.createEvent(
-            {
-              action: 'REFRESH_SUCCEEDED',
-              userId: session.userId,
-              actorUserId: session.userId,
-              ip: context.ip ?? null,
-              userAgent: context.userAgent ?? null,
-              metadataJson: {
-                source: 'internal/auth/refresh',
-                requestId: context.requestId ?? null,
-                serviceName: context.serviceName ?? null,
-                sessionId: session.id,
-              },
+          const refreshSucceededAudit = {
+            action: 'REFRESH_SUCCEEDED',
+            userId: session.userId,
+            actorUserId: session.userId,
+            ip: context.ip ?? null,
+            userAgent: context.userAgent ?? null,
+            metadataJson: {
+              source: 'internal/auth/refresh',
+              requestId: context.requestId ?? null,
+              serviceName: context.serviceName ?? null,
+              sessionId: session.id,
             },
-            db,
-          );
+          } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+          await this.auditLogs.createEvent(refreshSucceededAudit, db);
 
           const refreshResult = {
             user: {
@@ -141,7 +142,7 @@ export class AuthRefreshService {
         },
       );
 
-      await this.sessionCache.cacheSession({
+      const cacheSessionInput = {
         session: {
           id: refreshed.session.id,
           expiresAt: refreshed.session.expiresAt,
@@ -153,16 +154,22 @@ export class AuthRefreshService {
         roles: refreshed.roles,
         requestId: context.requestId,
         serviceName: context.serviceName,
-      });
+      } satisfies Parameters<AuthSessionCacheService['cacheSession']>[0];
 
-      const accessToken = await this.tokenIssue.issueAccessToken({
+      await this.sessionCache.cacheSession(cacheSessionInput);
+
+      const issueAccessTokenInput = {
         userId: refreshed.user.id,
         email: refreshed.user.email,
         roles: refreshed.roles,
         sessionId: refreshed.session.id,
-      });
+      } satisfies Parameters<AuthTokenIssueService['issueAccessToken']>[0];
 
-      return AuthContractMapper.toRefreshResponse({
+      const accessToken = await this.tokenIssue.issueAccessToken(
+        issueAccessTokenInput,
+      );
+
+      const refreshResponseInput = {
         session: refreshed.session,
         tokens: {
           accessToken,
@@ -170,10 +177,12 @@ export class AuthRefreshService {
           expiresIn: this.tokenIssue.accessTokenExpiresInSeconds(),
           tokenType: 'Bearer',
         },
-      });
+      } satisfies Parameters<typeof AuthContractMapper.toRefreshResponse>[0];
+
+      return AuthContractMapper.toRefreshResponse(refreshResponseInput);
     } catch (error) {
       if (this.isTooManyRequests(error)) {
-        await this.auditLogs.createEvent({
+        const refreshFailedAudit = {
           action: 'REFRESH_FAILED',
           ip: context.ip ?? null,
           userAgent: context.userAgent ?? null,
@@ -183,7 +192,9 @@ export class AuthRefreshService {
             serviceName: context.serviceName ?? null,
             reason: 'rate_limited',
           },
-        });
+        } satisfies Parameters<AuditLogRepository['createEvent']>[0];
+
+        await this.auditLogs.createEvent(refreshFailedAudit);
       }
 
       throw error;

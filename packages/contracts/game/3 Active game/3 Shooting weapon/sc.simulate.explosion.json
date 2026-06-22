@@ -1,7 +1,14 @@
 {
-    "type": "sc.simulate.explosion",
-    "matchId": 0,
-    "position": [0.0, 0.0],
-    "size": 0,
-    "seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_ExplosionOccurs",
+  "lobbyId": 0,
+  "seq": [1],
+  "point": {
+    "x": 0,
+    "y": 0
+  },
+  "radius": 3,
+  "notes": "Emitted after CS_EndAimState. Today this only deforms terrain on clients during TURN_END; damage/knockback/projectile simulation are not authoritative yet."
 }

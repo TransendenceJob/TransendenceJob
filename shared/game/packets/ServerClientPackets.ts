@@ -1,0 +1,421 @@
+// import * from 'ServerClientPackets.ts';
+
+/**
+ * ADDING A NEW PACKET
+ * 1) Create an enum in the SC_Type table
+ * 2) Create an interface based on the existing schema
+ * 	1] Name should be SC_ and then CamelCase what its for
+ * 	2] Should inherit from SC_Base
+ * 	3] It should have a type parameter, which will be the enum from 1)
+ * 3) Add the interface name into the union type at the end
+*/
+
+import { aimStateId, endOfTurnData, explosionData, gameData, pointData } from './util';
+import { Client } from './Client';
+
+export enum SC_Type {
+	SC_DEV_StartConnecting =	"SC_DEV_StartConnecting",
+	SC_InvalidState =			"SC_InvalidState",
+	SC_StartLobby =				"SC_StartLobby",
+	SC_ConnectFail =			"SC_ConnectFail",
+	SC_ConnectSuccess =			"SC_ConnectSuccess",
+	SC_ClientDisconnect =		"SC_ClientDisconnect",
+	SC_ClientJoin =				"SC_ClientJoin",
+	SC_LobbyData =				"SC_LobbyData",
+	SC_ReadyChange =			"SC_ReadyChange",
+	SC_StartLoading = 			"SC_StartLoading",
+	SC_FinishedLoading =		"SC_FinishedLoading",
+	SC_FailedLoading =			"SC_FailedLoading",
+	SC_LoadingProgress =		"SC_LoadingProgress",
+	SC_StartGame =				"SC_StartGame",
+	SC_GameData =				"SC_GameData",
+	SC_GameFinished =			"SC_GameFinished",
+	SC_DEV_ButtonPress =		"SC_DEV_ButtonPress",
+	SC_DEV_Periodic =			"SC_DEV_Periodic",
+	SC_DEV_GameState =			"SC_DEV_GameState",
+	SC_ActivePlayerChanged =	"SC_ActivePlayerChanged",
+	SC_WormChosen =				"SC_WormChosen",
+	SC_WeaponChosen =			"SC_WeaponChosen",
+	SC_AimAngle =				"SC_AimAngle",
+	SC_AimMoveTarget =			"SC_AimMoveTarget",
+	SC_ExplosionOccurs =		"SC_ExplosionOccurs",
+	SC_SwitchAimState =			"SC_SwitchAimState",
+	SC_AimTargetAngle =			"SC_AimTargetAngle",
+	SC_CancelAiming =			"SC_CancelAiming",
+	SC_TurnEnds =				"SC_TurnEnds",
+	SC_WormPosition =			"SC_WormPosition",
+	SC_DEV_KillRandomWorm =		"SC_DEV_KillRandomWorm",
+	SC_WinningPlayer =			"SC_WinningPlayer",
+	SC_LobbySettingsUpdate = "SC_LobbySettingsUpdate",
+}
+
+// Packets that should definitely not show up in logging
+// (likely because they are sent every tick)
+export const hideServerPackets: Array<SC_Type> = [
+	SC_Type.SC_AimAngle,
+	SC_Type.SC_AimMoveTarget,
+	SC_Type.SC_WormPosition,
+]
+
+// Packets that should be considered "handled" by BabylonJs
+export const frontendServerPackets: Array<SC_Type> = [
+	SC_Type.SC_ConnectSuccess,
+	SC_Type.SC_LobbyData,
+	SC_Type.SC_DEV_StartConnecting,
+	SC_Type.SC_InvalidState,
+	SC_Type.SC_StartLobby,
+	SC_Type.SC_ConnectFail,
+	SC_Type.SC_ReadyChange,
+	SC_Type.SC_StartLoading,
+	SC_Type.SC_StartGame,
+	SC_Type.SC_GameFinished,
+	SC_Type.SC_WinningPlayer,
+	SC_Type.SC_LobbySettingsUpdate,
+]
+
+/**
+ * Fields used in ALL packets:
+ * @param type: SC_Type enum as string to identify package
+ * @param lobbyId identifying number for which lobby this packet is meant
+ * @param seq Array that specifies the id of the packets sent out before this one
+ */
+export interface SC_Base {
+	lobbyId: number,
+	seq: Array<number>,
+}
+
+// CONNECTION =================================================================
+
+/**
+ * Sent when clients should go back to connecting phase
+ */
+export interface SC_DEV_StartConnecting extends SC_Base {
+	type: SC_Type.SC_DEV_StartConnecting,
+}
+
+/**
+ * Sent when server reached invalid state
+ */
+export interface SC_InvalidState extends SC_Base {
+	type: SC_Type.SC_InvalidState,
+}
+
+/**
+ * Sent so Clients move to Lobby state
+ */
+export interface SC_StartLobby extends SC_Base {
+	type: SC_Type.SC_StartLobby,
+}
+
+// LOBBY ======================================================================
+
+/**
+ * Response from a Server, when a ConnectAttempt is sent,
+ * and the Server refuses access to the lobby
+ * @param msg specifies Reason why Client was rejeced
+ */
+export interface SC_ConnectFail extends SC_Base {
+	type: SC_Type.SC_ConnectFail,
+	userId: string,
+	msg: string,
+}
+
+/**
+ * Response from a Server, when a ConnectAttempt is sent,
+ * and the Server accepts the connection to the lobby
+ * @param userId Id to identify this player
+ */
+export interface SC_ConnectSuccess extends SC_Base {
+	type: SC_Type.SC_ConnectSuccess,
+	userId: string,
+}
+
+/**
+ * Sent to all clients when a player disconnects the lobby,
+ * to inform Client to un-render player
+ * @param userId Id to identify the disconnecting player
+ */
+export interface SC_ClientDisconnect extends SC_Base {
+	type: SC_Type.SC_ClientDisconnect,
+	userId: string,
+}
+
+// TODO: Link a player who joins to an existing account from our database,
+// so we can associate some name with it
+
+/**
+ * Sent to all clients when a new player joins the lobby,
+ * to inform Client to render new player
+ * @param userId Id to identify the joining player
+ * @param userName The name of the player joining
+ */
+export interface SC_ClientJoin extends SC_Base {
+	type: SC_Type.SC_ClientJoin,
+	clientData: Client;
+}
+
+/**
+ * Sent to all clients when a new player joins the lobby,
+ * to inform Client to render new player
+ * @param userId Id to identify the joining player
+ * @param lobbyData Array of information about all the players in a lobby
+ */
+export interface SC_LobbyData extends SC_Base {
+	type: SC_Type.SC_LobbyData,
+	lobbyData: Array<Client>,
+}
+
+/**
+ * Sent to inform other users of client changing readiness state
+ * @param userId Id of the relevant user
+ * @param ready New state the user arrived at
+ */
+export interface SC_ReadyChange extends SC_Base {
+	type: SC_Type.SC_ReadyChange,
+	userId: string,
+	ready: boolean,
+}
+
+/**
+ * Sent so Clients move to Loading state
+ */
+export interface SC_StartLoading extends SC_Base {
+	type: SC_Type.SC_StartLoading,
+}
+
+/**
+ * Sent to all clients when the host updates the configuration parameters
+ */
+export interface SC_LobbySettingsUpdate extends SC_Base {
+	type: SC_Type.SC_LobbySettingsUpdate,
+	maxWormsPerPlayer: number | undefined,
+	selectedMap: string | undefined,
+}
+
+// LOADING ====================================================================
+
+/**
+ * Sent when a user or the server finished loading
+ * @param userId Id of the relevant user
+ */
+export interface SC_FinishedLoading extends SC_Base {
+	type: SC_Type.SC_FinishedLoading,
+	userId: string,
+}
+
+/**
+ * Sent when a user or the server failed loading
+ * @param userId Id of the relevant user, 0 = server
+ * @param msg Reason why loading failed
+ */
+export interface SC_FailedLoading extends SC_Base {
+	type: SC_Type.SC_FailedLoading,
+	userId: string,
+	msg: string,
+}
+
+/**
+ * Sent when a user or the server failed loading
+ * @param progress Number from 0 to 100 about how finished the loading is
+ * @param msg Optional text about the loading step that was last acomplished
+ */
+export interface SC_LoadingProgress extends SC_Base {
+	type: SC_Type.SC_LoadingProgress,
+	progress: number,
+	msg: string,
+}
+
+/**
+ * Sent when loading has finished for all parties, 
+ * so clients move to Game state
+ */
+export interface SC_StartGame extends SC_Base {
+	type: SC_Type.SC_StartGame,
+}
+
+// GAME =======================================================================
+
+/**
+ * Sent when game has finished so clients move to Endscreen
+ */
+export interface SC_GameFinished extends SC_Base {
+	type: SC_Type.SC_GameFinished,
+}
+
+/**
+ * DEV packet, should be removed later, only exists for the button proxy example
+ * Sent when server proxies back the clients button press
+ * @param timestamp Timestamp when press occured
+ * @param msg string that specifies how many times button pressed
+ */
+export interface SC_DEV_ButtonPress extends SC_Base {
+	type: SC_Type.SC_DEV_ButtonPress,
+	timestamp: number,
+	msg: string,
+}
+
+/**
+ * DEV packet, should be removed later, only exists for the button proxy example
+ * Sent every few seconds periodically
+ * @param msg string that specifies time passed
+ */
+export interface SC_DEV_Periodic extends SC_Base {
+	type: SC_Type.SC_DEV_Periodic,
+	msg: string,
+}
+
+/**
+ * DELETE ME DEBUG ONLY
+ */
+export interface SC_DEV_GameState extends SC_Base {
+	type: SC_Type.SC_DEV_GameState,
+	gameState: number,
+}
+
+/**
+ * Sent to inform frontend of possible change to active player
+ * @param activeId identifier of the now active player
+ */
+export interface SC_ActivePlayerChanged extends SC_Base {
+	type: SC_Type.SC_ActivePlayerChanged,
+	activeId: string,
+}
+
+/**
+ * Sent to inform frontend of client choosing a worm
+ * @param wormId identifier for the chosen worm
+ */
+export interface SC_WormChosen extends SC_Base {
+	type: SC_Type.SC_WormChosen,
+	wormId: number,
+}
+
+/**
+ * Sent to inform frontend of client choosing a weapon
+ * @param id identifier for the chosen weapon
+ */
+export interface SC_WeaponChosen extends SC_Base {
+	type: SC_Type.SC_WeaponChosen,
+	id: number,
+}
+
+/**
+ * Sent to inform frontend of client aiming weapon in a different direction
+ * @param angle new angle for worms weapon in bjs units
+ */
+export interface SC_AimAngle extends SC_Base {
+	type: SC_Type.SC_AimAngle,
+	angle: number,
+}
+
+/**
+ * Sent to inform frontend of client aiming target in a different direction
+ * @param angle new angle for target Direction in bjs units
+ */
+export interface SC_AimTargetAngle extends SC_Base {
+	type: SC_Type.SC_AimTargetAngle,
+	angle: number,
+}
+
+
+/**
+ * Sent when clients should move aiming target marker to another position
+ * @param point coordinates of new point
+ */
+export interface SC_AimMoveTarget extends SC_Base {
+	type: SC_Type.SC_AimMoveTarget,
+	point: pointData,
+}
+
+/**
+ * Sent when server needs client to change aim state
+ * @param entering wether we are entering or exiting the aim state
+ * @param stateId identifier for the state we are talking about
+ */
+export interface SC_SwitchAimState extends SC_Base {
+	type: SC_Type.SC_SwitchAimState,
+	entering: boolean,
+	stateId: aimStateId,
+}
+
+/**
+ * Sent when server telsl client to reset the aiming state
+ */
+export interface SC_CancelAiming extends SC_Base {
+	type: SC_Type.SC_CancelAiming,
+}
+
+/**
+ * Sent when game is started or loaded so Clients can display game
+ * @param data Data that is needed for game to be loaded
+ */
+export interface SC_GameData extends SC_Base {
+	type: SC_Type.SC_GameData,
+	data: gameData,
+}
+
+/**
+ * Sent when players won the game
+ * @param winnerIds Identifiers for the players who won the game
+ */
+export interface SC_TurnEnds extends SC_Base {
+	type: SC_Type.SC_TurnEnds,
+	data: endOfTurnData,
+}
+
+/**
+ * Sent when game is started or loaded so Clients can display game
+ * @param data Data that is needed for game to be loaded
+ */
+export interface SC_ExplosionOccurs extends SC_Base {
+	type: SC_Type.SC_ExplosionOccurs,
+	explo: Array<explosionData>,
+}
+
+/**
+ * Sent when Worm moves with significant speed
+ */
+export interface SC_WormPosition extends SC_Base {
+	type: SC_Type.SC_WormPosition,
+	wormId: number,
+	pos: pointData,
+}
+
+/**
+ * Sent when Worm moves with significant speed
+ */
+export interface SC_WinningPlayer extends SC_Base {
+	type: SC_Type.SC_WinningPlayer,
+	winnerId: string,
+}
+
+/**
+ * Sent when Worm moves with significant speed
+ */
+export interface SC_DEV_KillRandomWorm extends SC_Base {
+	type: SC_Type.SC_DEV_KillRandomWorm,
+	wormId: number,
+	playerId: string,
+}
+
+
+// ENDSCREEN ==================================================================
+
+
+export type SC_GenericPacket = 
+			SC_DEV_StartConnecting | SC_InvalidState | SC_StartLobby |
+			SC_ConnectFail | SC_ConnectSuccess | SC_ClientDisconnect | 
+			SC_ClientJoin | SC_LobbyData | SC_ReadyChange | 
+			SC_StartLoading | SC_FinishedLoading | SC_FailedLoading | 
+			SC_LoadingProgress | SC_StartGame | SC_GameFinished |
+			SC_DEV_ButtonPress | SC_DEV_Periodic | SC_DEV_GameState |
+			SC_GameData | SC_ActivePlayerChanged | SC_WormChosen |
+			SC_ExplosionOccurs | SC_WeaponChosen | SC_AimAngle |
+			SC_AimMoveTarget | SC_SwitchAimState | SC_AimTargetAngle |
+			SC_CancelAiming | SC_LobbySettingsUpdate |
+			SC_TurnEnds | SC_WormPosition |
+			SC_DEV_KillRandomWorm | SC_WinningPlayer
+			;
+
+export type SC_GenericStatePacket = SC_StartLobby | SC_StartLoading |
+	SC_StartGame | SC_GameFinished | SC_InvalidState;

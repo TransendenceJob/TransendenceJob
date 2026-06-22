@@ -1,10 +1,7 @@
 {
-	"type": "cs.worm.move",
-	"matchId": 0,
-	"wormId": 0,
-	"inputs": {
-		"left": false,
-		"right": false,
-		"jump": false
-	}
+  "implemented": false,
+  "direction": "client_to_server",
+  "socketEvent": "msgToServer",
+  "plannedType": "CS_WormMove",
+  "notes": "No movement input packet exists in shared/game/packets/ClientServerPackets.ts today. MovementState exists in the state machine, but websocket movement commands are not implemented."
 }

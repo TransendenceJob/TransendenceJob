@@ -1,11 +1,16 @@
 {
-	"type": "cs.aiming.data",
-	"matchId": 0,
-	"userKey": 0,
-	"wormId": 0,
-	"weapon": "",
-	"aimData": {
-		"position": [0.0, 0.0],
-		"angle": 0
-	}
+  "implemented": true,
+  "direction": "client_to_server",
+  "socketEvent": "msgToServer",
+  "type": "CS_EndAimState",
+  "lobbyId": 0,
+  "userId": "user-uuid",
+  "wormAngle": 0,
+  "position": {
+    "x": 0,
+    "y": 0
+  },
+  "targetAngle": 0,
+  "force": 0,
+  "notes": "Final aiming commit from the active player. The server stores these fields in game.aimingData, moves to TURN_END, and currently emits SC_ExplosionOccurs as placeholder resolution."
 }

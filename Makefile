@@ -6,23 +6,30 @@ COMPOSE_PROD = docker/compose.prod.yml
 
 # ---------- Compose commands ----------
 DC_BASE = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)
-DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) -f $(COMPOSE_DEV) --profile prod --profile dev
+DC_DEV  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE)  -f $(COMPOSE_DEV) --profile dev
 DC_PROD = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) --profile prod 
-DC_OBS  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) --profile dev --profile obs
+DC_OBS  = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_BASE) -f $(COMPOSE_PROD) --profile prod --profile obs
+
+OBS_SERVICES = prometheus grafana \
+	redis_exporter \
+	postgres_exporter_auth postgres_exporter_game postgres_exporter_social postgres_exporter_stats \
+	cadvisor node_exporter
+OBS_IMPORTER = grafana_dashboard_importer
 
 # Optional service selector:
 SVC ?=
 CMD ?= sh
 
 .PHONY: help check-env up down down-base down-dev down-prod down-all \
-        ps logs health reset dev prod debug obs rebuild pull restart exec sh
+	ps logs health reset dev prod production debug obs rebuild pull restart exec sh e2e-auth
 
 help:
 	@echo "Targets:"
 	@echo "  make dev         - Start dev stack"
 	@echo "  make prod        - Start prod-like stack"
+	@echo "  make production  - Alias for prod-like stack"
 	@echo "  make debug       - Start dev stack with debug config"
-	@echo "  make obs         - Start infra + observability"
+	@echo "  make obs         - Start observability only: Prometheus, Grafana, dashboard importer, exporters"
 	@echo "  make down        - Stop dev stack"
 	@echo "  make down-base   - Stop base infra only"
 	@echo "  make down-dev    - Stop dev stack"
@@ -36,6 +43,7 @@ help:
 	@echo "  make exec SVC=x CMD='...' - Exec command in service"
 	@echo "  make sh SVC=x    - Shell into service"
 	@echo "  make rebuild     - Build images"
+	@echo "  make e2e-auth    - Run auth-service e2e tests against isolated test DB"
 	@echo "  make reset       - Down all + delete volumes"
 
 check-env:
@@ -48,13 +56,16 @@ dev: check-env
 	$(DC_DEV) up -d --build
 
 prod: check-env
-	$(DC_PROD) up --build
+	$(DC_PROD) up -d --build
+
+production: prod
 
 debug: check-env
 	$(DC_DEV) up -d --build
 
 obs: check-env
-	$(DC_OBS) up -d
+	$(DC_OBS) up -d --no-deps $(OBS_SERVICES)
+	$(DC_OBS) up -d --no-deps --force-recreate $(OBS_IMPORTER)
 
 # ---------- Down targets ----------
 down: down-dev
@@ -105,6 +116,7 @@ ifeq ($(NOCACHE),1)
 	$(DC_DEV) build --no-cache
 else
 	$(DC_DEV) build
+	@echo "Successfuly rebuilded ✅"
 endif
 
 pull: check-env
@@ -128,6 +140,9 @@ ifndef SVC
 	$(error Please provide SVC=<service>, e.g. make sh SVC=nginx)
 endif
 	$(DC_DEV) exec $(SVC) sh
+
+e2e-auth: check-env
+	bash scripts/test-e2e.sh
 
 reset:
 	@echo "⚠️  This will DELETE ALL DATA (volumes). Ctrl+C to abort. 10 seconds..."

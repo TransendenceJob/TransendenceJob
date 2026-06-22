@@ -1,6 +1,10 @@
 {
-	"type": "cs.worm.chosen",
-	"matchId": 0,
-	"userKey": 0,
-	"wormId": 0
+  "implemented": true,
+  "direction": "client_to_server",
+  "socketEvent": "msgToServer",
+  "type": "CS_WormChosen",
+  "lobbyId": 0,
+  "userId": "user-uuid",
+  "wormId": 0,
+  "notes": "Currently trusted and rebroadcast as SC_WormChosen. Server-side validation that the worm belongs to the active player is still TODO."
 }

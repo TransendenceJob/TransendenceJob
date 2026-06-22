@@ -1,7 +1,10 @@
 {
-	"type": "sc.active.player.changes",
-	"matchId": 0,
-	"activePlayerId": 0,
-	"round": 0,
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_ActivePlayerChanged",
+  "lobbyId": 0,
+  "seq": [1],
+  "activeId": "user-uuid",
+  "notes": "Sent when the server-side ClientManager changes the active player. activeId is the player/user id string, not a numeric slot."
 }

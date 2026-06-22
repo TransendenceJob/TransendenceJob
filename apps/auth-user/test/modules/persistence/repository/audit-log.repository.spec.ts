@@ -80,6 +80,7 @@ describe('AuditLogRepository', () => {
       action: 'USER_DISABLED',
       createdFrom,
       createdTo,
+      cursor: 'audit-123',
       take: 50,
       skip: 0,
     });
@@ -94,11 +95,29 @@ describe('AuditLogRepository', () => {
           lte: createdTo,
         },
       },
-      orderBy: {
-        createdAt: 'desc',
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      cursor: {
+        id: 'audit-123',
       },
       take: 50,
-      skip: 0,
+      skip: 1,
     });
+  });
+
+  it('searchAuditLogs supports action IN filtering', async () => {
+    await repository.searchAuditLogs({
+      action: ['LOGIN_SUCCEEDED', 'LOGIN_FAILED'],
+      take: 20,
+    });
+
+    expect(prisma.auditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          action: {
+            in: ['LOGIN_SUCCEEDED', 'LOGIN_FAILED'],
+          },
+        }),
+      }),
+    );
   });
 });

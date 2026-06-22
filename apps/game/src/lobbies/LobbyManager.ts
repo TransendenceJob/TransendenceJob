@@ -2,8 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { Lobby } from './Lobby';
 import { EventEmitter } from 'stream';
 import { Logger } from '@nestjs/common';
+import {
+  CS_GenericPacket,
+  CS_Type,
+  hideClientPackets,
+} from '@/shared/packets/ClientServerPackets';
+import {
+  SERVER_LOG_CLIENT_PACKETS,
+  SERVER_LOG_SERVER_PACKETS,
+} from '@/shared/packets/config';
+import {
+  hideServerPackets,
+  SC_Type,
+} from '@/shared/packets/ServerClientPackets';
 
-const DEBUG: boolean = (process.env.NODE_ENV == "development");
+const DEBUG: boolean = true;
+//process.env.NODE_ENV == 'development';
 
 /**
  * Service that administrates multiple lobbies at the same time
@@ -21,19 +35,67 @@ export class LobbyManager extends EventEmitter {
     for (let i = 0; i < amount; i++) {
       this.lobbies[i] = new Lobby(i, (payload: string) => {
         this.emit('dataToEmit', payload);
-        if (DEBUG)
-          this.logger.log(new Date(Date.now()), "Server -> Client: ", payload);
+
+        const obj = JSON.parse(payload);
+        const found = hideServerPackets.find(
+          (type: SC_Type) => type == obj.type,
+        );
+        if (!found && SERVER_LOG_SERVER_PACKETS)
+          this.logger.log(`Server->Client: ${payload}`);
       });
     }
   }
 
   /**
    * @brief Send Client Websocket packet to Server
-   * @param data Raw string of packet, should be in json format
+   * @param data_raw Raw string of packet, should be in json format
    */
-  msgToServer(data: string) {
-    this.lobbies[0].msgToServer(data);
-    if (DEBUG)
-      this.logger.log(new Date(Date.now()), "Client -> Server: ", data);
+  msgToServer(data_raw: string) {
+    const data: CS_GenericPacket = JSON.parse(data_raw) as CS_GenericPacket;
+
+    // Check data.type
+    if (data.type == undefined) {
+      this.logger.log(
+        `Error: Received packet without type parameter ${data_raw}`,
+      );
+      return;
+    }
+
+    // Check lobbyId
+    if (
+      data.lobbyId == undefined ||
+      data.lobbyId > this.lobbies.length - 1 ||
+      data.lobbyId < 0
+    ) {
+      this.logger.log(
+        `Error: Received packet with invalid lobbyId parameter ${data_raw}`,
+      );
+      return;
+    }
+
+    // Log C->S packets
+    const found: CS_Type | undefined = hideClientPackets.find(
+      (type: CS_Type) => type == (data.type as CS_Type),
+    );
+    if (!found && SERVER_LOG_CLIENT_PACKETS)
+      this.logger.log(`Client->Server: ${data_raw}`);
+
+    // Let appropriate lobby handle package
+    this.lobbies[data.lobbyId].msgToServer(data);
+  }
+
+  /**
+   * Called when a socket connection is lost.
+   * Finds the correct lobby and tells it to remove the user.
+   */
+  handleDisconnect(lobbyId: number, userId: string) {
+    if (this.lobbies[lobbyId]) {
+      this.logger.log(
+        `Directing cleanup: User ${userId} from Lobby ${lobbyId}`,
+      );
+
+      // Call the cleanup function inside the specific Lobby instance
+      this.lobbies[lobbyId].handleDisconnect(userId);
+    }
   }
 }

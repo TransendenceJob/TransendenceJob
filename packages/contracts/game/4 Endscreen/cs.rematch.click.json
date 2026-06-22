@@ -1,5 +1,7 @@
 {
-	"type": "cs.rematch.click",
-	"userKey": 0,
-	"matchId": 0
+  "implemented": false,
+  "direction": "client_to_server",
+  "socketEvent": "msgToServer",
+  "plannedType": "CS_RematchClick",
+  "notes": "No rematch packet exists in shared/game/packets/ClientServerPackets.ts. EndScreen currently disposes the game, creates a new Game, resets clients, and returns the lobby to OpenLobby."
 }

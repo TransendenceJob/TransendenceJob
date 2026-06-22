@@ -1,6 +1,7 @@
 {
-	"type": "sc.timer.over",
-	"matchId": 0,
-	"activePlayerId": 0,
-	"seq": [0]
+  "implemented": false,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "plannedType": "SC_TimerOver",
+  "notes": "No timer-over websocket packet exists in the current game packet interfaces."
 }

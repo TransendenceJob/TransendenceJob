@@ -1,19 +1,20 @@
 "use client";
-
 import { useEffect, useRef } from "react";
-import { Engine } from "@babylonjs/core" ;
+import { Engine, Scene } from "@babylonjs/core" ;
+
+
 import { createScene } from "@/lib/babylon/createScene";
-import { Socket } from 'socket.io-client';
+import { useGameContext } from '../lobby/GameContext';
 
-interface Params {
-  msgToServer: (data: string) => void;
-  socket: Socket;
-  DEBUG: boolean;
-}
+export default function BabylonCanvas() {
+  const {lobbyId, socketRef, msgToServer, userId} = useGameContext();
 
-export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
+  // Persistant references for better memory handling
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
- 
+  const engineRef = useRef<Engine | null>(null);
+  const cleanupRef = useRef<() => void | undefined>(undefined);
+  const resizeUiRef = useRef<() => void | undefined>(undefined);
+
   // Update our msgToServer function, once it has changed,
   // which happens if the SubPages rerenders due to the Socket connecting
   // Essentially this ensures,
@@ -23,43 +24,60 @@ export default function BabylonCanvas({ msgToServer, socket, DEBUG}: Params) {
     msgRef.current = msgToServer;
   }, [msgToServer]);
 
+  // React runs this twice to check for bugs
   useEffect(() => {
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas ) return;
 
-    const engine = new Engine(canvas, true);
-    const disposed = false;
+    // This exists, because the game canvas starts hidden, 
+    // with 0x0 dimensions, and needs to redo the UI when it appears
+    const observer = new ResizeObserver(() => {
+      if (engineRef.current && canvas.offsetWidth > 0 && canvas.offsetHeight > 0) {
+        engineRef.current.resize();
+      }
+      resizeUiRef.current?.();
+    });
+    observer.observe(canvas);
 
-    createScene(canvas, engine, socket, msgRef.current, DEBUG).then((scene) => {
-      if (disposed) {
+    // Create and capture engine for better memory handling
+    const engine = new Engine(canvas, true, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+      adaptToDeviceRatio: true,
+    });
+    engineRef.current = engine;
+
+    const resize = () => engine.resize();
+    window.addEventListener("resize", resize);
+
+    createScene(canvas, engine, socketRef, msgRef.current, lobbyId, userId).then(({scene, resizeUi, cleanup}) => {
+      // Since its an async function, if the engine is disposed after scene Creation, dispose scene
+      if (engine.isDisposed) {
+        cleanup?.();
         scene.dispose();
-        engine.dispose();
         return;
       }
+      cleanupRef.current = cleanup;
+      resizeUiRef.current = resizeUi;
 
       engine.runRenderLoop(() => {
         scene.render();
       });
-
-      const resize = () => engine.resize();
-      window.addEventListener("resize", resize);
-
-      const cleanup = () => {
-        window.removeEventListener("resize", resize);
-        scene.dispose();
-        engine.dispose();
-      };
-
-      (canvas as HTMLCanvasElement & { __babylonCleanup?: () => void }).__babylonCleanup = cleanup;
     });
 
+    // React uses this on termination of element for memory cleanup
     return () => {
-      const cleanup = (canvas as HTMLCanvasElement & { __babylonCleanup?: () => void }).__babylonCleanup;
-      cleanup?.();
+      window.removeEventListener("resize", resize);
+      cleanupRef.current?.();
+      if (engineRef.current) {
+        engineRef.current.dispose();
+        engineRef.current = null;
+      }
+      observer.disconnect();
     };
   }, 
-  []);
+  [userId]);
 
   return <canvas ref={canvasRef} style={{ width: "100vw", height: "100vh", display: "block" }} />;
 }

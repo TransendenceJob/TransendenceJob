@@ -1,4 +1,20 @@
 services:
+  frontend_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/frontend
+      target: build
+      additional_contexts:
+        shared: ../shared/game
+    container_name: frontend_build
+    working_dir: /app
+    volumes:
+      - ../apps/frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+      - ../shared/game:/app/shared
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
+
   nginx:
     image: nginx:1.27-alpine
     ports:
@@ -8,14 +24,19 @@ services:
       FRONTEND_INTERNAL_PORT: ${FRONTEND_INTERNAL_PORT:-3000}
       BFF_INTERNAL_PORT: ${BFF_INTERNAL_PORT:-3000}
       GAME_INTERNAL_PORT: ${GAME_INTERNAL_PORT:-3001}
+      SOCIAL_INTERNAL_PORT: ${SOCIAL_INTERNAL_PORT:-3000}
     volumes:
       - ../infra/nginx/nginx.prod.conf.template:/etc/nginx/templates/default.conf.template:ro
       - nginx_maps:/usr/share/nginx/html/maps
     depends_on:
+      - frontend_build
       - frontend
       - bff
       - game_service
-    networks: [backend]
+    build:
+      context: ../apps/nginx
+      dockerfile: Dockerfile
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
@@ -23,44 +44,77 @@ services:
         max-file: "3"
 
   frontend:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/frontend
       dockerfile: Dockerfile
-    container_name:  frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8080/api}
+      additional_contexts:
+        shared: ../shared/game
+    container_name: frontend
     environment:
-      NODE_ENV : production
-      PORT : 3000
+      NODE_ENV: production
+      PORT: 3000
+      FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    volumes:
+      - frontend_next:/app/.next:ro
     expose:
       - "3000"
-    networks: [backend]
+    depends_on:
+      frontend_build:
+        condition: service_completed_successfully
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  bff_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/BFF
+      target: build
+    container_name: bff_build
+    working_dir: /app
+    volumes:
+      - ../apps/BFF:/app
+      - bff_node_modules:/app/node_modules
+      - bff_dist:/app/dist
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
+
   bff:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/BFF
       dockerfile: Dockerfile
     container_name: bff
     environment:
-      NODE_ENV : production
-      PORT : 3000
+      NODE_ENV: production
+      SERVICE_NAME: bff
+      PORT: 3000
       AUTH_SERVICE_URL: http://auth_service:3000
       SOCIAL_SERVICE_URL: http://social_service:3000
       STATS_SERVICE_URL: http://stats_service:3000
       GAME_SERVICE_HTTP_URL: http://game_service:${GAME_INTERNAL_PORT:-3002}
-      REDIS_HOST : redis
-      REDIS_PORT : 6379
-      RABBITMQ_HOST : rabbitmq
-      RABBITMQ_PORT :  5672
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
+      GOOGLE_REDIRECT_URI: http://localhost:${NGINX_HTTP_PORT:-8080}/api/auth/google/callback
+      GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
+      GOOGLE_FRONTEND_CALLBACK_URL: http://localhost:${NGINX_HTTP_PORT:-8080}/auth/google/callback
+    volumes:
+      - bff_dist:/app/dist:ro
     expose:
       - "3000"
-    command: [ "sh" , "-c" , "node dist/main.js"]
+    command: [ "sh", "-c", "node dist/main.js" ]
     depends_on:
+      bff_build:
+        condition: service_completed_successfully
       postgres_auth:
         condition: service_healthy
       postgres_social:
@@ -71,15 +125,28 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  auth_service_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/auth-user
+      target: build
+    container_name: auth_service_build
+    working_dir: /app
+    volumes:
+      - ../apps/auth-user:/app
+      - auth_service_node_modules:/app/node_modules
+      - auth_service_dist:/app/dist
+    command: [ "sh", "-c", "npm ci --include=dev && npx prisma generate && npm run build" ]
+
   auth_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/auth-user
       dockerfile: Dockerfile
@@ -103,10 +170,17 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_ACCESS_TTL: ${JWT_ACCESS_TTL}
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      REFRESH_TOKEN_BYTES: ${REFRESH_TOKEN_BYTES}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL}
+      REFRESH_TOKEN_HASH_PEPPER: ${REFRESH_TOKEN_HASH_PEPPER}
 
       GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_ID:-prod-google-client-id}
       GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_SECRET:-prod-google-client-secret}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3005/api/auth/callback/google}
+      GOOGLE_REDIRECT_URI: http://localhost:${NGINX_HTTP_PORT:-8080}/api/auth/google/callback
+      GOOGLE_STATE_SECRET: ${GOOGLE_STATE_SECRET}
+      GOOGLE_FRONTEND_CALLBACK_URL: http://localhost:${NGINX_HTTP_PORT:-8080}/auth/google/callback
 
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS}
 
@@ -114,21 +188,40 @@ services:
       SERVICE_VERSION: ${SERVICE_VERSION:-1.0.0}
     expose:
       - "${AUTH_INTERNAL_PORT:-3000}"
-    command: ["sh", "-c", "node dist/src/main.js"]
+    volumes:
+      - auth_service_dist:/app/dist:ro
+    command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
+      auth_service_build:
+        condition: service_completed_successfully
       postgres_auth:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  social_service_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/social
+      target: build
+    container_name: social_service_build
+    working_dir: /app
+    volumes:
+      - ../apps/social:/app
+      - social_service_node_modules:/app/node_modules
+      - social_service_dist:/app/dist
+    environment:
+      DATABASE_URL: postgresql://${SOCIAL_DB_USER}:${SOCIAL_DB_PASSWORD}@postgres_social:5432/${SOCIAL_DB_NAME}?schema=public
+    command: [ "sh", "-c", "npm ci --include=dev && npx prisma generate && npm run build" ]
+
   social_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/social
       dockerfile: Dockerfile
@@ -136,34 +229,73 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      AUTH_SERVICE_URL: http://auth_service:3000
       DB_HOST: postgres_social
       DB_PORT: 5432
       DB_USER: ${SOCIAL_DB_USER}
       DB_PASSWORD: ${SOCIAL_DB_PASSWORD}
       DB_NAME: ${SOCIAL_DB_NAME}
+      DATABASE_URL: postgresql://${SOCIAL_DB_USER}:${SOCIAL_DB_PASSWORD}@postgres_social:5432/${SOCIAL_DB_NAME}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      SERVICE_NAME: social-service
+      SERVICE_VERSION: ${SERVICE_VERSION}
+      UPLOAD_ROOT: /app/uploads
+      PUBLIC_UPLOAD_BASE_PATH: /api/uploads
+      WEBSOCKET_SESSION_CHECK_INTERVAL_SECONDS: ${WEBSOCKET_SESSION_CHECK_INTERVAL_SECONDS:-60}
+      PRISMA_GENERATE_ON_START: "true"
+      PRISMA_RUN_MIGRATIONS: "true"
     expose:
       - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
+    volumes:
+      - social_service_dist:/app/dist:ro
+      - ../apps/social/prisma:/app/prisma:ro
+      - ../apps/social/prisma.config.ts:/app/prisma.config.ts:ro
+      - ../apps/social/scripts:/app/scripts:ro
+      - social_uploads:/app/uploads
+    entrypoint: ["sh", "/app/scripts/prismarun.sh"]
+    command: [ "node", "dist/main.js" ]
     depends_on:
+      social_service_build:
+        condition: service_completed_successfully
       postgres_social:
         condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  stats_service_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/stats
+      target: build
+    container_name: stats_service_build
+    working_dir: /app
+    volumes:
+      - ../apps/stats:/app
+      - stats_service_node_modules:/app/node_modules
+      - stats_service_dist:/app/dist
+    environment:
+      DATABASE_URL: postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?schema=public
+    command: [ "sh", "-c", "npm ci --include=dev && ./node_modules/.bin/prisma generate && npm run build" ]
+
   stats_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/stats
       dockerfile: Dockerfile
@@ -176,28 +308,51 @@ services:
       DB_USER: ${STATS_DB_USER}
       DB_PASSWORD: ${STATS_DB_PASSWORD}
       DB_NAME: ${STATS_DB_NAME}
+      DATABASE_URL: postgresql://${STATS_DB_USER}:${STATS_DB_PASSWORD}@postgres_stats:5432/${STATS_DB_NAME}?schema=public
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
     expose:
       - "3000"
-    command: ["sh", "-c", "node dist/main.js"]
+    volumes:
+      - stats_service_dist:/app/dist:ro
+    command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
+      stats_service_build:
+        condition: service_completed_successfully
       postgres_stats:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
+  game_service_build:
+    profiles: [ "prod" ]
+    build:
+      context: ../apps/game
+      target: build
+      additional_contexts:
+        shared: ../shared/game
+    container_name: game_service_build
+    working_dir: /app
+    volumes:
+      - ../apps/game:/app
+      - game_service_node_modules:/app/node_modules
+      - game_service_dist:/app/dist
+      - ../shared/game:/app/shared
+    command: [ "sh", "-c", "npm ci --include=dev && npm run build" ]
+
   game_service:
-    profiles: ["prod"]
+    profiles: [ "prod" ]
     build:
       context: ../apps/game
       dockerfile: Dockerfile
+      additional_contexts:
+        shared: ../shared/game
     container_name: game_service
     environment:
       NODE_ENV: production
@@ -215,22 +370,40 @@ services:
     expose:
       - "${GAME_INTERNAL_PORT:-3001}"
     volumes:
+      - game_service_dist:/app/dist:ro
+      - ../shared/game:/app/shared:ro
       - nginx_maps:/app/generated/maps
-    command: ["sh", "-c", "node dist/main.js"]
+      - nginx_game_assets:/app/assets
+    command: [ "sh", "-c", "node dist/src/main.js" ]
     depends_on:
+      game_service_build:
+        condition: service_completed_successfully
       postgres_game:
         condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    networks: [backend]
+    networks: [ backend ]
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
 
-
 volumes:
+  auth_service_dist:
+  auth_service_node_modules:
+  bff_dist:
+  bff_node_modules:
+  frontend_next:
+  frontend_node_modules:
+  game_service_dist:
+  game_service_node_modules:
   nginx_maps:
+  social_service_dist:
+  social_service_node_modules:
+  social_uploads:
+  stats_service_dist:
+  stats_service_node_modules:
+  nginx_game_assets:

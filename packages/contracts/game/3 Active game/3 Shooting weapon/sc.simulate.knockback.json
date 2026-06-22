@@ -1,9 +1,7 @@
 {
-	"type": "sc.simulate.knockback",
-	"matchId": 0,
-	"wormId": 0,
-	"direction": [0.0, 0.0],
-	"speed": 0,
-	"newPosition": [0.0, 0.0],
-	"seq": [0]
+  "implemented": false,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "plannedType": "SC_SimulateKnockback",
+  "notes": "Knockback is not represented by a websocket packet in the current implementation."
 }

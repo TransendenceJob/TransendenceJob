@@ -1,6 +1,9 @@
 {
-	"type": "sc.game.finished",
-	"matchId": 0,
-	"winnerId": 0,
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_GameFinished",
+  "lobbyId": 0,
+  "seq": [1],
+  "notes": "State-transition packet only. Winner id is not included in the implemented interface."
 }

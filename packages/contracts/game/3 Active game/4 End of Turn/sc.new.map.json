@@ -1,6 +1,35 @@
 {
-	"type": "sc.new.map",
-	"matchId": 0,
-	"newMapPath": "",
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_GameData",
+  "lobbyId": 0,
+  "seq": [1],
+  "data": {
+    "players": [
+      {
+        "id": "user-uuid",
+        "slot": 0,
+        "name": "Player",
+        "worms": [
+          {
+            "id": 0,
+            "pos": {
+              "x": 0,
+              "y": 0
+            }
+          }
+        ]
+      }
+    ],
+    "map": {
+      "points": [
+        {
+          "x": 0,
+          "y": 0
+        }
+      ]
+    }
+  },
+  "notes": "SC_GameData is the implemented map/player spawn payload. It is sent when entering game loading/start flow, not specifically as an end-of-turn new map."
 }

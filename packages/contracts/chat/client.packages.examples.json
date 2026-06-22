@@ -1,0 +1,49 @@
+{
+  "createDm": {
+    "endpoint": "POST /chats/dm",
+    "body": {
+      "otherUserId": "d7fc2a9a-cf4b-4fcb-b154-27166fd75f7a"
+    }
+  },
+  "listThreadMessages": {
+    "endpoint": "GET /chats/{threadId}/messages?cursor=<cursor>&limit=20",
+    "params": {
+      "threadId": "8da21b8a-55f6-4e30-9325-319f04a9ab8b"
+    }
+  },
+  "sendMessage": {
+    "endpoint": "POST /chats/{threadId}/messages",
+    "params": {
+      "threadId": "8da21b8a-55f6-4e30-9325-319f04a9ab8b"
+    },
+    "body": {
+      "content": "gg wp",
+      "contentType": "TEXT",
+      "clientMessageId": "web-1747900000-001"
+    }
+  },
+  "editMessage": {
+    "endpoint": "PATCH /messages/{messageId}",
+    "params": {
+      "messageId": "8e073d2d-3f27-4f78-a069-cf4a4c4d1f55"
+    },
+    "body": {
+      "content": "gg wp everyone"
+    }
+  },
+  "deleteMessage": {
+    "endpoint": "DELETE /messages/{messageId}?forEveryone=true",
+    "params": {
+      "messageId": "8e073d2d-3f27-4f78-a069-cf4a4c4d1f55"
+    }
+  },
+  "markRead": {
+    "endpoint": "POST /chats/{threadId}/read",
+    "params": {
+      "threadId": "8da21b8a-55f6-4e30-9325-319f04a9ab8b"
+    },
+    "body": {
+      "readAt": "2026-05-22T12:34:56.000Z"
+    }
+  }
+}

@@ -1,9 +1,7 @@
 {
-	"type": "sc.simulate.projectile",
-	"matchId": 0,
-	"projectileId": 0,
-	"position": [0.0, 0.0],
-	"direction": [0.0, 0.0],
-	"speed": 0,
-	"seq": [0]
+  "implemented": false,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "plannedType": "SC_SimulateProjectile",
+  "notes": "Projectile spawning/trajectory packets are not implemented. The frontend may animate locally, but the current server packet only emits SC_ExplosionOccurs after aim commit."
 }

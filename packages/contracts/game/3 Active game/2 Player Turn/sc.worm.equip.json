@@ -1,8 +1,10 @@
 {
-	"type": "sc.worm.equip",
-	"matchId": 0,
-	"wormId": 0,
-	"weapon": "",
-	"success": false,
-	"seq": [0]
+  "implemented": true,
+  "direction": "server_to_client",
+  "socketEvent": "msgToClient",
+  "type": "SC_WeaponChosen",
+  "lobbyId": 0,
+  "seq": [1],
+  "id": 0,
+  "notes": "Broadcast after CS_WeaponChosen. The frontend resolves id against its loaded weapon list."
 }
